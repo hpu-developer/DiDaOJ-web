@@ -1,0 +1,36 @@
+@import "./base.css";
+@import "./theme.css";
+
+a {
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+.sh-code {
+  border: 1px solid #e8eaec;
+  border-radius: 10%;
+  background-color: #f8f9fa;
+  margin: 3px !important;
+  padding: 3px !important;
+}
+
+.sh-anim-loop {
+  animation: ani-loading-loop 1s linear infinite;
+}
+
+@keyframes ani-loading-loop {
+  0% {
+    -webkit-transform: rotate(0);
+    transform: rotate(0);
+  }
+
+  50% {
+    -webkit-transform: rotate(180deg);
+    transform: rotate(180deg);
+  }
+
+  to {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
