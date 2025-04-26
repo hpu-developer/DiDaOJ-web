@@ -3,8 +3,6 @@ import { Tab } from "@/types/webStyle.ts";
 import HomeView from "../views/HomeView.vue";
 import View404 from "../views/View404.vue";
 
-import ProblemList from "@/views/problem/ProblemList.vue";
-
 import type { RouteRecordRaw } from "vue-router";
 
 const tabsConfig: Tab[] = [
@@ -21,8 +19,8 @@ const tabsConfig: Tab[] = [
     path: "/problem",
     title: "题目",
     icon: "dashboard",
-    showSidebar: false,
-    component: ProblemList,
+    showSidebar: true,
+    redirect: "problem-list",
   },
   {
     name: "404",

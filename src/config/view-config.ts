@@ -4,7 +4,18 @@ import type { RouteRecordRaw } from "vue-router";
 import type { Tab, MenuGroup, MenuList, View } from "@/types/webStyle";
 import { IsViewGroup, ViewList } from "@/types/webStyle";
 
+import ProblemList from "@/views/problem/ProblemList.vue";
+
 const viewsConfig = [
+  {
+    name: "problem-list",
+    tab: "problem",
+    sidebar: "problem-list",
+    path: "",
+    title: "问题列表",
+    icon: "cpu",
+    component: ProblemList,
+  },
 ] as ViewList;
 
 export const parseTabMenu = (list: MenuList, tabName: string, view: View) => {

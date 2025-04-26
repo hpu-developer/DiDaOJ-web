@@ -65,5 +65,14 @@ developerStore.$subscribe((_, state) => {
   margin-left: 64px;
   margin-top: 8px;
   margin-right: 32px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: bold;
+  font-family: "Source Code Pro", monospace;
+
+  &:hover {
+    color: #1890ff;
+  }
 }
 </style>
