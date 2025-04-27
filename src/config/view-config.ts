@@ -5,6 +5,7 @@ import type { Tab, MenuGroup, MenuList, View } from "@/types/webStyle";
 import { IsViewGroup, ViewList } from "@/types/webStyle";
 
 import ProblemList from "@/views/problem/ProblemList.vue";
+import ProblemDetail from "@/views/problem/ProblemDetail.vue";
 
 const viewsConfig = [
   {
@@ -16,6 +17,17 @@ const viewsConfig = [
     icon: "cpu",
     component: ProblemList,
   },
+  {
+    name: "problem-detail",
+    tab: "problem",
+    sidebar: "problem-list",
+    path: ":problemId+",
+    title: "问题详情",
+    icon: "cpu",
+    component: ProblemDetail,
+  },
+
+
 ] as ViewList;
 
 export const parseTabMenu = (list: MenuList, tabName: string, view: View) => {

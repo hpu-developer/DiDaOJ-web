@@ -16,6 +16,7 @@ import "./assets/main.css";
 
 import "highlight.js/styles/stackoverflow-light.css";
 import { ReinitTextCache } from "@/text/library.ts";
+import 'vditor/dist/index.css'
 
 hljs.registerLanguage("verilog", verilog);
 

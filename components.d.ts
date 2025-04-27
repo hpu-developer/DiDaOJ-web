@@ -21,6 +21,8 @@ declare module 'vue' {
     TCheckboxGroup: typeof import('tdesign-vue-next')['CheckboxGroup']
     TCol: typeof import('tdesign-vue-next')['Col']
     TContent: typeof import('tdesign-vue-next')['Content']
+    TDescriptions: typeof import('tdesign-vue-next')['Descriptions']
+    TDescriptionsItem: typeof import('tdesign-vue-next')['DescriptionsItem']
     TFooter: typeof import('tdesign-vue-next')['Footer']
     TForm: typeof import('tdesign-vue-next')['Form']
     TFormItem: typeof import('tdesign-vue-next')['FormItem']
