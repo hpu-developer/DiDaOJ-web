@@ -29,7 +29,7 @@ onMounted(() => {
 
     <div class="footer-right">
       <p class="foot-text">
-        <a href="https://github.com/hpu-developer/DiDaOJ-web" target="_blank">
+        <a href="https://github.com/hpu-user/DiDaOJ-web" target="_blank">
           <t-button theme="default" variant="outline" :ghost="true">@didaoj-web</t-button>
         </a>
       </p>

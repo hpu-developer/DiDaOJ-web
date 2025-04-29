@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { PostLoginRefresh } from "@/apis/developer.ts";
+import { PostLoginRefresh } from "@/apis/user.ts";
 import { useLoginStore } from "@/stores/login";
-import { useDeveloperStore } from "@/stores/developer.ts";
+import { useUserStore } from "@/stores/user.ts";
 import { useWebStyleStore } from "@/stores/webStyle";
 import { useSidebarStyleStore } from "@/stores/sidebarStyle";
 import { ref, onMounted } from "vue";
@@ -17,7 +17,7 @@ import { ShowErrorTips, useCurrentInstance } from "@/util/index";
 const { globalProperties } = useCurrentInstance();
 
 const loginStore = useLoginStore();
-const developerStore = useDeveloperStore();
+const userStore = useUserStore();
 const webStyleStore = useWebStyleStore();
 const sidebarStyleStore = useSidebarStyleStore();
 
@@ -25,7 +25,7 @@ loginStore.$patch({
   Loaded: false,
 });
 
-const token = developerStore.getToken;
+const token = userStore.getToken;
 
 const showSidebar = ref(false);
 const realShowSidebar = ref(false);
@@ -59,7 +59,7 @@ function handleError() {
   loginStore.$patch({
     Loaded: true,
   });
-  developerStore.clear();
+  userStore.clear();
 }
 
 onMounted(() => {
@@ -72,7 +72,7 @@ onMounted(() => {
   PostLoginRefresh()
     .then((res) => {
       if (res.code == 0) {
-        developerStore.loadResponse(res.data);
+        userStore.loadResponse(res.data);
         loginStore.$patch({
           Loaded: true,
         });
@@ -81,7 +81,7 @@ onMounted(() => {
         loginStore.$patch({
           Loaded: true,
         });
-        developerStore.clear();
+        userStore.clear();
       }
     })
     .catch((err) => {

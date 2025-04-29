@@ -1,59 +1,51 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from "vue";
-import { useDeveloperStore } from "@/stores/developer.ts";
-import { ShowErrorTips, useCurrentInstance } from "@/util";
+import { onMounted, ref } from "vue";
+import { useUserStore } from "@/stores/user.ts";
+import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { DesktopIcon, LockOnIcon } from "tdesign-icons-vue-next";
+import { RequestLogin } from "@/apis/user.ts";
 
 const { globalProperties } = useCurrentInstance();
 
-const developerStore = useDeveloperStore();
+const userStore = useUserStore();
 
-const isLoaded = ref(false);
-const isLoggingIn = ref(false);
+const isLoginRunning = ref(false);
 
-const appId = ref("");
-
-const gotoUrl = ref("");
-
-const formData = reactive({
+const formData = ref({
   account: "",
   password: "",
 });
 
 const onReset = () => {
-  MessagePlugin.success("重置成功");
+  ShowTextTipsInfo(globalProperties, "重置成功");
 };
 
-const onSubmit = ({ validateResult, firstError }) => {
-  if (validateResult === true) {
-    MessagePlugin.success("提交成功");
-  } else {
-    console.log("Validate Errors: ", firstError, validateResult);
-    MessagePlugin.warning(firstError);
+const onSubmit = ({ validateResult, firstError }: any) => {
+  if (isLoginRunning.value) {
+    return;
   }
+  RequestLogin(formData.value.account, formData.value.password)
+    .then((res) => {
+      if (res.code === 0) {
+        userStore.loadResponse(res.data);
+        ShowTextTipsInfo(globalProperties, "登录成功");
+        globalProperties.$router.push({ path: "/user" });
+      } else {
+        ShowErrorTips(globalProperties, res.code);
+      }
+    })
+    .catch((e) => {
+      console.error("Login error", e);
+      ShowErrorTips(globalProperties, "登录失败");
+    });
 };
 
-function handleLoginError() {
-  isLoggingIn.value = false;
-  globalProperties.$message.error({
-    duration: 3000,
-    content: "登录失败",
-  });
-  refreshPage();
-}
-
-function refreshPage() {
-  isLoaded.value = false;
-  isLoadedFailed.value = false;
-  isLoggingIn.value = false;
-
-  const newQuery = JSON.parse(JSON.stringify(globalProperties.$route.query)); // 深拷贝
-  delete newQuery.code;
-  globalProperties.$router.replace({ query: newQuery });
-  globalProperties.$router.push({ path: "/login" });
-}
-
-onMounted(() => {});
+onMounted(() => {
+  if (userStore.isLogin()) {
+    globalProperties.$router.push({ path: "/user" });
+    return;
+  }
+});
 </script>
 
 <template>
@@ -75,7 +67,7 @@ onMounted(() => {});
         </t-input>
       </t-form-item>
       <t-form-item>
-        <t-button theme="primary" type="submit" block>登录</t-button>
+        <t-button theme="primary" type="submit" block :loading="isLoginRunning">登录</t-button>
       </t-form-item>
     </t-form>
     <div class="dida-login-footer">
@@ -97,7 +89,7 @@ onMounted(() => {});
 }
 
 .yj-login-form {
-  width: 100%;
+  width: 300px;
   padding: 20px;
 }
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { useDeveloperStore } from "@/stores/developer.ts";
+import { useUserStore } from "@/stores/user.ts";
 
 const baseURL = import.meta.env.VITE_API_BASE || "/api/";
 
@@ -19,8 +19,8 @@ const service = axios.create({
 // 请求拦截器，设置 X-Token
 service.interceptors.request.use(
   (config) => {
-    const developerStore = useDeveloperStore();
-    const token = developerStore.getToken;
+    const userStore = useUserStore();
+    const token = userStore.getToken;
     if (token) {
       config.headers["X-Token"] = token; // 设置 X-Token
     }

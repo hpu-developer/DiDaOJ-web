@@ -15,6 +15,13 @@ export function GetCommonErrorCode() {
   return 1000;
 }
 
+export function ShowTextTipsInfo(properties: ComponentCustomProperties & Record<string, any>, tips: string, duration = 3000) {
+  properties.$message.info({
+    duration,
+    content: tips,
+  });
+}
+
 export function ShowErrorTips(properties: ComponentCustomProperties & Record<string, any>, tips: number | string, duration = 3000) {
   const [found, realTips] = GetText(tips);
   const message = found ? realTips : `系统错误，错误提示[${realTips}]`;

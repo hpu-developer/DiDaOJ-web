@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useDeveloperStore } from "@/stores/developer.ts";
+import { useUserStore } from "@/stores/user.ts";
 import { useWebStyleStore } from "@/stores/webStyle";
 import { useSidebarStyleStore } from "@/stores/sidebarStyle";
 import { makeTabRouter } from "@/config/tab-config";
@@ -37,8 +37,8 @@ router.beforeEach((to, _, next) => {
   }
 
   if (toMeta.needLogin) {
-    const developerStore = useDeveloperStore();
-    if (developerStore.getToken == null || developerStore.getToken == "") {
+    const userStore = useUserStore();
+    if (userStore.getToken == null || userStore.getToken == "") {
       next({ name: "login", query: { redirect_uri: to.fullPath } });
       return;
     }

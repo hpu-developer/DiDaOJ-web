@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useLoginStore } from "@/stores/login";
-import { useDeveloperStore } from "@/stores/developer.ts";
+import { useUserStore } from "@/stores/user.ts";
 import { getGenerateTabs } from "@/config/tab-config";
 
 const loginStore = useLoginStore();
 
 const isLoaded = ref(loginStore.isLoaded);
 
-const developerStore = useDeveloperStore();
+const userStore = useUserStore();
 
 const isLogin = ref(false);
 
-const name = ref(developerStore.getName);
+const name = ref(userStore.getName);
 
 const tabList = ref(getGenerateTabs());
 
@@ -20,7 +20,7 @@ loginStore.$subscribe((_, state) => {
   isLoaded.value = state.Loaded;
 });
 
-developerStore.$subscribe((_, state) => {
+userStore.$subscribe((_, state) => {
   name.value = state.name;
   isLogin.value = state.token != "";
 });
@@ -40,7 +40,7 @@ developerStore.$subscribe((_, state) => {
       </t-menu-item>
     </template>
     <template #operations>
-      <t-menu-item v-if="isLoaded && isLogin" value="developer" :to="{ name: 'developer' }">
+      <t-menu-item v-if="isLoaded && isLogin" value="user" :to="{ name: 'user' }">
         <template #icon>
           <t-icon name="user" />
         </template>

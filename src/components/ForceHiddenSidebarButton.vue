@@ -132,7 +132,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  developer-select: none;
+  user-select: none;
   touch-action: none;
   z-index: 2000;
 }
