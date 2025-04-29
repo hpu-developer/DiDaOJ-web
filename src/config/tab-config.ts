@@ -23,6 +23,14 @@ const tabsConfig: Tab[] = [
     redirect: "problem-list",
   },
   {
+    name: "judge",
+    path: "/judge",
+    title: "评测",
+    icon: "dashboard",
+    showSidebar: true,
+    redirect: "judge-list",
+  },
+  {
     name: "404",
     path: "/404",
     title: "404",

@@ -6,6 +6,7 @@ import { IsViewGroup, ViewList } from "@/types/webStyle";
 
 import ProblemList from "@/views/problem/ProblemList.vue";
 import ProblemDetail from "@/views/problem/ProblemDetail.vue";
+import JudgeJobList from "@/views/judge/JudgeJobList.vue";
 
 const viewsConfig = [
   {
@@ -27,6 +28,15 @@ const viewsConfig = [
     component: ProblemDetail,
   },
 
+  {
+    name: "judge-list",
+    tab: "judge",
+    sidebar: "judge-list",
+    path: "",
+    title: "评测列表",
+    icon: "cpu",
+    component: JudgeJobList,
+  },
 
 ] as ViewList;
 
