@@ -1,7 +1,8 @@
 import { Tab } from "@/types/webStyle.ts";
 
-import HomeView from "../views/HomeView.vue";
-import View404 from "../views/View404.vue";
+import HomeView from "@/views/HomeView.vue";
+import View404 from "@/views/View404.vue";
+import LoginView from "@/views/login/LoginView.vue";
 
 import type { RouteRecordRaw } from "vue-router";
 
@@ -31,6 +32,14 @@ const tabsConfig: Tab[] = [
     redirect: "judge-list",
   },
   {
+    name: "login",
+    path: "/login",
+    title: "登陆",
+    showSidebar: false,
+    disableGenerateTab: true,
+    component: LoginView,
+  },
+  {
     name: "404",
     path: "/404",
     title: "404",
@@ -38,6 +47,7 @@ const tabsConfig: Tab[] = [
     disableGenerateTab: true,
     component: View404,
   },
+
 ];
 
 export const getTabConfig = (tabName: string) => {
