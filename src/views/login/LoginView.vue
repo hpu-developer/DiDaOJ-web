@@ -2,6 +2,7 @@
 import { ref, onMounted, reactive } from "vue";
 import { useDeveloperStore } from "@/stores/developer.ts";
 import { ShowErrorTips, useCurrentInstance } from "@/util";
+import { DesktopIcon, LockOnIcon } from "tdesign-icons-vue-next";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -56,9 +57,9 @@ onMounted(() => {});
 </script>
 
 <template>
-  <t-card class="yj-login-card">
-    <t-form ref="form" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit" class="yj-login-form">
-      <t-form-item label="用户名" name="account">
+  <t-card class="yj-login-card" title="欢迎使用DidaOJ~">
+    <t-form ref="form" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit" class="yj-login-form" :label-width="0">
+      <t-form-item name="account">
         <t-input v-model="formData.account" clearable placeholder="请输入账户名">
           <template #prefix-icon>
             <DesktopIcon />
@@ -66,10 +67,10 @@ onMounted(() => {});
         </t-input>
       </t-form-item>
 
-      <t-form-item label="密码" name="password">
+      <t-form-item name="password">
         <t-input v-model="formData.password" type="password" clearable placeholder="请输入密码">
           <template #prefix-icon>
-            <lock-on-icon />
+            <LockOnIcon />
           </template>
         </t-input>
       </t-form-item>
@@ -77,9 +78,9 @@ onMounted(() => {});
         <t-button theme="primary" type="submit" block>登录</t-button>
       </t-form-item>
     </t-form>
-    <div>
-      <t-button>忘记密码</t-button>
-      <t-button>注册账户</t-button>
+    <div class="dida-login-footer">
+      <t-link>忘记密码</t-link>
+      <t-link>注册账户</t-link>
     </div>
   </t-card>
 </template>
@@ -98,5 +99,12 @@ onMounted(() => {});
 .yj-login-form {
   width: 100%;
   padding: 20px;
+}
+
+.dida-login-footer {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 </style>

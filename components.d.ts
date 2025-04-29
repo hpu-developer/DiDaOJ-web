@@ -29,14 +29,13 @@ declare module 'vue' {
     TIcon: typeof import('tdesign-vue-next')['Icon']
     TInput: typeof import('tdesign-vue-next')['Input']
     TLayout: typeof import('tdesign-vue-next')['Layout']
+    TLink: typeof import('tdesign-vue-next')['Link']
     TLoading: typeof import('tdesign-vue-next')['Loading']
     TMenu: typeof import('tdesign-vue-next')['Menu']
     TMenuGroup: typeof import('tdesign-vue-next')['MenuGroup']
     TMenuItem: typeof import('tdesign-vue-next')['MenuItem']
     TRow: typeof import('tdesign-vue-next')['Row']
     TSpace: typeof import('tdesign-vue-next')['Space']
-    TSpan: typeof import('tdesign-vue-next')['Span']
     TTable: typeof import('tdesign-vue-next')['Table']
-    TTag: typeof import('tdesign-vue-next')['Tag']
   }
 }
