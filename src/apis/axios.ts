@@ -32,7 +32,7 @@ service.interceptors.response.use(
     // dataAxios 是 axios 返回数据中的 data
     const dataAxios = response.data;
     // 这个状态码是和后端约定的
-    const code = dataAxios.reset;
+    // const code = dataAxios.reset;
     return dataAxios;
   },
   function (error) {

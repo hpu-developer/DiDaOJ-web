@@ -33,12 +33,10 @@ export default defineConfig({
     },
   },
   server: {
-    https: false,
     proxy: {
-      "/helper": {
-        // target: "http://127.0.0.1:8180", // 接口的域名
-        target: "http://10.0.51.16:8180", // 接口的域名
-        rewrite: (path) => path.replace(/^\/helper/, ""),
+      "/api": {
+        target: "http://127.0.0.1:8180", // 接口的域名
+        rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
   },

@@ -18,12 +18,10 @@ declare module 'vue' {
     TBackTop: typeof import('tdesign-vue-next')['BackTop']
     TButton: typeof import('tdesign-vue-next')['Button']
     TCard: typeof import('tdesign-vue-next')['Card']
-    TCheckboxGroup: typeof import('tdesign-vue-next')['CheckboxGroup']
     TCol: typeof import('tdesign-vue-next')['Col']
     TContent: typeof import('tdesign-vue-next')['Content']
     TDescriptions: typeof import('tdesign-vue-next')['Descriptions']
     TDescriptionsItem: typeof import('tdesign-vue-next')['DescriptionsItem']
-    TFooter: typeof import('tdesign-vue-next')['Footer']
     TForm: typeof import('tdesign-vue-next')['Form']
     TFormItem: typeof import('tdesign-vue-next')['FormItem']
     THeader: typeof import('tdesign-vue-next')['Header']
@@ -36,7 +34,8 @@ declare module 'vue' {
     TMenuGroup: typeof import('tdesign-vue-next')['MenuGroup']
     TMenuItem: typeof import('tdesign-vue-next')['MenuItem']
     TRow: typeof import('tdesign-vue-next')['Row']
-    TSelectInput: typeof import('tdesign-vue-next')['SelectInput']
+    TSpace: typeof import('tdesign-vue-next')['Space']
     TTable: typeof import('tdesign-vue-next')['Table']
+    TTag: typeof import('tdesign-vue-next')['Tag']
   }
 }
