@@ -20,10 +20,25 @@ const ListColumns = ref([
   {
     title: "ID",
     colKey: "id",
+    cell: (_: any, data: any) => {
+      let theme = getProblemIdTheme(data.row.id);
+      return (
+        <t-button variant="dashed" theme={theme} onClick={() => handleGotoProblem(data.row.id)}>
+          {data.row.id}
+        </t-button>
+      );
+    },
   },
   {
     title: "标题",
     colKey: "title",
+    cell: (_: any, data: any) => {
+      return (
+        <t-button variant="text" onClick={() => handleGotoProblem(data.row.id)}>
+          {data.row.title}
+        </t-button>
+      );
+    },
   },
   {
     title: "标签",
@@ -74,6 +89,29 @@ const formItem = ref({
   selectBranchList: [],
   modify: "",
 });
+
+const handleGotoProblem = (id: string) => {
+  if (!id) {
+    return;
+  }
+  router.push({ path: "/problem/" + id });
+};
+
+const getProblemIdTheme = (id: string) => {
+  if (!id) {
+    return "default";
+  }
+  const problemId = parseInt(id);
+  if (problemId < 1010) {
+    return "default";
+  } else if (problemId < 1020) {
+    return "success";
+  } else if (problemId < 1030) {
+    return "warning";
+  } else {
+    return "danger";
+  }
+};
 
 const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
   if (needLoading) {

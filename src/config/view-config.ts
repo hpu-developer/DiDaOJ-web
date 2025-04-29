@@ -6,6 +6,7 @@ import { IsViewGroup, ViewList } from "@/types/webStyle";
 
 import ProblemList from "@/views/problem/ProblemList.vue";
 import ProblemDetail from "@/views/problem/ProblemDetail.vue";
+import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 import JudgeJobList from "@/views/judge/JudgeJobList.vue";
 
 const viewsConfig = [
@@ -26,6 +27,15 @@ const viewsConfig = [
     title: "问题详情",
     icon: "cpu",
     component: ProblemDetail,
+  },
+  {
+    name: "problem-recommend",
+    tab: "problem",
+    sidebar: "problem-recommend",
+    path: "recommend",
+    title: "问题推荐",
+    icon: "cpu",
+    component: ProblemRecommend,
   },
 
   {

@@ -13,6 +13,7 @@ const { globalProperties } = useCurrentInstance();
 
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
+let refreshTimeout: ReturnType<typeof setTimeout>;
 
 const ListColumns = ref([
   {
@@ -108,6 +109,7 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   if (needLoading) {
     dataLoading.value = true;
   }
+  let needRefresh = false;
   try {
     const { current, pageSize } = paginationInfo;
     const res = await GetJudgeJobList(current, pageSize);
@@ -117,6 +119,9 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
       responseList.forEach((item) => {
         const result = ParseJudgeJob(item);
         judgeJobViews.value?.push(result);
+        if (IsJudgeStatusRunning(item.status)) {
+          needRefresh = true;
+        }
       });
       pagination.value = { ...pagination.value, total: res.data.total_count };
     } else {
@@ -132,6 +137,11 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   } finally {
     if (needLoading) {
       dataLoading.value = false;
+    }
+    if (needRefresh && viewActive) {
+      refreshTimeout = setTimeout(() => {
+        fetchData({ current: currentPage, pageSize: currentPageSize }, false);
+      }, 5000);
     }
   }
 };
