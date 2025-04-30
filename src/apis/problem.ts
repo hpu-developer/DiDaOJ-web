@@ -3,6 +3,12 @@ import httpRequest from "@/apis/axios-api";
 
 import type { Problem, ProblemTag, ProblemView } from "@/types/problem";
 
+export enum ProblemAttemptStatus {
+  None = 0,
+  Attempt = 1,
+  Accept = 2,
+}
+
 export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag }): ProblemView {
   const result: ProblemView = {} as ProblemView;
   result.id = item.id;

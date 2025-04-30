@@ -1,9 +1,9 @@
 <script setup lang="tsx">
-import { ref, watch, onMounted, onBeforeUnmount } from "vue";
+import type { WatchStopHandle } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
-import { ParseProblem, GetProblemList, GetProblemTagList } from "@/apis/problem.ts";
-import type { WatchStopHandle } from "vue";
+import { GetProblemList, GetProblemTagList, ParseProblem, ProblemAttemptStatus } from "@/apis/problem.ts";
 import { Problem, ProblemTag, ProblemView } from "@/types/problem.ts";
 
 const route = useRoute();
@@ -15,6 +15,7 @@ let watchHandle: WatchStopHandle | null = null;
 
 const showMoreTags = ref(false);
 const tagsMap = {} as { [key: number]: ProblemTag };
+let problemAttemptStatus = {} as { [key: string]: ProblemAttemptStatus };
 
 const ListColumns = ref([
   {
@@ -101,15 +102,20 @@ const getProblemIdTheme = (id: string) => {
   if (!id) {
     return "default";
   }
-  const problemId = parseInt(id);
-  if (problemId < 1010) {
+  if (!problemAttemptStatus) {
     return "default";
-  } else if (problemId < 1020) {
-    return "success";
-  } else if (problemId < 1030) {
-    return "warning";
-  } else {
-    return "danger";
+  }
+  const status = problemAttemptStatus[id];
+  if (!status) {
+    return "default";
+  }
+  switch (status) {
+    case ProblemAttemptStatus.Accept:
+      return "success";
+    case ProblemAttemptStatus.Attempt:
+      return "warning";
+    default:
+      return "default";
   }
 };
 
@@ -128,6 +134,7 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
         problemViews.value?.push(result);
       });
       pagination.value = { ...pagination.value, total: res.data.total_count };
+      problemAttemptStatus = res.data.problem_attempt_status;
     } else {
       if (needLoading) {
         ShowErrorTips(globalProperties, res.code);

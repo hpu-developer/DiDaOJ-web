@@ -12,7 +12,7 @@ const userStore = useUserStore();
 
 const isLogin = ref(false);
 
-const name = ref(userStore.getName);
+const name = ref(userStore.getNickname);
 
 const tabList = ref(getGenerateTabs());
 
@@ -21,7 +21,7 @@ loginStore.$subscribe((_, state) => {
 });
 
 userStore.$subscribe((_, state) => {
-  name.value = state.name;
+  name.value = state.nickname;
   isLogin.value = state.token != "";
 });
 </script>
