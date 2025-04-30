@@ -3,6 +3,7 @@ import { Tab } from "@/types/webStyle.ts";
 import HomeView from "@/views/HomeView.vue";
 import View404 from "@/views/View404.vue";
 import LoginView from "@/views/login/LoginView.vue";
+import UserView from "@/views/user/UserView.vue";
 
 import type { RouteRecordRaw } from "vue-router";
 
@@ -38,6 +39,15 @@ const tabsConfig: Tab[] = [
     showSidebar: false,
     disableGenerateTab: true,
     component: LoginView,
+  },
+  {
+    name: "user",
+    path: "/user",
+    title: "用户",
+    showSidebar: false,
+    needLogin: true,
+    disableGenerateTab: true,
+    component: UserView,
   },
   {
     name: "404",

@@ -46,6 +46,12 @@ userStore.$subscribe((_, state) => {
         </template>
         {{ name }}
       </t-menu-item>
+      <t-menu-item v-else-if="!isLoaded" value="login">
+        <template #icon>
+          <t-icon name="login" />
+        </template>
+        ...
+      </t-menu-item>
       <t-menu-item v-else value="login" :to="{ name: 'login' }">
         <template #icon>
           <t-icon name="login" />
