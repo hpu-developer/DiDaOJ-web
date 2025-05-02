@@ -42,7 +42,7 @@ const tabsConfig: Tab[] = [
   },
   {
     name: "user",
-    path: "/user",
+    path: "/user/:username+",
     title: "用户",
     showSidebar: false,
     needLogin: true,
@@ -57,7 +57,6 @@ const tabsConfig: Tab[] = [
     disableGenerateTab: true,
     component: View404,
   },
-
 ];
 
 export const getTabConfig = (tabName: string) => {

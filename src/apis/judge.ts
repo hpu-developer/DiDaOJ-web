@@ -100,7 +100,10 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
     result.approveTime = "-";
   }
   result.author = item.author;
-
+  result.authorUsername = item.author_username;
+  result.authorNickname = item.author_nickname;
+  result.code = item.code;
+  result.compileMessage = item.compile_message;
   return result;
 }
 
@@ -116,9 +119,9 @@ export function PostJudgeJob(problemId: string, language: JudgeLanguage, code: s
   });
 }
 
-export function GetJudgeJobTagList(num: number) {
+export function GetJudgeJob(judgeId: number) {
   return httpRequest({
-    url: "/problem/tag/list" + "?max_count=" + num,
+    url: "/judge" + "?id=" + judgeId,
     method: "get",
   });
 }

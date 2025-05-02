@@ -1,9 +1,8 @@
 <script setup lang="tsx">
-import type { WatchStopHandle } from "vue";
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
-import { GetJudgeJobList, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus, ParseJudgeJob } from "@/apis/judge.ts";
+import { GetJudgeJob, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus, ParseJudgeJob } from "@/apis/judge.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
 
@@ -12,20 +11,14 @@ const router = useRouter();
 const { globalProperties } = useCurrentInstance();
 
 let viewActive = false;
-let watchHandle: WatchStopHandle | null = null;
 let refreshTimeout: ReturnType<typeof setTimeout>;
+let judgeId = -1;
+const judgeJob = ref<JudgeJobView | null>(null);
 
 const ListColumns = ref([
   {
     title: "ID",
     colKey: "id",
-    cell: (_: any, data: any) => {
-      return (
-        <t-button variant="text" onClick={() => handleGotoJudgeJob(data.row.id)}>
-          {data.row.id}
-        </t-button>
-      );
-    },
   },
   {
     title: "问题",
@@ -69,7 +62,7 @@ const ListColumns = ref([
       }
       finalElements.push(<span>{statusStr}</span>);
       return (
-        <t-button theme={theme} variant="outline" onClick={() => handleGotoJudgeJob(data.row.id)}>
+        <t-button theme={theme} variant="outline">
           {finalElements}
         </t-button>
       );
@@ -86,17 +79,6 @@ const ListColumns = ref([
   {
     title: "内存",
     colKey: "memory",
-  },
-  {
-    title: "代码",
-    colKey: "code",
-    cell: (_: any, data: any) => {
-      return (
-        <t-button theme="default" onClick={() => handleGotoJudgeJob(data.row.id)}>
-          {data.row.language + " / " + data.row.codeLength}
-        </t-button>
-      );
-    },
   },
   {
     title: "作者",
@@ -118,16 +100,6 @@ const ListColumns = ref([
 
 const dataLoading = ref(false);
 
-let currentPage = 1;
-let currentPageSize = 50;
-
-const pagination = ref({
-  defaultPageSize: currentPageSize,
-  defaultCurrent: currentPage,
-  total: 0,
-  pageSizeOptions: [50, 100],
-});
-
 const judgeJobViews = ref<JudgeJobView[]>();
 
 const handleGotoProblem = (id: string) => {
@@ -137,13 +109,6 @@ const handleGotoProblem = (id: string) => {
   router.push({ path: "/problem/" + id });
 };
 
-const handleGotoJudgeJob = (id: string) => {
-  if (!id) {
-    return;
-  }
-  router.push({ path: "/judge/" + id });
-};
-
 const handleGotoUser = (user: string) => {
   if (!user) {
     return;
@@ -151,25 +116,24 @@ const handleGotoUser = (user: string) => {
   router.push({ path: "/user/" + user });
 };
 
-const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
+const fetchData = async (needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
   }
   let needRefresh = false;
   try {
-    const { current, pageSize } = paginationInfo;
-    const res = await GetJudgeJobList(current, pageSize);
+    const res = await GetJudgeJob(judgeId);
     judgeJobViews.value = [];
     if (res.code === 0) {
-      const responseList = res.data.list as JudgeJob[];
-      responseList.forEach((item) => {
-        const result = ParseJudgeJob(item);
-        judgeJobViews.value?.push(result);
-        if (IsJudgeStatusRunning(item.status)) {
-          needRefresh = true;
-        }
-      });
-      pagination.value = { ...pagination.value, total: res.data.total_count };
+      const response = res.data as JudgeJob;
+      const result = ParseJudgeJob(response);
+      judgeJobViews.value?.push(result);
+
+      judgeJob.value = result;
+
+      if (IsJudgeStatusRunning(response.status)) {
+        needRefresh = true;
+      }
     } else {
       if (needLoading) {
         ShowErrorTips(globalProperties, res.code);
@@ -186,59 +150,43 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
     }
     if (needRefresh && viewActive) {
       refreshTimeout = setTimeout(() => {
-        fetchData({ current: currentPage, pageSize: currentPageSize }, false);
+        fetchData(false);
       }, 5000);
     }
   }
-};
-
-const onPageChange = async (pageInfo: { current: number; pageSize: number }) => {
-  // 更新 URL 查询参数
-  await router.push({
-    query: { ...route.query, page: pageInfo.current, page_size: pageInfo.pageSize },
-  });
 };
 
 // 初始化分页信息
 onMounted(async () => {
   viewActive = true;
 
-  watchHandle = watch(
-    () => route.query,
-    (newQuery) => {
-      const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
-      const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
-      currentPage = queryPage;
-      currentPageSize = queryPageSize;
-      pagination.value = { ...pagination.value, defaultCurrent: currentPage, defaultPageSize: currentPageSize };
-      fetchData({ current: currentPage, pageSize: currentPageSize }, true);
-    },
-    { immediate: true }
-  );
+  if (route.params.judgeId && route.params.judgeId.length === 1) {
+    judgeId = parseInt(route.params.judgeId[0] as string);
+  } else {
+    await router.push({ name: "judge" });
+    return;
+  }
+
+  await fetchData(true);
 });
 
 onBeforeUnmount(() => {
   viewActive = false;
-
-  if (watchHandle) {
-    watchHandle();
-  }
 });
 </script>
 
 <template>
   <t-card style="margin: 10px">
-    <t-table
-      :data="judgeJobViews"
-      :columns="ListColumns"
-      row-key="id"
-      vertical-align="top"
-      :hover="true"
-      :pagination="pagination"
-      :loading="dataLoading"
-      @page-change="onPageChange"
-    />
+    <t-table :data="judgeJobViews" :columns="ListColumns" row-key="id" vertical-align="top" :hover="true" :loading="dataLoading" />
   </t-card>
+
+  <pre>
+    <code>
+    {{ judgeJob?.code}}
+    </code>
+  </pre>
+
+  <div>{{ judgeJob?.compileMessage }}</div>
 </template>
 
 <style scoped>

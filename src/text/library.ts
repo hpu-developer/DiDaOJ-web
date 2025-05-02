@@ -33,6 +33,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "10001": {
         zh: "权限异常，请重新登陆后再试",
       },
+      "10003": {
+        zh: "未找到目标数据",
+      },
     });
   })
 }

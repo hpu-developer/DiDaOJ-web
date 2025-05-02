@@ -9,9 +9,13 @@ export interface JudgeJob {
   time: number;
   memory: number;
   code_length: number;
-  author: string;
+  author: number;
+  author_username: string;
+  author_nickname: string;
   language: JudgeLanguage;
   approve_time: string;
+  code?: string;
+  compile_message?: string;
 }
 
 export interface JudgeJobView {
@@ -22,7 +26,11 @@ export interface JudgeJobView {
   time: string;
   memory: string;
   codeLength: number;
-  author: string;
+  author: number;
+  authorUsername: string;
+  authorNickname: string;
   language: string;
   approveTime: string;
+  code?: string;
+  compileMessage?: string;
 }

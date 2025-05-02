@@ -29,7 +29,7 @@ const onSubmit = ({ validateResult, firstError }: any) => {
       if (res.code === 0) {
         userStore.loadResponse(res.data);
         ShowTextTipsInfo(globalProperties, "登录成功");
-        globalProperties.$router.push({ path: "/user" });
+        globalProperties.$router.push({ path: "/user/" + res.data.username });
       } else {
         ShowErrorTips(globalProperties, res.code);
       }

@@ -8,6 +8,7 @@ import ProblemList from "@/views/problem/ProblemList.vue";
 import ProblemDetail from "@/views/problem/ProblemDetail.vue";
 import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 import JudgeJobList from "@/views/judge/JudgeJobList.vue";
+import JudgeJobDetail from "@/views/judge/JudgeJobDetail.vue";
 
 const viewsConfig = [
   {
@@ -46,6 +47,15 @@ const viewsConfig = [
     title: "评测列表",
     icon: "cpu",
     component: JudgeJobList,
+  },
+  {
+    name: "judge-detail",
+    tab: "judge",
+    sidebar: "judge-list",
+    path: ":judgeId+",
+    title: "评测详情",
+    icon: "cpu",
+    component: JudgeJobDetail,
   },
 
 ] as ViewList;
