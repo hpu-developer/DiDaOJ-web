@@ -41,3 +41,18 @@ export function GetJudgeLanguageStr(language: JudgeLanguage) {
       return "Unknown";
   }
 }
+
+export function GetMarkdownLanguageByJudgeLanguage(language: JudgeLanguage) {
+  switch (language) {
+    case JudgeLanguage.C:
+      return "c";
+    case JudgeLanguage.Cpp:
+      return "cpp";
+    case JudgeLanguage.Java:
+      return "java";
+    case JudgeLanguage.Python:
+      return "python";
+    default:
+      return "text";
+  }
+}

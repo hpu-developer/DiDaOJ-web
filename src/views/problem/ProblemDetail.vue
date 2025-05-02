@@ -89,6 +89,7 @@ onMounted(async () => {
         toolbar: ["undo", "redo"],
       } as IOptions;
       codeEditor = new Vditor("codeEditRef", codeEditOptions);
+      Vditor.highlightRender({ lineNumber: true, enable: true }, markdownRef.value);
     }
     problemLoading.value = false;
   });

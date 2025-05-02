@@ -1,10 +1,12 @@
 <script setup lang="tsx">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
 import { GetJudgeJob, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus, ParseJudgeJob } from "@/apis/judge.ts";
+import { GetMarkdownLanguageByJudgeLanguage } from "@/apis/language.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
+import Vditor from "vditor";
 
 const route = useRoute();
 const router = useRouter();
@@ -14,6 +16,8 @@ let viewActive = false;
 let refreshTimeout: ReturnType<typeof setTimeout>;
 let judgeId = -1;
 const judgeJob = ref<JudgeJobView | null>(null);
+const judgeJobCode = ref("");
+const markdownCodeRef = ref<HTMLElement | null>(null);
 
 const ListColumns = ref([
   {
@@ -129,6 +133,18 @@ const fetchData = async (needLoading: boolean) => {
       const result = ParseJudgeJob(response);
       judgeJobViews.value?.push(result);
 
+      const options = {} as IPreviewOptions;
+      if (response.code) {
+        const language = GetMarkdownLanguageByJudgeLanguage(response.language);
+        const codeMarkdown = `\`\`\`${language}\n${response.code}\n\`\`\``;
+        judgeJobCode.value = await Vditor.md2html(codeMarkdown, options);
+        await nextTick(() => {
+          if (markdownCodeRef.value) {
+            Vditor.highlightRender({ lineNumber: true, enable: true }, markdownCodeRef.value);
+          }
+        });
+      }
+
       judgeJob.value = result;
 
       if (IsJudgeStatusRunning(response.status)) {
@@ -180,11 +196,7 @@ onBeforeUnmount(() => {
     <t-table :data="judgeJobViews" :columns="ListColumns" row-key="id" vertical-align="top" :hover="true" :loading="dataLoading" />
   </t-card>
 
-  <pre>
-    <code>
-    {{ judgeJob?.code}}
-    </code>
-  </pre>
+  <div v-html="judgeJobCode" ref="markdownCodeRef"></div>
 
   <div>{{ judgeJob?.compileMessage }}</div>
 </template>
