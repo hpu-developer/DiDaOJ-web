@@ -88,6 +88,7 @@ onMounted(() => {
       console.log(err);
       handleError();
     });
+
 });
 </script>
 
@@ -104,7 +105,7 @@ onMounted(() => {
       </Transition>
       <t-layout :class="['sh-main-layout', { expanded: !realShowSidebar }]">
         <BreadcrumbContent />
-        <t-content class="sh-main-content">
+        <t-content class="sh-main-content" v-copy-code>
           <RouterView />
         </t-content>
         <FooterContent />

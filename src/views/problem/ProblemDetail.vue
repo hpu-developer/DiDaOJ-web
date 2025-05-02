@@ -6,6 +6,7 @@ import router from "@/router";
 import { GetProblem } from "@/apis/problem.ts";
 import { GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { Problem } from "@/types/problem.ts";
 import { PostJudgeJob } from "@/apis/judge.ts";
 
@@ -90,6 +91,7 @@ onMounted(async () => {
       } as IOptions;
       codeEditor = new Vditor("codeEditRef", codeEditOptions);
       Vditor.highlightRender({ lineNumber: true, enable: true }, markdownRef.value);
+      enhanceCodeCopy(markdownRef.value);
     }
     problemLoading.value = false;
   });

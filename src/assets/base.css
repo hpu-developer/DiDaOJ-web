@@ -24,3 +24,29 @@ body {
 .t-head-menu .t-menu__item {
   gap: var(--td-comp-margin-xxs)
 }
+
+.copy-wrapper {
+  position: relative;
+}
+
+.copy-wrapper .copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.copy-wrapper:hover .copy-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
