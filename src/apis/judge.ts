@@ -2,7 +2,7 @@
 import httpRequest from "@/apis/axios-api";
 
 import type { JudgeJob, JudgeJobView } from "@/types/judge";
-import { GetJudgeLanguageStr } from "@/apis/language.ts";
+import { GetJudgeLanguageStr, JudgeLanguage } from "@/apis/language.ts";
 
 export enum JudgeStatus {
   Init = 0,
@@ -54,7 +54,7 @@ export const GetJudgeStatusStr = (status: JudgeStatus) => {
     default:
       return status;
   }
-}
+};
 
 export function IsJudgeStatusRunning(status: JudgeStatus) {
   switch (status) {
@@ -76,7 +76,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
 
   if (IsJudgeStatusRunning(item.status)) {
     result.score = "-";
-  }else{
+  } else {
     result.score = item.score.toString();
   }
   if (item.time) {
@@ -102,6 +102,18 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   result.author = item.author;
 
   return result;
+}
+
+export function PostJudgeJob(problemId: string, language: JudgeLanguage, code: string) {
+  return httpRequest({
+    url: "/judge/approve",
+    method: "post",
+    data: {
+      problem_id: problemId,
+      language: language,
+      code: code,
+    },
+  });
 }
 
 export function GetJudgeJobTagList(num: number) {

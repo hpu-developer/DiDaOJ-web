@@ -28,6 +28,15 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
   return result;
 }
 
+export function GetProblem(problemId: string) {
+  return httpRequest({
+    url: "/problem" + "?id=" + problemId,
+    method: "get",
+  });
+}
+
+
+
 export function GetProblemTagList(num: number) {
   return httpRequest({
     url: "/problem/tag/list" + "?max_count=" + num,

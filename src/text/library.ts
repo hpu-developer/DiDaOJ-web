@@ -1,4 +1,3 @@
-import httpRequest from "@/apis/axios";
 
 let remoteTextCache: Record<string, Record<string, string>> | null = null;
 
@@ -26,13 +25,14 @@ export function GetText(key: string | number, lang = "zh"): [boolean, string] {
 }
 
 async function fetchRemoteText(): Promise<Record<string, Record<string, string>> | null> {
-  try {
-    const response: any = await httpRequest.get(`/text/all`);
-    if (response.code == 0) {
-      return response.data;
-    }
-    return null;
-  } catch (error) {
-    return null;
-  }
+  return new Promise((resolve, reject) => {
+    resolve({
+      "1000": {
+        zh: "系统错误",
+      },
+      "10001": {
+        zh: "权限异常，请重新登陆后再试",
+      },
+    });
+  })
 }

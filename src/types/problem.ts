@@ -5,6 +5,8 @@ export interface Problem {
   tags: number[];
   accept: number;
   attempt: number;
+  description?: string;
+  hint?: string;
 }
 
 export interface ProblemView {
@@ -14,6 +16,8 @@ export interface ProblemView {
   tags: string[];
   accept: number;
   attempt: number;
+  description?: string;
+  hint?: string;
 }
 
 export interface ProblemTag {

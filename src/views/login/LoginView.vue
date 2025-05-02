@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useUserStore } from "@/stores/user.ts";
-import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { DesktopIcon, LockOnIcon } from "tdesign-icons-vue-next";
 import { RequestLogin } from "@/apis/user.ts";
 
@@ -36,7 +36,7 @@ const onSubmit = ({ validateResult, firstError }: any) => {
     })
     .catch((e) => {
       console.error("Login error", e);
-      ShowErrorTips(globalProperties, "登录失败");
+      ShowTextTipsError(globalProperties, "登录失败");
     });
 };
 

@@ -6,6 +6,27 @@ export enum JudgeLanguage {
   Python = 3,
 }
 
+export function GetSubmitLanguages() {
+  return [
+    {
+      value: JudgeLanguage.C,
+      label: "C",
+    },
+    {
+      value: JudgeLanguage.Cpp,
+      label: "C++",
+    },
+    {
+      value: JudgeLanguage.Java,
+      label: "Java",
+    },
+    {
+      value: JudgeLanguage.Python,
+      label: "Python",
+    },
+  ];
+}
+
 export function GetJudgeLanguageStr(language: JudgeLanguage) {
   switch (language) {
     case JudgeLanguage.C:
