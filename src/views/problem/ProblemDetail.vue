@@ -4,11 +4,15 @@ import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetProblem } from "@/apis/problem.ts";
-import { GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
+import { GetKeyByJudgeLanguage, GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { Problem } from "@/types/problem.ts";
 import { PostJudgeJob } from "@/apis/judge.ts";
+
+import * as monaco from "monaco-editor";
+import { editor } from "monaco-editor";
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -18,7 +22,8 @@ const problemId = ref("");
 const markdownRef = ref<HTMLElement | null>(null);
 const problemLoading = ref(false);
 const problemData = ref<Problem | null>(null);
-let codeEditor = null;
+let codeEditor = null as IStandaloneCodeEditor | null;
+const codeEditRef = ref<HTMLElement | null>(null);
 
 const selectLanguage = ref("");
 const languageOptions = ref([] as { label: string; value: JudgeLanguage }[]);
@@ -27,16 +32,16 @@ languageOptions.value = GetSubmitLanguages();
 
 const handleSubmitCode = async () => {
   if (!problemId.value) {
-    ShowTextTipsError(globalProperties, "没有问题ID");
+    ShowTextTipsError(globalProperties, "问题ID无效");
     return;
   }
   if (!selectLanguage.value) {
-    ShowTextTipsError(globalProperties, "没有选择语言");
+    ShowTextTipsError(globalProperties, "请选择所编写的语言");
     return;
   }
   const code = codeEditor?.getValue();
   if (!code) {
-    ShowTextTipsError(globalProperties, "没有提交代码");
+    ShowTextTipsError(globalProperties, "请输入所需提交的代码");
     return;
   }
   const res = await PostJudgeJob(problemId.value, parseInt(selectLanguage.value), code);
@@ -49,6 +54,13 @@ const handleSubmitCode = async () => {
 
   const statusId = res.data.id;
   await router.push({ path: "/judge/" + statusId });
+};
+
+const onSelectLanguageChanged = (value: JudgeLanguage) => {
+  if (!codeEditor) {
+    return;
+  }
+  monaco.editor.setModelLanguage(codeEditor.getModel(), GetKeyByJudgeLanguage(value));
 };
 
 onMounted(async () => {
@@ -86,12 +98,21 @@ onMounted(async () => {
   await nextTick(() => {
     if (markdownRef.value) {
       Vditor.mathRender(markdownRef.value);
-      const codeEditOptions = {
-        toolbar: ["undo", "redo"],
-      } as IOptions;
-      codeEditor = new Vditor("codeEditRef", codeEditOptions);
       Vditor.highlightRender({ lineNumber: true, enable: true }, markdownRef.value);
       enhanceCodeCopy(markdownRef.value);
+
+      if (codeEditRef.value) {
+        codeEditor = monaco.editor.create(codeEditRef.value, {
+          value: "",
+          language: "cpp",
+          minimap: {
+            enabled: true,
+          },
+          colorDecorators: true, //颜色装饰器
+          readOnly: false, //是否开启已读功能
+          theme: "vs-dark", //主题
+        });
+      }
     }
     problemLoading.value = false;
   });
@@ -114,12 +135,12 @@ onMounted(async () => {
           </t-descriptions>
           <div class="dida-code-submit-div">
             <t-space>
-              <t-select v-model="selectLanguage" label="语言：" placeholder="请选择提交语言" auto-width clearable>
+              <t-select v-model="selectLanguage" label="语言：" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
                 <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
               </t-select>
               <t-button @click="handleSubmitCode">提交</t-button>
             </t-space>
-            <div id="codeEditRef" class="dida-code-editor"></div>
+            <div ref="codeEditRef" class="dida-code-editor"></div>
           </div>
         </div>
       </t-col>

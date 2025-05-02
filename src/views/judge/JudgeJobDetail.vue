@@ -3,7 +3,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
 import { GetJudgeJob, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus, ParseJudgeJob } from "@/apis/judge.ts";
-import { GetMarkdownLanguageByJudgeLanguage } from "@/apis/language.ts";
+import { GetKeyByJudgeLanguage } from "@/apis/language.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
 import Vditor from "vditor";
@@ -135,7 +135,7 @@ const fetchData = async (needLoading: boolean) => {
 
       const options = {} as IPreviewOptions;
       if (response.code) {
-        const language = GetMarkdownLanguageByJudgeLanguage(response.language);
+        const language = GetKeyByJudgeLanguage(response.language);
         const codeMarkdown = `\`\`\`${language}\n${response.code}\n\`\`\``;
         judgeJobCode.value = await Vditor.md2html(codeMarkdown, options);
         await nextTick(() => {

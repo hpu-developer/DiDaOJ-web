@@ -42,7 +42,7 @@ export function GetJudgeLanguageStr(language: JudgeLanguage) {
   }
 }
 
-export function GetMarkdownLanguageByJudgeLanguage(language: JudgeLanguage) {
+export function GetKeyByJudgeLanguage(language: JudgeLanguage) {
   switch (language) {
     case JudgeLanguage.C:
       return "c";
