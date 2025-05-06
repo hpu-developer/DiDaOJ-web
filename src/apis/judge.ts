@@ -1,7 +1,7 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import type { JudgeJob, JudgeJobView } from "@/types/judge";
+import type { JudgeTaskView, JudgeJob, JudgeJobView } from "@/types/judge";
 import { GetJudgeLanguageStr, JudgeLanguage } from "@/apis/language.ts";
 
 export enum JudgeStatus {
@@ -104,6 +104,34 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   result.authorNickname = item.author_nickname;
   result.code = item.code;
   result.compileMessage = item.compile_message;
+  result.task = [];
+  if (item.task) {
+    for (let i = 0; i < item.task?.length; i++) {
+      const task = item.task[i];
+      const taskView = {} as JudgeTaskView;
+      taskView.taskId = task.task_id;
+      taskView.status = task.status;
+      if (task.time) {
+        // 保留到整数，向上取整
+        taskView.time = Math.ceil(task.time / 1000000) + "ms";
+      } else {
+        taskView.time = "-";
+      }
+      if (task.memory) {
+        // 保留两位数字
+        taskView.memory = (task.memory / 1024 / 1024).toFixed(2) + "MB";
+      } else {
+        taskView.memory = "-";
+      }
+      taskView.score = task.score;
+      taskView.content = task.content;
+      taskView.waHint = task.wa_hint;
+      if (!taskView.content && !taskView.waHint) {
+        taskView.content = "无提示信息";
+      }
+      result.task.push(taskView);
+    }
+  }
   return result;
 }
 

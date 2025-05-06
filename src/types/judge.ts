@@ -1,6 +1,26 @@
 import { JudgeLanguage } from "@/apis/language.ts";
 import { JudgeStatus } from "@/apis/judge.ts";
 
+export interface JudgeTask {
+  task_id: string; // 代码长度
+  status: JudgeStatus; // 评测状态
+  time: number; // 所用的时间
+  memory: number; // 所用的内存
+  score: number; // 评分
+  content: string; // 输出内容
+  wa_hint: string; // 错误提示
+}
+
+export interface JudgeTaskView {
+  taskId: string; // 代码长度
+  status: JudgeStatus; // 评测状态
+  time: string; // 所用的时间
+  memory: string; // 所用的内存
+  score: number; // 评分
+  content: string; // 输出内容
+  waHint: string; // 错误提示
+}
+
 export interface JudgeJob {
   id: string;
   problem_id: string;
@@ -16,6 +36,7 @@ export interface JudgeJob {
   approve_time: string;
   code?: string;
   compile_message?: string;
+  task?: JudgeTask[];
 }
 
 export interface JudgeJobView {
@@ -33,4 +54,5 @@ export interface JudgeJobView {
   approveTime: string;
   code?: string;
   compileMessage?: string;
+  task?: JudgeTaskView[];
 }

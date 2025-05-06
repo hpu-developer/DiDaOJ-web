@@ -121,6 +121,42 @@ const handleGotoUser = (user: string) => {
   router.push({ path: "/user/" + user });
 };
 
+const taskRender = (task: any) => {
+  const status = task.status as JudgeStatus;
+  const statusStr = GetJudgeStatusStr(status);
+  let theme: ButtonProps["theme"];
+  switch (status) {
+    case JudgeStatus.Init:
+    case JudgeStatus.Rejudge:
+    case JudgeStatus.Compiling:
+    case JudgeStatus.Running:
+      theme = "default";
+      break;
+    case JudgeStatus.Accept:
+      theme = "success";
+      break;
+    case JudgeStatus.PE:
+      theme = "warning";
+      break;
+    default:
+      theme = "danger";
+      break;
+  }
+  return (
+    <t-space>
+      <t-button theme="default" variant="outline">
+        {task.taskId}
+      </t-button>
+      <t-button theme={theme} variant="outline">
+        {statusStr}
+      </t-button>
+      <span>分数：{task.score}</span>
+      <span>用时：{task.time}</span>
+      <span>内存：{task.memory}</span>
+    </t-space>
+  );
+};
+
 const fetchData = async (needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
@@ -201,11 +237,22 @@ onBeforeUnmount(() => {
 
   <div v-html="judgeJobCode" ref="markdownCodeRef"></div>
 
-  <div style="white-space: pre-wrap;">{{ judgeJob?.compileMessage }}</div>
+  <div style="white-space: pre-wrap">{{ judgeJob?.compileMessage }}</div>
+
+  <t-collapse class="task-panel">
+    <t-collapse-panel v-for="task in judgeJob?.task" :key="task.taskId" :header="() => taskRender(task)">
+      {{ task.content }}
+      {{ task.waHint }}
+    </t-collapse-panel>
+  </t-collapse>
 </template>
 
 <style scoped>
 :deep(.dida-status-loading) {
   margin-right: 5px;
+}
+
+.task-panel {
+  margin: 20px;
 }
 </style>
