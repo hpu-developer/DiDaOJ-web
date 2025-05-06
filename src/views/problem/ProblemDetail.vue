@@ -4,7 +4,7 @@ import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetProblem } from "@/apis/problem.ts";
-import { GetKeyByJudgeLanguage, GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
+import { GetKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { Problem } from "@/types/problem.ts";
@@ -35,7 +35,8 @@ const handleSubmitCode = async () => {
     ShowTextTipsError(globalProperties, "问题ID无效");
     return;
   }
-  if (!selectLanguage.value) {
+  const selectValue = parseInt(selectLanguage.value);
+  if (!IsJudgeLanguageValid(selectValue)) {
     ShowTextTipsError(globalProperties, "请选择所编写的语言");
     return;
   }
@@ -44,7 +45,7 @@ const handleSubmitCode = async () => {
     ShowTextTipsError(globalProperties, "请输入所需提交的代码");
     return;
   }
-  const res = await PostJudgeJob(problemId.value, parseInt(selectLanguage.value), code);
+  const res = await PostJudgeJob(problemId.value, selectValue, code);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
     return;

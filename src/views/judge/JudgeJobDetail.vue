@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
 import { GetJudgeJob, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus, ParseJudgeJob } from "@/apis/judge.ts";
 import { GetKeyByJudgeLanguage } from "@/apis/language.ts";
+import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
 import Vditor from "vditor";
@@ -141,6 +142,8 @@ const fetchData = async (needLoading: boolean) => {
         await nextTick(() => {
           if (markdownCodeRef.value) {
             Vditor.highlightRender({ lineNumber: true, enable: true }, markdownCodeRef.value);
+
+            enhanceCodeCopy(markdownCodeRef.value);
           }
         });
       }
@@ -198,7 +201,7 @@ onBeforeUnmount(() => {
 
   <div v-html="judgeJobCode" ref="markdownCodeRef"></div>
 
-  <div>{{ judgeJob?.compileMessage }}</div>
+  <div style="white-space: pre-wrap;">{{ judgeJob?.compileMessage }}</div>
 </template>
 
 <style scoped>

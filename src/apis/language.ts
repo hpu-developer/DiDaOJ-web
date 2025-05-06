@@ -4,6 +4,7 @@ export enum JudgeLanguage {
   Cpp = 1,
   Java = 2,
   Python = 3,
+  Max,
 }
 
 export function GetSubmitLanguages() {
@@ -25,6 +26,10 @@ export function GetSubmitLanguages() {
       label: "Python",
     },
   ];
+}
+
+export function IsJudgeLanguageValid(language: number) {
+  return language > JudgeLanguage.Unknown && language < JudgeLanguage.Max;
 }
 
 export function GetJudgeLanguageStr(language: JudgeLanguage) {

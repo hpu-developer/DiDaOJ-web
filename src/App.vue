@@ -105,7 +105,7 @@ onMounted(() => {
       </Transition>
       <t-layout :class="['sh-main-layout', { expanded: !realShowSidebar }]">
         <BreadcrumbContent />
-        <t-content class="sh-main-content" v-copy-code>
+        <t-content class="sh-main-content">
           <RouterView />
         </t-content>
         <FooterContent />

@@ -29,7 +29,11 @@ const onSubmit = ({ validateResult, firstError }: any) => {
       if (res.code === 0) {
         userStore.loadResponse(res.data);
         ShowTextTipsInfo(globalProperties, "登录成功");
-        globalProperties.$router.push({ path: "/user/" + res.data.username });
+        let redirectUri = globalProperties.$route.query.redirect_uri as string;
+        if (!redirectUri) {
+          redirectUri = "/user/" + res.data.username;
+        }
+        globalProperties.$router.push({ path: redirectUri });
       } else {
         ShowErrorTips(globalProperties, res.code);
       }
