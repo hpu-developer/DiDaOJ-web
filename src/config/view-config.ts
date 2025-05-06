@@ -9,6 +9,7 @@ import ProblemDetail from "@/views/problem/ProblemDetail.vue";
 import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 import JudgeJobList from "@/views/judge/JudgeJobList.vue";
 import JudgeJobDetail from "@/views/judge/JudgeJobDetail.vue";
+import { mergeAuths } from "@/auth";
 
 const viewsConfig = [
   {
@@ -58,6 +59,27 @@ const viewsConfig = [
     component: JudgeJobDetail,
   },
 
+  {
+    name: "manage-problem",
+    tab: "manage",
+    path: "problem",
+    sidebar: "manage-problem",
+    title: "问题管理",
+    icon: "cpu",
+    auths: ["i-manage-problem"],
+    component: ProblemList,
+  },
+
+  {
+    name: "manage-judge",
+    tab: "manage",
+    path: "judge",
+    sidebar: "manage-judge",
+    title: "评测管理",
+    icon: "cpu",
+    auths: ["i-manage-judge"],
+    component: JudgeJobList,
+  },
 ] as ViewList;
 
 export const parseTabMenu = (list: MenuList, tabName: string, view: View) => {
@@ -111,6 +133,8 @@ export const parseViewRouter = (routers: RouteRecordRaw[], view: View) => {
       sidebar: view.sidebar,
       showSidebar: tabConfig.showSidebar,
       needLogin: tabConfig.needLogin || view.needLogin,
+      tabAuths: tabConfig.auths,
+      auths: view.auths,
     },
     component: view.component,
   };

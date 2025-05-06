@@ -33,6 +33,15 @@ const tabsConfig: Tab[] = [
     redirect: "judge-list",
   },
   {
+    name: "manage",
+    path: "/manage",
+    title: "管理",
+    icon: "dashboard",
+    showSidebar: true,
+    redirect: "manage-problem",
+    auths: ["i-manage"],
+  },
+  {
     name: "login",
     path: "/login",
     title: "登陆",
@@ -63,10 +72,10 @@ export const getTabConfig = (tabName: string) => {
   return tabsConfig.find((tab) => tab.name == tabName);
 };
 
-export const getGenerateTabs = () => {
+export const getGenerateTabs = (userStore: any) => {
   const tabs = [] as Tab[];
   tabsConfig.forEach((tab) => {
-    if (!tab.disableGenerateTab) {
+    if (!tab.disableGenerateTab && userStore.hasAllAuths(tab.auths)) {
       tabs.push(tab);
     }
   });
@@ -84,6 +93,7 @@ export const makeTabRouter = (routers: RouteRecordRaw[]) => {
         showSidebar: tab.showSidebar,
         needLogin: tab.needLogin,
         redirect: tab.redirect,
+        tabAuths: tab.auths,
       },
       component: tab.component,
     } as RouteRecordRaw;

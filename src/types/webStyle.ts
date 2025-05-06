@@ -16,6 +16,7 @@ export type Tab = {
   redirect?: string;
   needLogin?: boolean;
   component?: any;
+  auths?: string[]; // 所需要的权限，需要所配置全部的权限才会显示
 };
 
 export type View = {
@@ -28,6 +29,7 @@ export type View = {
   disableSidebar?: boolean;
   needLogin?: boolean;
   component: DefineComponent<unknown, unknown, unknown>;
+  auths: string[]; // 所需要的权限，需要所配置全部的权限才会显示
 };
 
 export type ViewGroup = {

@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type { UserState } from "@/types/user";
+import { isRolesHasAllAuths } from "@/auth";
 
 export const useUserStore = defineStore("user", {
   state: (): UserState => ({
@@ -7,6 +8,7 @@ export const useUserStore = defineStore("user", {
     userId: -1,
     username: "",
     nickname: "",
+    roles: [],
   }),
   getters: {
     getToken(): string {
@@ -29,6 +31,7 @@ export const useUserStore = defineStore("user", {
         userId: -1,
         username: "",
         nickname: "",
+        roles: [],
       });
     },
     loadResponse(response: any) {
@@ -37,10 +40,17 @@ export const useUserStore = defineStore("user", {
         userId: response.user_id,
         username: response.username,
         nickname: response.nickname,
+        roles: response.roles,
       });
     },
     isLogin(): boolean {
       return this.token != null && this.token != "";
+    },
+    hasAllAuths(auths: string[]): boolean {
+      if (!auths) {
+        return true;
+      }
+      return isRolesHasAllAuths(this.roles, auths);
     },
   },
   persist: true,

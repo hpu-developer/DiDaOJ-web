@@ -7,11 +7,18 @@ import { makeViewRouter, getTabSubMenus } from "@/config/view-config";
 
 import type { RouteRecordRaw } from "vue-router";
 import View404 from "@/views/View404.vue";
+import View403 from "@/views/View403.vue";
 
 const routers = [] as RouteRecordRaw[];
 
 makeTabRouter(routers);
 makeViewRouter(routers);
+
+routers.push({
+  path: "/403",
+  name: "403",
+  component: View403,
+});
 
 routers.push({
   path: "/:pathMatch(.*)*",
@@ -40,6 +47,15 @@ router.beforeEach((to, _, next) => {
     const userStore = useUserStore();
     if (userStore.getToken == null || userStore.getToken == "") {
       next({ name: "login", query: { redirect_uri: to.fullPath } });
+      return;
+    }
+  }
+
+  const auths = toMeta.tabAuths as string[] | undefined;
+  if (auths) {
+    const userStore = useUserStore();
+    if (!userStore.hasAllAuths(auths)) {
+      next({ name: "403", query: { target: to.fullPath } });
       return;
     }
   }

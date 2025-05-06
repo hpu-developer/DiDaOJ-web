@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useLoginStore } from "@/stores/login";
 import { useUserStore } from "@/stores/user.ts";
 import { getGenerateTabs } from "@/config/tab-config";
@@ -16,7 +16,11 @@ const isLogin = ref(false);
 const username = ref(userStore.getUsername);
 const nickname = ref(userStore.getNickname);
 
-const tabList = ref(getGenerateTabs());
+const tabList = ref();
+
+const updateTabList = () => {
+  tabList.value = getGenerateTabs(userStore);
+};
 
 loginStore.$subscribe((_, state) => {
   isLoaded.value = state.Loaded;
@@ -26,6 +30,8 @@ userStore.$subscribe((_, state) => {
   username.value = state.username;
   nickname.value = state.nickname;
   isLogin.value = state.token != "";
+
+  updateTabList();
 });
 
 const handleClickLogin = () => {
@@ -43,7 +49,15 @@ const handleClickLogout = () => {
     duration: 3000,
     content: "注销成功",
   });
+  globalProperties.$router.push({
+    path: "/login",
+    query: { redirect_uri: globalProperties.$router.currentRoute.value.fullPath },
+  });
 };
+
+onMounted(() => {
+  updateTabList();
+});
 </script>
 
 <template>

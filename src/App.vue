@@ -1,18 +1,20 @@
 <script setup lang="ts">
+import { ref, onMounted, computed } from "vue";
 import { PostLoginRefresh } from "@/apis/user.ts";
 import { useLoginStore } from "@/stores/login";
 import { useUserStore } from "@/stores/user.ts";
 import { useWebStyleStore } from "@/stores/webStyle";
 import { useSidebarStyleStore } from "@/stores/sidebarStyle";
-import { ref, onMounted } from "vue";
 
 import HeaderContent from "./components/HeaderContent.vue";
 import SidebarContent from "./components/SidebarContent.vue";
 import BreadcrumbContent from "./components/BreadcrumbContent.vue";
 import FooterContent from "./components/FooterContent.vue";
 import ForceHiddenSidebarButton from "./components/ForceHiddenSidebarButton.vue";
+import View403 from "@/views/View403.vue";
 
-import { ShowErrorTips, useCurrentInstance } from "@/util/index";
+import { ShowErrorTips, useCurrentInstance } from "@/util/";
+import { useRoute } from "vue-router";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -51,6 +53,13 @@ sidebarStyleStore.$subscribe((_, state) => {
   realShowSidebar.value = showSidebar.value && !state.forceHiddenSidebar;
 });
 
+const route = useRoute();
+
+const hasNotAuth = computed(() => {
+  const auths = route.meta.auths as string[] | undefined
+  return auths ? !userStore.hasAllAuths(auths) : false
+})
+
 function handleError() {
   globalProperties.$message.warning({
     duration: 3000,
@@ -88,7 +97,6 @@ onMounted(() => {
       console.log(err);
       handleError();
     });
-
 });
 </script>
 
@@ -106,7 +114,8 @@ onMounted(() => {
       <t-layout :class="['sh-main-layout', { expanded: !realShowSidebar }]">
         <BreadcrumbContent />
         <t-content class="sh-main-content">
-          <RouterView />
+          <View403 v-if="hasNotAuth" />
+          <RouterView v-else />
         </t-content>
         <FooterContent />
       </t-layout>
