@@ -237,9 +237,9 @@ onBeforeUnmount(() => {
 
   <div v-html="judgeJobCode" ref="markdownCodeRef"></div>
 
-  <div style="white-space: pre-wrap">{{ judgeJob?.compileMessage }}</div>
+  <t-card v-if="judgeJob?.compileMessage" class="compile-message">{{ judgeJob?.compileMessage }}</t-card>
 
-  <t-collapse class="task-panel">
+  <t-collapse v-if="judgeJob?.task.length > 0" class="task-panel">
     <t-collapse-panel v-for="task in judgeJob?.task" :key="task.taskId" :header="() => taskRender(task)">
       {{ task.content }}
       {{ task.waHint }}
@@ -250,6 +250,11 @@ onBeforeUnmount(() => {
 <style scoped>
 :deep(.dida-status-loading) {
   margin-right: 5px;
+}
+
+.compile-message {
+  white-space: pre-wrap;
+  margin: 0 20px;
 }
 
 .task-panel {
