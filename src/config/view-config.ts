@@ -9,7 +9,8 @@ import ProblemDetail from "@/views/problem/ProblemDetail.vue";
 import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 import JudgeJobList from "@/views/judge/JudgeJobList.vue";
 import JudgeJobDetail from "@/views/judge/JudgeJobDetail.vue";
-import { mergeAuths } from "@/auth";
+
+import ManageJudge from "@/views/manage/ManageJudge.vue";
 
 const viewsConfig = [
   {
@@ -78,7 +79,7 @@ const viewsConfig = [
     title: "评测管理",
     icon: "cpu",
     auths: ["i-manage-judge"],
-    component: JudgeJobList,
+    component: ManageJudge,
   },
 ] as ViewList;
 

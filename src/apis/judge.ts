@@ -132,3 +132,10 @@ export function GetJudgeJobList(page: number, pageSize: number) {
     method: "get",
   });
 }
+
+export function PostRejudgeRecently() {
+  return httpRequest({
+    url: "/judge/rejudge/recently",
+    method: "post",
+  });
+}
