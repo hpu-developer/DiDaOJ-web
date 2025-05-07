@@ -1,4 +1,3 @@
-
 let remoteTextCache: Record<string, Record<string, string>> | null = null;
 
 export async function ReinitTextCache() {
@@ -27,15 +26,21 @@ export function GetText(key: string | number, lang = "zh"): [boolean, string] {
 async function fetchRemoteText(): Promise<Record<string, Record<string, string>> | null> {
   return new Promise((resolve, reject) => {
     resolve({
+      "404": {
+        zh: "接口未找到",
+      },
       "1000": {
         zh: "系统错误",
       },
       "10001": {
         zh: "权限异常，请重新登陆后再试",
       },
+      "10002": {
+        zh: "参数不符合要求",
+      },
       "10003": {
         zh: "未找到目标数据",
       },
     });
-  })
+  });
 }

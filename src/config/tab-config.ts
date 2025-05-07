@@ -33,6 +33,14 @@ const tabsConfig: Tab[] = [
     redirect: "judge-list",
   },
   {
+    name: "contest",
+    path: "/contest",
+    title: "比赛",
+    icon: "dashboard",
+    showSidebar: true,
+    redirect: "contest-list",
+  },
+  {
     name: "manage",
     path: "/manage",
     title: "管理",

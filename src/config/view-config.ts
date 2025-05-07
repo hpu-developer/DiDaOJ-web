@@ -9,6 +9,7 @@ import ProblemDetail from "@/views/problem/ProblemDetail.vue";
 import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 import JudgeJobList from "@/views/judge/JudgeJobList.vue";
 import JudgeJobDetail from "@/views/judge/JudgeJobDetail.vue";
+import ContestList from "@/views/contest/ContestList.vue";
 
 import ManageJudge from "@/views/manage/ManageJudge.vue";
 
@@ -58,6 +59,26 @@ const viewsConfig = [
     title: "评测详情",
     icon: "cpu",
     component: JudgeJobDetail,
+  },
+
+  {
+    name: "contest-list",
+    tab: "contest",
+    sidebar: "contest-list",
+    path: "",
+    title: "比赛列表",
+    icon: "cpu",
+    component: ContestList,
+  },
+
+  {
+    name: "contest-recent",
+    tab: "contest",
+    sidebar: "contest-recent",
+    path: "recent",
+    title: "近期比赛",
+    icon: "cpu",
+    component: ContestList,
   },
 
   {
