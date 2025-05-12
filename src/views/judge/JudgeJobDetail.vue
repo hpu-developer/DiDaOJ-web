@@ -86,6 +86,17 @@ const ListColumns = ref([
     colKey: "memory",
   },
   {
+    title: "代码",
+    colKey: "language",
+    cell: (_: any, data: any) => {
+      return (
+        <span>
+          {data.row.language + " / " + data.row.codeLength}
+        </span>
+      );
+    },
+  },
+  {
     title: "作者",
     colKey: "author",
     cell: (_: any, data: any) => {
