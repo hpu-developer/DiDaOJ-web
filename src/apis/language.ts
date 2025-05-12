@@ -4,6 +4,8 @@ export enum JudgeLanguage {
   Cpp = 1,
   Java = 2,
   Python = 3,
+  Pascal = 4,
+  Golang = 5,
   Max,
 }
 
@@ -25,6 +27,14 @@ export function GetSubmitLanguages() {
       value: JudgeLanguage.Python,
       label: "Python",
     },
+    // {
+    //   value: JudgeLanguage.Pascal,
+    //   label: "Pascal",
+    // },
+    // {
+    //   value: JudgeLanguage.Golang,
+    //   label: "Golang",
+    // },
   ];
 }
 
@@ -42,6 +52,10 @@ export function GetJudgeLanguageStr(language: JudgeLanguage) {
       return "Java";
     case JudgeLanguage.Python:
       return "Python";
+    case JudgeLanguage.Pascal:
+      return "Pascal";
+    case JudgeLanguage.Golang:
+      return "Golang";
     default:
       return "Unknown";
   }
@@ -57,6 +71,10 @@ export function GetKeyByJudgeLanguage(language: JudgeLanguage) {
       return "java";
     case JudgeLanguage.Python:
       return "python";
+    case JudgeLanguage.Pascal:
+      return "pascal";
+    case JudgeLanguage.Golang:
+      return "golang";
     default:
       return "text";
   }

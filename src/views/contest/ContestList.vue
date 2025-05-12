@@ -19,6 +19,7 @@ const ListColumns = ref([
   {
     title: "ID",
     colKey: "id",
+    width: "100",
     cell: (_: any, data: any) => {
       return (
         <t-button variant="text" onClick={() => handleGotoContest(data.row.id)}>
@@ -41,14 +42,17 @@ const ListColumns = ref([
   {
     title: "负责人",
     colKey: "ownerNickname",
+    width: "200",
   },
   {
     title: "开始时间",
     colKey: "startTime",
+    width: "180",
   },
   {
     title: "结束时间",
     colKey: "endTime",
+    width: "180",
   },
 ]);
 
