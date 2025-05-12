@@ -41,6 +41,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "10003": {
         zh: "未找到目标数据",
       },
+      "100001": {
+        zh: "用户名不存在或密码不匹配",
+      },
     });
   });
 }

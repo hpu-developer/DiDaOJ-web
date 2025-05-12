@@ -101,6 +101,7 @@ const ListColumns = ref([
   {
     title: "作者",
     colKey: "author",
+    width: 200,
     cell: (_: any, data: any) => {
       return (
         <t-button variant="text" onClick={() => handleGotoUser(data.row.authorUsername)}>
