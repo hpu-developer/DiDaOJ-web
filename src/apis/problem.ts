@@ -70,6 +70,13 @@ export function GetProblemTagList(num: number) {
   });
 }
 
+export function GetProblemJudge(problemId: string) {
+  return httpRequest({
+    url: "/problem/judge" + "?id=" + problemId,
+    method: "get",
+  });
+}
+
 export function GetProblemList(title: string, tag: string, page: number, pageSize: number) {
   return httpRequest({
     url: "/problem/list" + "?title=" + title + "&tag=" + tag + "&page=" + page + "&page_size=" + pageSize,

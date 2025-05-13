@@ -16,6 +16,7 @@ import ContestDetail from "@/views/contest/ContestDetail.vue";
 
 import ManageJudge from "@/views/manage/ManageJudge.vue";
 import ProblemEdit from "@/views/problem/ProblemEdit.vue";
+import ProblemJudge from "@/views/problem/ProblemJudge.vue";
 import { AuthType } from "@/auth";
 
 const viewsConfig = [
@@ -149,6 +150,17 @@ const viewsConfig = [
     title: "问题编辑",
     icon: "cpu",
     component: ProblemEdit,
+    auths: [AuthType.ManageProblem],
+  },
+  {
+    name: "manage-problem-judge",
+    tab: "manage",
+    sidebar: "manage-problem-judge",
+    disableSidebar: true,
+    path: "problem/:problemId+/judge",
+    title: "评测数据",
+    icon: "cpu",
+    component: ProblemJudge,
     auths: [AuthType.ManageProblem],
   },
   {

@@ -95,6 +95,15 @@ const handleClickView = () => {
   });
 };
 
+const handleClickJudge = () => {
+  router.push({
+    name: "manage-problem-judge",
+    params: {
+      problemId: problemId.value,
+    },
+  });
+};
+
 const handleClickEdit = async () => {
   if (!descriptionEditor) {
     return;
@@ -269,6 +278,7 @@ onMounted(async () => {
           <div class="dida-edit-container">
             <t-space>
               <t-button @click="handleClickEdit" theme="danger">保存</t-button>
+              <t-button @click="handleClickJudge" theme="warning">判题数据</t-button>
               <t-button @click="handleClickView">查看</t-button>
             </t-space>
           </div>
