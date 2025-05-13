@@ -10,12 +10,16 @@ import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import { ProblemTag, ProblemView } from "@/types/problem.ts";
 import { PostJudgeJob } from "@/apis/judge.ts";
 
+import { useWebStyleStore } from "@/stores/webStyle.ts";
+
 import * as monaco from "monaco-editor";
 import { editor } from "monaco-editor";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
+
+const webStyleStore = useWebStyleStore();
 
 let content = ref("");
 const problemId = ref("");
@@ -92,6 +96,8 @@ onMounted(async () => {
 
   problemData.value = ParseProblem(res.data.problem, tagsMap);
 
+  webStyleStore.setTitle(problemData.value.title + " - " + webStyleStore.getTitle);
+
   let problemDescription = problemData.value.description as string;
 
   const options = {
@@ -154,17 +160,15 @@ onMounted(async () => {
               </t-space>
             </t-descriptions-item>
           </t-descriptions>
-            <div class="dida-code-submit-div">
-              <t-space>
-                <t-select v-model="selectLanguage" label="语言：" placeholder="请选择提交语言" auto-width clearable
-                          @change="onSelectLanguageChanged">
-                  <t-option v-for="item in languageOptions" :key="item.value" :value="item.value"
-                            :label="item.label"></t-option>
-                </t-select>
-                <t-button @click="handleSubmitCode">提交</t-button>
-              </t-space>
-              <div ref="codeEditRef" class="dida-code-editor"></div>
-            </div>
+          <div class="dida-code-submit-div">
+            <t-space>
+              <t-select v-model="selectLanguage" label="语言：" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
+                <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
+              </t-select>
+              <t-button @click="handleSubmitCode">提交</t-button>
+            </t-space>
+            <div ref="codeEditRef" class="dida-code-editor"></div>
+          </div>
         </div>
       </t-col>
     </t-row>
