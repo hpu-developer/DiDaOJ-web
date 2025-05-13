@@ -4,6 +4,11 @@ import httpRequest from "@/apis/axios-api";
 import type { JudgeTaskView, JudgeJob, JudgeJobView } from "@/types/judge";
 import { GetJudgeLanguageStr, JudgeLanguage } from "@/apis/language.ts";
 
+export enum JudgeType {
+  Normal = 0,
+  Special = 1,
+}
+
 export enum JudgeStatus {
   Init = 0,
   Rejudge = 1,
@@ -24,6 +29,17 @@ export enum JudgeStatus {
   SubmitFail = 16,
   Unknown = 17,
 }
+
+export const GetJudgeTypeStr = (type: JudgeType) => {
+  switch (type) {
+    case JudgeType.Normal:
+      return "普通评测";
+    case JudgeType.Special:
+      return "特殊评测";
+    default:
+      return "未知";
+  }
+};
 
 export const GetJudgeStatusStr = (status: JudgeStatus) => {
   switch (status) {

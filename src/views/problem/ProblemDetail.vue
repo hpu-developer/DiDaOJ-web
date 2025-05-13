@@ -7,7 +7,7 @@ import { GetProblem, ParseProblem } from "@/apis/problem.ts";
 import { GetKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
-import type { ProblemView } from "@/types/problem.ts";
+import { ProblemTag, ProblemView } from "@/types/problem.ts";
 import { PostJudgeJob } from "@/apis/judge.ts";
 
 import * as monaco from "monaco-editor";
@@ -24,6 +24,8 @@ const problemLoading = ref(false);
 const problemData = ref<ProblemView | null>(null);
 let codeEditor = null as IStandaloneCodeEditor | null;
 const codeEditRef = ref<HTMLElement | null>(null);
+
+const tagsMap = {} as { [key: number]: ProblemTag };
 
 const selectLanguage = ref("");
 const languageOptions = ref([] as { label: string; value: JudgeLanguage }[]);
@@ -82,12 +84,15 @@ onMounted(async () => {
     return;
   }
 
-  problemData.value = ParseProblem(res.data);
+  if (res.data.tags) {
+    res.data.tags.forEach((tag: ProblemTag) => {
+      tagsMap[tag.id] = tag;
+    });
+  }
+
+  problemData.value = ParseProblem(res.data.problem, tagsMap);
 
   let problemDescription = problemData.value.description as string;
-  if (problemData.value.hint) {
-    problemDescription += "\n\n" + problemData.value.hint;
-  }
 
   const options = {
     math: {
@@ -132,17 +137,34 @@ onMounted(async () => {
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="标题">{{ problemData?.title }}</t-descriptions-item>
-            <t-descriptions-item label="状态"></t-descriptions-item>
+            <t-descriptions-item label="时间限制">{{ problemData?.timeLimit }}</t-descriptions-item>
+            <t-descriptions-item label="内存限制">{{ problemData?.memoryLimit }}</t-descriptions-item>
+            <t-descriptions-item label="判题方式">{{ problemData?.judgeType }}</t-descriptions-item>
+            <t-descriptions-item label="正确提交">{{ problemData?.accept }}</t-descriptions-item>
+            <t-descriptions-item label="提交总数">{{ problemData?.attempt }}</t-descriptions-item>
+            <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
+            <t-descriptions-item label="上传用户">{{ problemData?.creatorNickname }}</t-descriptions-item>
+            <t-descriptions-item label="题目来源">{{ problemData?.source }}</t-descriptions-item>
+            <t-descriptions-item label="标签">
+              <t-space>
+                <t-button v-for="tag in problemData?.tags" :key="tag.id" size="small" variant="dashed">
+                  {{ tag.name }}
+                </t-button>
+              </t-space>
+            </t-descriptions-item>
           </t-descriptions>
-          <div class="dida-code-submit-div">
-            <t-space>
-              <t-select v-model="selectLanguage" label="语言：" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
-                <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
-              </t-select>
-              <t-button @click="handleSubmitCode">提交</t-button>
-            </t-space>
-            <div ref="codeEditRef" class="dida-code-editor"></div>
-          </div>
+            <div class="dida-code-submit-div">
+              <t-space>
+                <t-select v-model="selectLanguage" label="语言：" placeholder="请选择提交语言" auto-width clearable
+                          @change="onSelectLanguageChanged">
+                  <t-option v-for="item in languageOptions" :key="item.value" :value="item.value"
+                            :label="item.label"></t-option>
+                </t-select>
+                <t-button @click="handleSubmitCode">提交</t-button>
+              </t-space>
+              <div ref="codeEditRef" class="dida-code-editor"></div>
+            </div>
         </div>
       </t-col>
     </t-row>

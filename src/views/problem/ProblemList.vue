@@ -54,7 +54,7 @@ const ListColumns = ref([
         const tag = tags[i];
         tagButtons.push(
           <t-button key={i} theme="default" variant="outline">
-            {tag}
+            {tag.name}
           </t-button>
         );
       }

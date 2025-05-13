@@ -8,8 +8,6 @@ import { ShowErrorTips, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { ContestView } from "@/types/contest.ts";
 
-import { editor } from "monaco-editor";
-
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
 
@@ -19,11 +17,26 @@ const contestData = ref<ContestView | null>(null);
 
 const listColumns = ref([
   {
+    title: "ID",
+    colKey: "id",
+    cell: (_: any, data: any) => {
+      return <t-button variant="text">{data.row.id}</t-button>;
+    },
+  },
+  {
     title: "标题",
     colKey: "title",
     cell: (_: any, data: any) => {
       return <t-button variant="text">{data.row.title}</t-button>;
     },
+  },
+  {
+    title: "正确",
+    colKey: "accept",
+  },
+  {
+    title: "提交",
+    colKey: "attempt",
   },
 ]);
 

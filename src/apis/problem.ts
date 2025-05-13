@@ -1,6 +1,8 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
+import { GetJudgeTypeStr } from "@/apis/judge.ts";
+
 import type { Problem, ProblemTag, ProblemView } from "@/types/problem";
 
 export enum ProblemAttemptStatus {
@@ -19,12 +21,38 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
     for (const tag of item.tags) {
       const tagData = tagsMap[tag];
       if (tagData) {
-        result.tags.push(tagData.name);
+        result.tags.push(tagData);
       }
     }
   }
   result.accept = item.accept;
   result.attempt = item.attempt;
+
+  if (item.description != undefined) {
+    result.description = item.description;
+  }
+  if (item.time_limit != undefined) {
+    result.timeLimit = item.time_limit.toString() + " ms";
+  }
+  if (item.memory_limit != undefined) {
+    result.memoryLimit = (item.memory_limit / 1024).toFixed(2) + " MB";
+  }
+  if (item.judge_type != undefined) {
+    result.judgeType = GetJudgeTypeStr(item.judge_type);
+  }
+  if (item.insert_time != undefined) {
+    result.insertTime = new Date(item.insert_time).toLocaleString();
+  }
+  if (item.update_time != undefined) {
+    result.updateTime = new Date(item.update_time).toLocaleString();
+  }
+  if (item.creator_nickname != undefined) {
+    result.creatorNickname = item.creator_nickname;
+  }
+  if (item.source != undefined) {
+    result.source = item.source;
+  }
+
   return result;
 }
 
@@ -34,8 +62,6 @@ export function GetProblem(problemId: string) {
     method: "get",
   });
 }
-
-
 
 export function GetProblemTagList(num: number) {
   return httpRequest({

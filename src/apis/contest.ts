@@ -1,10 +1,21 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import type { Contest, ContestView, ContestCreateRequest, ContestDescription } from "@/types/contest";
+import type { Contest, ContestView, ContestCreateRequest, ContestDescription, ContestProblem } from "@/types/contest";
 import Vditor from "vditor";
 
-export async function ParseContest(item: Contest): ContestView {
+export function GetContestProblemIndexStr(index: number): string {
+  let result = "";
+  index++;
+  while (index > 0) {
+    index--;
+    result = String.fromCharCode(65 + (index % 26)) + result;
+    index = Math.floor(index / 26);
+  }
+  return result;
+}
+
+export async function ParseContest(item: Contest): Promise<ContestView> {
   const result: ContestView = {} as ContestView;
   result.id = item.id;
   result.ownerId = item.owner_id;
@@ -32,7 +43,24 @@ export async function ParseContest(item: Contest): ContestView {
     }
   }
   result.notification = item.notification;
-  result.problems = item.problems;
+  if (item.problems) {
+    // item.problems根据sort字段排序
+    result.problems = [];
+    item.problems.sort((a: ContestProblem, b: ContestProblem) => {
+      return a.sort - b.sort;
+    });
+    for (let i = 0; i < item.problems.length; i++) {
+      const problem = item.problems[i];
+      if (!problem.accept) {
+        problem.accept = 0;
+      }
+      if (!problem.attempt) {
+        problem.attempt = 0;
+      }
+      problem.id = GetContestProblemIndexStr(i);
+      result.problems.push(problem);
+    }
+  }
   return result;
 }
 

@@ -1,3 +1,8 @@
+export interface ProblemTag {
+  id: number;
+  name: string;
+}
+
 export interface Problem {
   id: string;
   title: string;
@@ -6,21 +11,28 @@ export interface Problem {
   accept: number;
   attempt: number;
   description?: string;
-  hint?: string;
+  time_limit?: number;
+  memory_limit?: number;
+  judge_type?: number;
+  insert_time?: string;
+  update_time?: string;
+  creator_nickname?: string;
+  source?: string;
 }
 
 export interface ProblemView {
   id: string;
   title: string;
   author: string;
-  tags: string[];
+  tags: ProblemTag[];
   accept: number;
   attempt: number;
   description?: string;
-  hint?: string;
-}
-
-export interface ProblemTag {
-  id: number;
-  name: string;
+  timeLimit?: string;
+  memoryLimit?: string;
+  judgeType?: string;
+  insertTime?: string;
+  updateTime?: string;
+  creatorNickname?: string;
+  source?: string;
 }
