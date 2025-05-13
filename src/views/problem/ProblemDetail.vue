@@ -36,6 +36,20 @@ const languageOptions = ref([] as { label: string; value: JudgeLanguage }[]);
 
 languageOptions.value = GetSubmitLanguages();
 
+const handleClickTag = (tag: ProblemTag) => {
+  if (!tag) {
+    return;
+  }
+  router.push({
+    name: "problem-list",
+    query: {
+      ...route.query,
+      title: "",
+      tag: tag.name,
+    },
+  });
+};
+
 const handleSubmitCode = async () => {
   if (!problemId.value) {
     ShowTextTipsError(globalProperties, "问题ID无效");
@@ -154,7 +168,7 @@ onMounted(async () => {
             <t-descriptions-item label="题目来源">{{ problemData?.source }}</t-descriptions-item>
             <t-descriptions-item label="标签">
               <t-space>
-                <t-button v-for="tag in problemData?.tags" :key="tag.id" variant="dashed">
+                <t-button v-for="tag in problemData?.tags" :key="tag.id" variant="dashed" @click="() => handleClickTag(tag)">
                   {{ tag.name }}
                 </t-button>
               </t-space>

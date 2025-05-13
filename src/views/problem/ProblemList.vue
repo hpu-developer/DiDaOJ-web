@@ -132,6 +132,21 @@ const handleClickSearch = async () => {
   });
 };
 
+const handleClickTag = (tag: ProblemTag) => {
+  if (!tag) {
+    return;
+  }
+  router.push({
+    query: {
+      ...route.query,
+      title: "",
+      tag: tag.name,
+      page: 1,
+      page_size: pagination.value.defaultPageSize,
+    },
+  });
+};
+
 const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
@@ -256,7 +271,14 @@ onBeforeUnmount(() => {
           </t-form>
         </t-card>
         <t-card class="sh-card sh-background-black">
-          <t-button v-for="tag in problemTags" class="sh-tag-button" theme="default" variant="outline" :ghost="true" @click="() => $router.push('/')">
+          <t-button
+            v-for="tag in problemTags"
+            class="sh-tag-button"
+            theme="default"
+            variant="outline"
+            :ghost="true"
+            @click="() => handleClickTag(tag)"
+          >
             {{ tag.name }}
           </t-button>
           <t-button
