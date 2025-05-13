@@ -12,8 +12,9 @@ import { PostJudgeJob } from "@/apis/judge.ts";
 
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 
-import * as monaco from "monaco-editor";
-import { editor } from "monaco-editor";
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+
+import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 let route = useRoute();

@@ -18,6 +18,12 @@ import "highlight.js/styles/stackoverflow-light.css";
 import { ReinitTextCache } from "@/text/library.ts";
 import 'vditor/dist/index.css'
 
+import 'monaco-editor/esm/vs/editor/editor.all.js';
+// 加载语言支持
+import 'monaco-editor/esm/vs/basic-languages/cpp/cpp.contribution'
+import 'monaco-editor/esm/vs/basic-languages/python/python.contribution'
+import 'monaco-editor/esm/vs/basic-languages/java/java.contribution'
+
 hljs.registerLanguage("verilog", verilog);
 
 const pinia = createPinia();
