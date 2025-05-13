@@ -154,7 +154,7 @@ onMounted(async () => {
             <t-descriptions-item label="题目来源">{{ problemData?.source }}</t-descriptions-item>
             <t-descriptions-item label="标签">
               <t-space>
-                <t-button v-for="tag in problemData?.tags" :key="tag.id" size="small" variant="dashed">
+                <t-button v-for="tag in problemData?.tags" :key="tag.id" variant="dashed">
                   {{ tag.name }}
                 </t-button>
               </t-space>

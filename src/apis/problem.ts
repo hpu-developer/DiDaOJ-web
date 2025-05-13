@@ -70,9 +70,9 @@ export function GetProblemTagList(num: number) {
   });
 }
 
-export function GetProblemList(page: number, pageSize: number) {
+export function GetProblemList(title: string, tag: string, page: number, pageSize: number) {
   return httpRequest({
-    url: "/problem/list" + "?page=" + page + "&page_size=" + pageSize,
+    url: "/problem/list" + "?title=" + title + "&tag=" + tag + "&page=" + page + "&page_size=" + pageSize,
     method: "get",
   });
 }

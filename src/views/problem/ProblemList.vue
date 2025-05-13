@@ -2,7 +2,7 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { GetProblemList, GetProblemTagList, ParseProblem, ProblemAttemptStatus } from "@/apis/problem.ts";
 import { Problem, ProblemTag, ProblemView } from "@/types/problem.ts";
 
@@ -87,8 +87,8 @@ const problemViews = ref<ProblemView[]>();
 const problemTags = ref<ProblemTag[]>();
 
 const formItem = ref({
-  selectBranchList: [],
-  modify: "",
+  title: "",
+  tag: "",
 });
 
 const handleGotoProblem = (id: string) => {
@@ -119,16 +119,33 @@ const getProblemIdTheme = (id: string) => {
   }
 };
 
+const handleClickSearch = async () => {
+  // 更新 URL 查询参数
+  await router.push({
+    query: {
+      ...route.query,
+      title: formItem.value.title,
+      tag: formItem.value.tag,
+      page: 1,
+      page_size: pagination.value.defaultPageSize,
+    },
+  });
+};
+
 const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
   }
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetProblemList(current, pageSize);
+    const res = await GetProblemList(formItem.value.title, formItem.value.tag, current, pageSize);
     problemViews.value = [];
     if (res.code === 0) {
       const responseList = res.data.list as Problem[];
+      if (!responseList || responseList.length <= 0) {
+        ShowTextTipsInfo(globalProperties, "未找到记录");
+        return;
+      }
       responseList.forEach((item) => {
         const result = ParseProblem(item, tagsMap);
         problemViews.value?.push(result);
@@ -177,6 +194,8 @@ onMounted(async () => {
         watchHandle = watch(
           () => route.query,
           (newQuery) => {
+            formItem.value.title = (newQuery.title as string) || "";
+            formItem.value.tag = (newQuery.tag as string) || "";
             const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
             const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
             currentPage = queryPage;
@@ -226,13 +245,13 @@ onBeforeUnmount(() => {
         <t-card class="sh-card">
           <t-form :model="formItem">
             <t-form-item label="标题">
-              <t-input v-model="formItem.modify" placeholder="暂不支持模糊查询"></t-input>
+              <t-input v-model="formItem.title" placeholder="暂不支持模糊查询"></t-input>
             </t-form-item>
             <t-form-item label="标签">
-              <t-input v-model="formItem.modify" placeholder="暂不支持模糊查询"></t-input>
+              <t-input v-model="formItem.tag" placeholder="暂不支持模糊查询"></t-input>
             </t-form-item>
             <t-form-item>
-              <t-button theme="primary">提交</t-button>
+              <t-button theme="primary" @click="handleClickSearch">搜索</t-button>
             </t-form-item>
           </t-form>
         </t-card>
