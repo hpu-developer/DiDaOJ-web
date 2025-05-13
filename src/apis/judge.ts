@@ -49,6 +49,8 @@ export const GetJudgeStatusStr = (status: JudgeStatus) => {
       return "重新评测";
     case JudgeStatus.Submitting:
       return "提交中";
+    case JudgeStatus.Queuing:
+      return "队列中";
     case JudgeStatus.Compiling:
       return "编译中";
     case JudgeStatus.Running:
@@ -81,6 +83,16 @@ export const GetJudgeStatusStr = (status: JudgeStatus) => {
       return status;
   }
 };
+
+export function GetJudgeStatusOptions() {
+  const exclude = [JudgeStatus.Unknown]; // 不想包含的语言
+  return Object.values(JudgeStatus)
+    .filter((v) => typeof v === "number" && !exclude.includes(v))
+    .map((value) => ({
+      value,
+      label: GetJudgeStatusStr(value as JudgeStatus),
+    })) as { label: string; value: JudgeStatus }[];
+}
 
 export function IsJudgeStatusRunning(status: JudgeStatus) {
   switch (status) {
@@ -181,9 +193,17 @@ export function GetJudgeJob(judgeId: number) {
   });
 }
 
-export function GetJudgeJobList(page: number, pageSize: number) {
+export function GetJudgeJobList(problemId: string, username: string, language: JudgeLanguage, status: JudgeStatus, page: number, pageSize: number) {
+  const params = new URLSearchParams({
+    problem_id: problemId,
+    username: username,
+    language: String(language),
+    status: String(status),
+    page: String(page),
+    page_size: String(pageSize),
+  });
   return httpRequest({
-    url: "/judge/list" + "?page=" + page + "&page_size=" + pageSize,
+    url: `/judge/list?${params.toString()}`,
     method: "get",
   });
 }

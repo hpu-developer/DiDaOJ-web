@@ -10,32 +10,13 @@ export enum JudgeLanguage {
 }
 
 export function GetSubmitLanguages() {
-  return [
-    {
-      value: JudgeLanguage.C,
-      label: "C",
-    },
-    {
-      value: JudgeLanguage.Cpp,
-      label: "C++",
-    },
-    {
-      value: JudgeLanguage.Java,
-      label: "Java",
-    },
-    {
-      value: JudgeLanguage.Python,
-      label: "Python",
-    },
-    // {
-    //   value: JudgeLanguage.Pascal,
-    //   label: "Pascal",
-    // },
-    // {
-    //   value: JudgeLanguage.Golang,
-    //   label: "Golang",
-    // },
-  ];
+  const exclude = [JudgeLanguage.Unknown, JudgeLanguage.Pascal, JudgeLanguage.Golang, JudgeLanguage.Max]; // 不想包含的语言
+  return Object.values(JudgeLanguage)
+    .filter((v) => typeof v === "number" && !exclude.includes(v))
+    .map((value) => ({
+      value,
+      label: GetJudgeLanguageStr(value as JudgeLanguage),
+    })) as { label: string; value: JudgeLanguage }[];
 }
 
 export function IsJudgeLanguageValid(language: number) {

@@ -158,6 +158,8 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
     if (res.code === 0) {
       const responseList = res.data.list as Problem[];
       if (!responseList || responseList.length <= 0) {
+        pagination.value = { ...pagination.value, total: 0 };
+        problemAttemptStatus = null;
         ShowTextTipsInfo(globalProperties, "未找到记录");
         return;
       }

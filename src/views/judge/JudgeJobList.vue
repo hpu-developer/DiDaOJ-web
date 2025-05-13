@@ -2,8 +2,9 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
-import { GetJudgeJobList, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus, ParseJudgeJob } from "@/apis/judge.ts";
+import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
+import { GetJudgeJobList, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus, GetJudgeStatusOptions, ParseJudgeJob } from "@/apis/judge.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
 
@@ -14,6 +15,13 @@ const { globalProperties } = useCurrentInstance();
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
 let refreshTimeout: ReturnType<typeof setTimeout>;
+
+const searchForm = ref({
+  problemId: "",
+  username: "",
+  language: undefined as JudgeLanguage | undefined,
+  status: undefined as JudgeStatus | undefined,
+});
 
 const ListColumns = ref([
   {
@@ -131,6 +139,11 @@ const pagination = ref({
 
 const judgeJobViews = ref<JudgeJobView[]>();
 
+const languageOptions = ref([] as { label: string; value: JudgeLanguage }[]);
+languageOptions.value = GetSubmitLanguages();
+const judgeStatusOptions = ref([] as { label: string; value: JudgeStatus }[]);
+judgeStatusOptions.value = GetJudgeStatusOptions();
+
 const handleGotoProblem = (id: string) => {
   if (!id) {
     return;
@@ -152,6 +165,38 @@ const handleGotoUser = (user: string) => {
   router.push({ path: "/user/" + user });
 };
 
+const handleSearchFormSubmit = async () => {
+  await router.push({
+    query: {
+      ...route.query,
+      page: 1,
+      page_size: currentPageSize,
+      problem_id: searchForm.value.problemId,
+      username: searchForm.value.username,
+      language: searchForm.value.language,
+      status: searchForm.value.status,
+    },
+  });
+};
+
+const handleSearchFormReset = async () => {
+  searchForm.value.problemId = "";
+  searchForm.value.username = "";
+  searchForm.value.language = undefined;
+  searchForm.value.status = undefined;
+  await router.push({
+    query: {
+      ...route.query,
+      page: 1,
+      page_size: currentPageSize,
+      problem_id: "",
+      username: "",
+      language: undefined,
+      status: undefined,
+    },
+  });
+};
+
 const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
@@ -159,18 +204,30 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   let needRefresh = false;
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetJudgeJobList(current, pageSize);
+    const res = await GetJudgeJobList(
+      searchForm.value.problemId,
+      searchForm.value.username,
+      searchForm.value.language,
+      searchForm.value.status,
+      current,
+      pageSize
+    );
     judgeJobViews.value = [];
     if (res.code === 0) {
-      const responseList = res.data.list as JudgeJob[];
-      responseList.forEach((item) => {
-        const result = ParseJudgeJob(item);
-        judgeJobViews.value?.push(result);
-        if (IsJudgeStatusRunning(item.status)) {
-          needRefresh = true;
-        }
-      });
-      pagination.value = { ...pagination.value, total: res.data.total_count };
+      if (res.data.list && res.data.list.length > 0) {
+        const responseList = res.data.list as JudgeJob[];
+        responseList.forEach((item) => {
+          const result = ParseJudgeJob(item);
+          judgeJobViews.value?.push(result);
+          if (IsJudgeStatusRunning(item.status)) {
+            needRefresh = true;
+          }
+        });
+        pagination.value = { ...pagination.value, total: res.data.total_count };
+      } else {
+        ShowTextTipsInfo(globalProperties, "未找到记录");
+        pagination.value = { ...pagination.value, total: 0 };
+      }
     } else {
       if (needLoading) {
         ShowErrorTips(globalProperties, res.code);
@@ -207,6 +264,18 @@ onMounted(async () => {
   watchHandle = watch(
     () => route.query,
     (newQuery) => {
+      searchForm.value.problemId = (newQuery.problem_id as string) || "";
+      searchForm.value.username = (newQuery.username as string) || "";
+      if (newQuery.language != undefined) {
+        searchForm.value.language = Number(newQuery.language as string) as JudgeLanguage;
+      } else {
+        searchForm.value.language = undefined;
+      }
+      if (newQuery.status != undefined) {
+        searchForm.value.status = Number(newQuery.status as string) as JudgeStatus;
+      } else {
+        searchForm.value.status = undefined;
+      }
       const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
       const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
       currentPage = queryPage;
@@ -229,6 +298,31 @@ onBeforeUnmount(() => {
 
 <template>
   <t-card style="margin: 10px">
+    <t-form layout="inline" @submit="handleSearchFormSubmit" @reset="handleSearchFormReset">
+      <t-form-item label="题号">
+        <t-input v-model="searchForm.problemId" placeholder="请输入完整题号" />
+      </t-form-item>
+      <t-form-item label="用户">
+        <t-input v-model="searchForm.username" placeholder="仅支持输入完整用户名" />
+      </t-form-item>
+      <t-form-item label="语言">
+        <t-select v-model="searchForm.language" placeholder="请选择提交语言" auto-width clearable>
+          <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
+        </t-select>
+      </t-form-item>
+      <t-form-item label="状态">
+        <t-select v-model="searchForm.status" placeholder="请选择评测状态" auto-width clearable>
+          <t-option v-for="item in judgeStatusOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
+        </t-select>
+      </t-form-item>
+      <t-form-item>
+        <t-space>
+          <t-button theme="primary" type="submit">搜索</t-button>
+          <t-button theme="default" variant="base" type="reset">重置</t-button>
+        </t-space>
+      </t-form-item>
+    </t-form>
+
     <t-table
       :data="judgeJobViews"
       :columns="ListColumns"

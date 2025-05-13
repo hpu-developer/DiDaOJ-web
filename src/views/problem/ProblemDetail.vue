@@ -174,6 +174,15 @@ onMounted(async () => {
               </t-space>
             </t-descriptions-item>
           </t-descriptions>
+
+          <div class="dida-operation-container">
+            <t-space>
+              <t-button>提交记录</t-button>
+              <t-button>题目讨论</t-button>
+              <t-button>题目推荐</t-button>
+            </t-space>
+          </div>
+
           <div class="dida-code-submit-div">
             <t-space>
               <t-select v-model="selectLanguage" label="语言：" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
@@ -192,6 +201,11 @@ onMounted(async () => {
 <style scoped>
 .dida-main-content {
   min-height: 800px;
+}
+
+.dida-operation-container {
+  margin: 10px 0 20px;
+  text-align: right;
 }
 
 .dida-code-submit-div {
