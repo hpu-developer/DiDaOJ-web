@@ -7,18 +7,22 @@ import { GetJudgeLanguageStr, JudgeLanguage } from "@/apis/language.ts";
 export enum JudgeStatus {
   Init = 0,
   Rejudge = 1,
-  Compiling = 2,
-  Running = 3,
-  Accept = 4,
-  PE = 5,
-  WA = 6,
-  TLE = 7,
-  MLE = 8,
-  OLE = 9,
-  RE = 10,
-  CE = 11,
-  CLE = 12,
-  JudgeFail = 13,
+  Submitting = 2,
+  Queuing = 3,
+  Compiling = 4,
+  Running = 5,
+  Accept = 6,
+  PE = 7,
+  WA = 8,
+  TLE = 9,
+  MLE = 10,
+  OLE = 11,
+  RE = 12,
+  CE = 13,
+  CLE = 14,
+  JudgeFail = 15,
+  SubmitFail = 16,
+  Unknown = 17,
 }
 
 export const GetJudgeStatusStr = (status: JudgeStatus) => {
@@ -27,6 +31,8 @@ export const GetJudgeStatusStr = (status: JudgeStatus) => {
       return "等待处理";
     case JudgeStatus.Rejudge:
       return "重新评测";
+    case JudgeStatus.Submitting:
+      return "提交中";
     case JudgeStatus.Compiling:
       return "编译中";
     case JudgeStatus.Running:
@@ -51,6 +57,10 @@ export const GetJudgeStatusStr = (status: JudgeStatus) => {
       return "编译超限";
     case JudgeStatus.JudgeFail:
       return "评测失败";
+    case JudgeStatus.SubmitFail:
+      return "提交失败";
+    case JudgeStatus.Unknown:
+      return "未知";
     default:
       return status;
   }
@@ -60,6 +70,7 @@ export function IsJudgeStatusRunning(status: JudgeStatus) {
   switch (status) {
     case JudgeStatus.Init:
     case JudgeStatus.Rejudge:
+    case JudgeStatus.Submitting:
     case JudgeStatus.Compiling:
     case JudgeStatus.Running:
       return true;
