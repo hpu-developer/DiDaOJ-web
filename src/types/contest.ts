@@ -6,6 +6,12 @@ export interface ContestDescription {
   sort: number;
 }
 
+export interface ContestProblem {
+  title: string;
+  accept: number;
+  attempt: number;
+}
+
 export interface Contest {
   id: string;
   title: string;
@@ -16,6 +22,7 @@ export interface Contest {
   end_time: string;
   descriptions: ContestDescription[];
   notification: string;
+  problems: ContestProblem[];
 }
 
 export interface ContestView {
@@ -28,6 +35,7 @@ export interface ContestView {
   endTime: string;
   descriptions: ContestDescription[];
   notification: string;
+  problems: ContestProblem[];
 }
 
 export interface ContestCreateRequest {

@@ -1,9 +1,10 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import { Contest, ContestCreateRequest, ContestView } from "@/types/contest";
+import type { Contest, ContestView, ContestCreateRequest, ContestDescription } from "@/types/contest";
+import Vditor from "vditor";
 
-export function ParseContest(item: Contest): ContestView {
+export async function ParseContest(item: Contest): ContestView {
   const result: ContestView = {} as ContestView;
   result.id = item.id;
   result.ownerId = item.owner_id;
@@ -12,8 +13,26 @@ export function ParseContest(item: Contest): ContestView {
   result.title = item.title;
   result.startTime = new Date(item.start_time).toLocaleString();
   result.endTime = new Date(item.end_time).toLocaleString();
-  result.descriptions = item.descriptions;
+
+  if (item.descriptions) {
+    result.descriptions = [];
+    const options = {
+      math: {
+        inlineDigit: true,
+        engine: "KaTeX",
+      },
+    } as IPreviewOptions;
+    for (let i = 0; i < item.descriptions.length; i++) {
+      const description = item.descriptions[i];
+      const contentDescription = {} as ContestDescription;
+      contentDescription.title = description.title;
+      contentDescription.content = await Vditor.md2html(description.content, options);
+      contentDescription.sort = description.sort;
+      result.descriptions.push(contentDescription);
+    }
+  }
   result.notification = item.notification;
+  result.problems = item.problems;
   return result;
 }
 
