@@ -46,6 +46,9 @@ export const useUserStore = defineStore("user", {
     isLogin(): boolean {
       return this.token != null && this.token != "";
     },
+    hasAuth(auths: string): boolean {
+      return this.hasAllAuths([auths]);
+    },
     hasAllAuths(auths: string[]): boolean {
       if (!auths) {
         return true;

@@ -58,14 +58,25 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // 手动代码分割，单独提取 Monaco 编辑器和其他语言特性
-        manualChunks: {
-          "monaco-editor-core": ["monaco-editor/esm/vs/editor/editor.api.js"],
-          "monaco-editor-languages": [
-            "monaco-editor/esm/vs/basic-languages/cpp/cpp.js",
-            "monaco-editor/esm/vs/basic-languages/java/java.js",
-            "monaco-editor/esm/vs/basic-languages/python/python.js",
-          ],
+        manualChunks(id) {
+          // 将 TDesign 相关的组件拆分到单独的文件中
+          if (id.includes("node_modules/tdesign-vue-next")) {
+            return "tdesign-vue-next";
+          }
+          // 将 Monaco 编辑器相关的文件拆分成单独的文件
+          if (id.includes("node_modules/monaco-editor")) {
+            return "monaco-editor";
+          }
+          if (id.includes("node_modules/highlight.js")) {
+            return "highlight.js";
+          }
+          if (id.includes("node_modules/vditor")) {
+            return "vditor";
+          }
+          // 第三方库单独分为一个文件
+          if (id.includes("node_modules")) {
+            return "node_modules";
+          }
         },
       },
     },

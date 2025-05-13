@@ -6,6 +6,7 @@ import LoginView from "@/views/login/LoginView.vue";
 import UserView from "@/views/user/UserView.vue";
 
 import type { RouteRecordRaw } from "vue-router";
+import { AuthType } from "@/auth";
 
 const tabsConfig: Tab[] = [
   {
@@ -54,8 +55,8 @@ const tabsConfig: Tab[] = [
     title: "管理",
     icon: "dashboard",
     showSidebar: true,
-    redirect: "manage-problem",
-    auths: ["i-manage"],
+    redirect: "manage-judge",
+    auths: [AuthType.Manage],
   },
   {
     name: "login",

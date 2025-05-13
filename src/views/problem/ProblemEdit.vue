@@ -60,7 +60,7 @@ const handleClickTag = (tag: ProblemTag) => {
 
 const handleClickEdit = () => {
   router.push({
-    name: "manage-problem",
+    name: "problem-edit",
     params: {
       problemId: problemId.value,
     },

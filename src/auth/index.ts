@@ -1,5 +1,11 @@
-﻿const roleAuths: Record<string, string[]> = {
-  "r-admin": ["i-manage", "i-manage-problem", "i-manage-judge"],
+﻿export enum AuthType {
+  Manage = "i-manage",
+  ManageJudge = "i-manage-judge",
+  ManageProblem = "i-manage-problem",
+}
+
+const roleAuths: Record<string, string[]> = {
+  "r-admin": [AuthType.Manage, AuthType.ManageJudge, AuthType.ManageProblem],
 };
 
 export function getRolesAllAuths(roles: string[] | undefined): string[] {

@@ -72,6 +72,7 @@ const contestViews = ref<ContestView[]>();
 
 const contestSearchForm = ref({
   title: "",
+  username: "",
 });
 
 const contestCreateForm = ref<ContestCreateRequest>({
@@ -85,6 +86,18 @@ const handleGotoContest = (id: string) => {
     return;
   }
   router.push({ path: "/contest/" + id });
+};
+
+const handleSearchContest = async () => {
+  await router.push({
+    query: {
+      ...route.query,
+      title: contestSearchForm.value.title,
+      username: contestSearchForm.value.username,
+      page: 1,
+      page_size: pagination.value.defaultPageSize,
+    },
+  });
 };
 
 const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
@@ -158,6 +171,8 @@ onMounted(async () => {
   watchHandle = watch(
     () => route.query,
     (newQuery) => {
+      contestSearchForm.value.title = (newQuery.title as string) || "";
+      contestSearchForm.value.username = (newQuery.username as string) || "";
       const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
       const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
       currentPage = queryPage;
@@ -201,8 +216,11 @@ onBeforeUnmount(() => {
             <t-form-item label="标题">
               <t-input v-model="contestSearchForm.title" placeholder="暂不支持模糊查询"></t-input>
             </t-form-item>
+            <t-form-item label="负责人">
+              <t-input v-model="contestSearchForm.username" placeholder="仅支持输入完整用户名"></t-input>
+            </t-form-item>
             <t-form-item>
-              <t-button theme="primary">提交</t-button>
+              <t-button theme="primary" @click="handleSearchContest">提交</t-button>
             </t-form-item>
           </t-form>
         </t-card>
