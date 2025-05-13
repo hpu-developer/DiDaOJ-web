@@ -1,5 +1,11 @@
 import { DateMultipleValue } from "tdesign-vue-next";
 
+export interface ContestDescription {
+  title: string;
+  content: string;
+  sort: number;
+}
+
 export interface Contest {
   id: string;
   title: string;
@@ -8,6 +14,8 @@ export interface Contest {
   owner_nickname?: string;
   start_time: string;
   end_time: string;
+  descriptions: ContestDescription[];
+  notification: string;
 }
 
 export interface ContestView {
@@ -18,6 +26,8 @@ export interface ContestView {
   ownerNickname?: string;
   startTime: string;
   endTime: string;
+  descriptions: ContestDescription[];
+  notification: string;
 }
 
 export interface ContestCreateRequest {

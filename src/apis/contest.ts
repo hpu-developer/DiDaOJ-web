@@ -12,6 +12,8 @@ export function ParseContest(item: Contest): ContestView {
   result.title = item.title;
   result.startTime = new Date(item.start_time).toLocaleString();
   result.endTime = new Date(item.end_time).toLocaleString();
+  result.descriptions = item.descriptions;
+  result.notification = item.notification;
   return result;
 }
 

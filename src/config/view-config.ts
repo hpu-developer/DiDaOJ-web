@@ -7,9 +7,12 @@ import { IsViewGroup, ViewList } from "@/types/webStyle";
 import ProblemList from "@/views/problem/ProblemList.vue";
 import ProblemDetail from "@/views/problem/ProblemDetail.vue";
 import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
+
 import JudgeJobList from "@/views/judge/JudgeJobList.vue";
 import JudgeJobDetail from "@/views/judge/JudgeJobDetail.vue";
+
 import ContestList from "@/views/contest/ContestList.vue";
+import ContestDetail from "@/views/contest/ContestDetail.vue";
 
 import ManageJudge from "@/views/manage/ManageJudge.vue";
 
@@ -70,13 +73,67 @@ const viewsConfig = [
     icon: "cpu",
     component: ContestList,
   },
-
   {
     name: "contest-recent",
     tab: "contest",
     sidebar: "contest-recent",
     path: "recent",
     title: "近期比赛",
+    icon: "cpu",
+    component: ContestList,
+  },
+
+  {
+    name: "contest-detail",
+    tab: "contest-detail",
+    sidebar: "contest-detail",
+    path: ":contestId+",
+    title: "比赛详情",
+    icon: "cpu",
+    component: ContestDetail,
+  },
+  {
+    name: "contest-problem",
+    tab: "contest-detail",
+    sidebar: "contest-problem",
+    path: ":contestId+/problem",
+    title: "问题列表",
+    icon: "cpu",
+    component: ContestList,
+  },
+  {
+    name: "contest-judge",
+    tab: "contest-detail",
+    sidebar: "contest-judge",
+    path: ":contestId+/judge",
+    title: "评测列表",
+    icon: "cpu",
+    component: ContestList,
+  },
+  {
+    name: "contest-rank",
+    tab: "contest-detail",
+    sidebar: "contest-rank",
+    path: ":contestId+/rank",
+    title: "比赛排名",
+    icon: "cpu",
+    component: ContestList,
+  },
+  {
+    name: "contest-statistics",
+    tab: "contest-detail",
+    sidebar: "contest-statistics",
+    path: ":contestId+/statistics",
+    title: "结果统计",
+    icon: "cpu",
+    component: ContestList,
+  },
+  {
+    name: "contest-discuss",
+    tab: "contest-detail",
+    sidebar: "contest-discuss",
+    path: ":contestId+/discuss",
+    title: "比赛讨论",
     icon: "cpu",
     component: ContestList,
   },

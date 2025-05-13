@@ -3,11 +3,11 @@ import { ref, onMounted, nextTick } from "vue";
 import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetProblem } from "@/apis/problem.ts";
+import { GetProblem, ParseProblem } from "@/apis/problem.ts";
 import { GetKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
-import type { Problem } from "@/types/problem.ts";
+import type { ProblemView } from "@/types/problem.ts";
 import { PostJudgeJob } from "@/apis/judge.ts";
 
 import * as monaco from "monaco-editor";
@@ -21,7 +21,7 @@ let content = ref("");
 const problemId = ref("");
 const markdownRef = ref<HTMLElement | null>(null);
 const problemLoading = ref(false);
-const problemData = ref<Problem | null>(null);
+const problemData = ref<ProblemView | null>(null);
 let codeEditor = null as IStandaloneCodeEditor | null;
 const codeEditRef = ref<HTMLElement | null>(null);
 
@@ -82,7 +82,7 @@ onMounted(async () => {
     return;
   }
 
-  problemData.value = res.data as Problem;
+  problemData.value = ParseProblem(res.data);
 
   let problemDescription = problemData.value.description as string;
   if (problemData.value.hint) {

@@ -41,6 +41,14 @@ const tabsConfig: Tab[] = [
     redirect: "contest-list",
   },
   {
+    name: "contest-detail",
+    title: "比赛",
+    path: "/contest",
+    showSidebar: true,
+    disableGenerateTab: true,
+    redirect: "contest-list",
+  },
+  {
     name: "manage",
     path: "/manage",
     title: "管理",
