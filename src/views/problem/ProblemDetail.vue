@@ -50,6 +50,33 @@ const handleClickTag = (tag: ProblemTag) => {
   });
 };
 
+const handleClickJudgeStatus = () => {
+  router.push({
+    name: "judge-list",
+    query: {
+      problem_id: problemId.value,
+    },
+  });
+};
+
+const handleClickDiscuss = () => {
+  // router.push({
+  //   name: "problem-discuss",
+  //   query: {
+  //     problem_id: problemId.value,
+  //   },
+  // });
+};
+
+const handleClickRecommend = () => {
+  router.push({
+    name: "problem-recommend",
+    params: {
+      problemId: problemId.value,
+    },
+  });
+};
+
 const handleSubmitCode = async () => {
   if (!problemId.value) {
     ShowTextTipsError(globalProperties, "问题ID无效");
@@ -177,9 +204,9 @@ onMounted(async () => {
 
           <div class="dida-operation-container">
             <t-space>
-              <t-button>提交记录</t-button>
-              <t-button>题目讨论</t-button>
-              <t-button>题目推荐</t-button>
+              <t-button @click="handleClickJudgeStatus">提交记录</t-button>
+              <t-button @click="handleClickDiscuss">题目讨论</t-button>
+              <t-button @click="handleClickRecommend">题目推荐</t-button>
             </t-space>
           </div>
 

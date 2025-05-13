@@ -39,7 +39,7 @@ const viewsConfig = [
     name: "problem-recommend",
     tab: "problem",
     sidebar: "problem-recommend",
-    path: "recommend",
+    path: "recommend/:problemId*",
     title: "问题推荐",
     icon: "cpu",
     component: ProblemRecommend,
