@@ -163,11 +163,11 @@ const viewsConfig = [
   },
 ] as ViewList;
 
-export const parseTabMenu = (list: MenuList, tabName: string, view: View) => {
+export const parseTabMenu = (list: MenuList, toSidebar: string, tabName: string, view: View) => {
   if (view.tab != tabName) {
     return;
   }
-  if (view.disableSidebar) {
+  if (view.disableSidebar && toSidebar != view.sidebar) {
     return;
   }
   if (view.sidebar == null || view.sidebar != view.name) {
@@ -181,13 +181,13 @@ export const parseTabMenu = (list: MenuList, tabName: string, view: View) => {
   });
 };
 
-export const getTabSubMenus = (tabName: string) => {
+export const getTabSubMenus = (toSidebar: string, tabName: string) => {
   const menus = [] as MenuList;
   viewsConfig.forEach((view) => {
     if (IsViewGroup(view)) {
       const views = [] as MenuList;
       view.children.forEach((childView) => {
-        parseTabMenu(views, tabName, childView);
+        parseTabMenu(views, toSidebar, tabName, childView);
       });
       if (views.length > 0) {
         menus.push({
@@ -196,7 +196,7 @@ export const getTabSubMenus = (tabName: string) => {
         } as MenuGroup);
       }
     } else {
-      parseTabMenu(menus, tabName, view);
+      parseTabMenu(menus, toSidebar, tabName, view);
     }
   });
   return menus;

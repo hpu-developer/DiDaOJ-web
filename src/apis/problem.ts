@@ -76,3 +76,19 @@ export function GetProblemList(title: string, tag: string, page: number, pageSiz
     method: "get",
   });
 }
+
+export function PostProblemEdit(problemId: string, title: string, timeLimit: number, memoryLimit: number,source:string, tags: string[], description: string) {
+  return httpRequest({
+    url: "/problem/edit",
+    method: "post",
+    data: {
+      id: problemId,
+      title: title,
+      time_limit: timeLimit,
+      memory_limit: memoryLimit,
+      source: source,
+      tags: tags,
+      description: description,
+    },
+  });
+}

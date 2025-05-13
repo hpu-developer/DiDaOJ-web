@@ -63,7 +63,7 @@ router.beforeEach((to, _, next) => {
   next();
 });
 
-router.afterEach((to, from) => {
+router.afterEach((to: any, from: any) => {
   if (to.name === from.name) {
     return;
   }
@@ -86,7 +86,7 @@ router.afterEach((to, from) => {
 
   if (toMeta?.showSidebar) {
     sidebarStyleStore.setSidebarShow(true);
-    const menus = getTabSubMenus(toMeta?.tab as string);
+    const menus = getTabSubMenus(toMeta?.sidebar, toMeta?.tab as string);
     sidebarStyleStore.setMenuList(menus);
     sidebarStyleStore.setMenuActiveName(toMeta?.sidebar as string);
   } else {

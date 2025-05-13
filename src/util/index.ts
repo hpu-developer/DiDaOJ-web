@@ -15,6 +15,13 @@ export function GetCommonErrorCode() {
   return 1000;
 }
 
+export function ShowTextTipsSuccess(properties: ComponentCustomProperties & Record<string, any>, tips: string, duration = 3000) {
+  properties.$message.success({
+    duration,
+    content: tips,
+  });
+}
+
 export function ShowTextTipsInfo(properties: ComponentCustomProperties & Record<string, any>, tips: string, duration = 3000) {
   properties.$message.info({
     duration,
