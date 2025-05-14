@@ -6,12 +6,12 @@ a {
   margin-right: 2px;
 }
 
-.sh-code {
+:not(pre) > code, .sh-code {
   border: 1px solid #e8eaec;
   border-radius: 10%;
   background-color: #f8f9fa;
-  margin: 3px !important;
-  padding: 3px !important;
+  margin: 3px;
+  padding: 3px;
 }
 
 .sh-anim-loop {
