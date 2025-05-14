@@ -199,8 +199,8 @@ onMounted(async () => {
       </t-col>
       <t-col :span="4">
         <div style="margin: 12px">
-          <div class="dida-edit-container">
-            <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
+          <div v-if="hasEditAuth" class="dida-edit-container">
+            <t-button @click="handleClickEdit">编辑</t-button>
           </div>
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="标题">{{ problemData?.title }}</t-descriptions-item>
@@ -250,7 +250,7 @@ onMounted(async () => {
   min-height: 800px;
 }
 
-.dida-edit-container{
+.dida-edit-container {
   margin: 10px 0;
   text-align: right;
 }

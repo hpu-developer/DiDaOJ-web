@@ -1,16 +1,26 @@
 <script setup lang="tsx">
-import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
-import { GetJudgeJob, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus, ParseJudgeJob } from "@/apis/judge.ts";
+import {
+  GetJudgeJob,
+  GetJudgeStatusStr,
+  IsJudgeStatusRunning,
+  JudgeStatus,
+  ParseJudgeJob,
+  PostRejudgeJob,
+} from "@/apis/judge.ts";
 import { GetKeyByJudgeLanguage } from "@/apis/language.ts";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
 import Vditor from "vditor";
+import { AuthType } from "@/auth";
+import { useUserStore } from "@/stores/user.ts";
 
 const route = useRoute();
 const router = useRouter();
+const userStore = useUserStore();
 const { globalProperties } = useCurrentInstance();
 
 let viewActive = false;
@@ -115,8 +125,33 @@ const ListColumns = ref([
 ]);
 
 const dataLoading = ref(false);
+const isRejudging = ref(false);
 
 const judgeJobViews = ref<JudgeJobView[]>();
+
+const hasEditAuth = computed(() => {
+  return userStore.hasAuth(AuthType.ManageJudge);
+});
+
+const handleClickRejudge = async () => {
+  if (isRejudging.value) {
+    return;
+  }
+  isRejudging.value = true;
+  try {
+    const res = await PostRejudgeJob(judgeId);
+    if (res.code === 0) {
+      await fetchData(true);
+    } else {
+      ShowErrorTips(globalProperties, res.code);
+    }
+  } catch (err) {
+    console.error(err);
+    ShowErrorTips(globalProperties, GetCommonErrorCode());
+  } finally {
+    isRejudging.value = false;
+  }
+};
 
 const handleGotoProblem = (id: string) => {
   if (!id) {
@@ -256,6 +291,10 @@ onBeforeUnmount(() => {
       {{ task.waHint }}
     </t-collapse-panel>
   </t-collapse>
+
+  <div class="dida-edit-container" v-if="hasEditAuth">
+    <t-button  @click="handleClickRejudge" :loading="isRejudging">重新评测</t-button>
+  </div>
 </template>
 
 <style scoped>
@@ -270,5 +309,10 @@ onBeforeUnmount(() => {
 
 .task-panel {
   margin: 20px;
+}
+
+.dida-edit-container {
+  margin: 10px 20px;
+  text-align: right;
 }
 </style>

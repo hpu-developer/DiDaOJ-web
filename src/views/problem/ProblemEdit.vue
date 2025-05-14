@@ -17,6 +17,7 @@ const webStyleStore = useWebStyleStore();
 const problemId = ref("");
 const problemLoading = ref(false);
 let descriptionEditor = null as Vditor | null;
+const isEditing = ref(false);
 
 const problemData = ref<ProblemView | null>(null);
 
@@ -104,10 +105,12 @@ const handleClickJudge = () => {
   });
 };
 
-const handleClickEdit = async () => {
+const handleClickSave = async () => {
   if (!descriptionEditor) {
     return;
   }
+
+  isEditing.value = true;
 
   problemEditForm.value.tags = [];
   for (let i = 0; i < problemTags.value.length; i++) {
@@ -117,21 +120,28 @@ const handleClickEdit = async () => {
     }
   }
 
-  const res = await PostProblemEdit(
-    problemId.value,
-    problemEditForm.value.title,
-    problemEditForm.value.timeLimit,
-    problemEditForm.value.memoryLimit,
-    problemEditForm.value.source,
-    problemEditForm.value.tags,
-    descriptionEditor.getValue()
-  );
-  if (res.code !== 0) {
-    ShowErrorTips(globalProperties, res.code);
-    return;
-  }
+  try {
+    const res = await PostProblemEdit(
+      problemId.value,
+      problemEditForm.value.title,
+      problemEditForm.value.timeLimit,
+      problemEditForm.value.memoryLimit,
+      problemEditForm.value.source,
+      problemEditForm.value.tags,
+      descriptionEditor.getValue()
+    );
 
-  ShowTextTipsSuccess(globalProperties, "保存成功");
+    isEditing.value = true;
+
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+
+    ShowTextTipsSuccess(globalProperties, "保存成功");
+  } catch (e) {
+    isEditing.value = true;
+  }
 };
 
 const loadProblem = async () => {
@@ -277,7 +287,7 @@ onMounted(async () => {
         <div style="margin: 12px">
           <div class="dida-edit-container">
             <t-space>
-              <t-button @click="handleClickEdit" theme="danger">保存</t-button>
+              <t-button @click="handleClickSave" theme="danger" :loading="isEditing">保存</t-button>
               <t-button @click="handleClickJudge" theme="warning">判题数据</t-button>
               <t-button @click="handleClickView">查看</t-button>
             </t-space>

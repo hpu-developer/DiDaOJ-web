@@ -99,6 +99,7 @@ export function IsJudgeStatusRunning(status: JudgeStatus) {
     case JudgeStatus.Init:
     case JudgeStatus.Rejudge:
     case JudgeStatus.Submitting:
+    case JudgeStatus.Queuing:
     case JudgeStatus.Compiling:
     case JudgeStatus.Running:
       return true;
@@ -212,5 +213,15 @@ export function PostRejudgeRecently() {
   return httpRequest({
     url: "/judge/rejudge/recently",
     method: "post",
+  });
+}
+
+export function PostRejudgeJob(id: number) {
+  return httpRequest({
+    url: "/judge/rejudge",
+    method: "post",
+    data: {
+      id: id,
+    },
   });
 }

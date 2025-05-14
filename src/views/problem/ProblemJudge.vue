@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetJudgeDataDownload, GetProblemJudge, ParseProblem, PostJudgeData } from "@/apis/problem.ts";
-import { ShowErrorTips, ShowTextTipsError, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ProblemView } from "@/types/problem.ts";
 
@@ -98,14 +98,13 @@ const handleClickSave = async () => {
   PostJudgeData(problemId.value, problemJudgeZip)
     .then(async (res) => {
       if (res.code == 0) {
-        globalProperties.$message.success({
-          duration: 3000,
-          content: "申请成功",
-        });
         fileInput.value.value = null;
         problemJudgeZip = null;
         fileName.value = "";
         problemLoading.value = true;
+
+        ShowTextTipsSuccess(globalProperties, "上传成功");
+
         await loadProblem();
       } else {
         ShowErrorTips(globalProperties, res.code);
@@ -204,12 +203,11 @@ onMounted(async () => {
 <template>
   <t-loading :loading="problemLoading">
     <t-row>
-      <t-col :span="8">
+      <t-col :span="7">
         <div style="margin: 10px">
           <div
             id="drop-zone"
             :style="dropZoneStyle"
-            style="width: 1000px; height: 30px"
             @click="triggerFileInput"
             @dragenter.prevent="handleDragEnter"
             @dragover.prevent
@@ -222,7 +220,7 @@ onMounted(async () => {
         </div>
         <t-table :data="fileViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true" />
       </t-col>
-      <t-col :span="4">
+      <t-col :span="5">
         <div style="margin: 12px">
           <div class="dida-edit-container">
             <t-space>
