@@ -52,6 +52,9 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
   if (item.source != undefined) {
     result.source = item.source;
   }
+  if (item.judge_md5 != undefined) {
+    result.judgeMd5 = item.judge_md5;
+  }
 
   return result;
 }
@@ -84,7 +87,15 @@ export function GetProblemList(title: string, tag: string, page: number, pageSiz
   });
 }
 
-export function PostProblemEdit(problemId: string, title: string, timeLimit: number, memoryLimit: number,source:string, tags: string[], description: string) {
+export function PostProblemEdit(
+  problemId: string,
+  title: string,
+  timeLimit: number,
+  memoryLimit: number,
+  source: string,
+  tags: string[],
+  description: string
+) {
   return httpRequest({
     url: "/problem/edit",
     method: "post",
@@ -97,5 +108,27 @@ export function PostProblemEdit(problemId: string, title: string, timeLimit: num
       tags: tags,
       description: description,
     },
+  });
+}
+
+export function GetJudgeDataDownload(id: string, key: string) {
+  return httpRequest({
+    url: "/problem/judge/data/download" + "?id=" + id + "&key=" + key,
+    method: "get",
+  });
+}
+
+export function PostJudgeData(id: string, zip: File) {
+  const formData = new FormData();
+  formData.append("id", id);
+  formData.append("zip", zip);
+  return httpRequest({
+    url: "/problem/judge/data",
+    method: "post",
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+    timeout: 1000 * 60 * 5, // 设置超时时间为5分钟
   });
 }

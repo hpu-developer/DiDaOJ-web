@@ -18,6 +18,7 @@ export interface Problem {
   update_time?: string;
   creator_nickname?: string;
   source?: string;
+  judge_md5?: string;
 }
 
 export interface ProblemView {
@@ -35,4 +36,5 @@ export interface ProblemView {
   updateTime?: string;
   creatorNickname?: string;
   source?: string;
+  judgeMd5?: string;
 }
