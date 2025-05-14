@@ -222,6 +222,8 @@ export function PostRejudgeAll() {
   return httpRequest({
     url: "/judge/rejudge/all",
     method: "post",
+    // 可能用时较长，取消超时限制
+    timeout: 0,
   });
 }
 

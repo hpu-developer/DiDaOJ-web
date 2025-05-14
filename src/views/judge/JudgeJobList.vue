@@ -131,8 +131,10 @@ let currentPage = 1;
 let currentPageSize = 50;
 
 const pagination = ref({
-  defaultPageSize: currentPageSize,
+  current: currentPage,
+  pageSize: currentPageSize,
   defaultCurrent: currentPage,
+  defaultPageSize: currentPageSize,
   total: 0,
   pageSizeOptions: [50, 100],
 });
@@ -280,7 +282,10 @@ onMounted(async () => {
       const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
       currentPage = queryPage;
       currentPageSize = queryPageSize;
-      pagination.value = { ...pagination.value, defaultCurrent: currentPage, defaultPageSize: currentPageSize };
+      if (!pagination.value.pageSizeOptions.includes(currentPageSize)) {
+        currentPageSize = pagination.value.defaultPageSize;
+      }
+      pagination.value = { ...pagination.value, current: currentPage, pageSize: currentPageSize }
       fetchData({ current: currentPage, pageSize: currentPageSize }, true);
     },
     { immediate: true }

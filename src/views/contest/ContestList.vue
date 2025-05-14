@@ -177,7 +177,7 @@ onMounted(async () => {
       const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
       currentPage = queryPage;
       currentPageSize = queryPageSize;
-      pagination.value = { ...pagination.value, defaultCurrent: currentPage, defaultPageSize: currentPageSize };
+      pagination.value = { ...pagination.value, current: currentPage, pageSize: currentPageSize };
       fetchData({ current: currentPage, pageSize: currentPageSize }, true);
     },
     { immediate: true }

@@ -1,8 +1,11 @@
 <script setup lang="tsx">
+import { ref } from "vue";
 import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { PostRejudgeRecently, PostRejudgeAll } from "@/apis/judge.ts";
 
 const { globalProperties } = useCurrentInstance();
+
+const rejudgeAllLoading = ref(false);
 
 const handleRejudgeRecently = async () => {
   const res = await PostRejudgeRecently();
@@ -14,12 +17,17 @@ const handleRejudgeRecently = async () => {
 };
 
 const handleRejudgeAll = async () => {
-  const res = await PostRejudgeAll();
-  if (res.code !== 0) {
-    ShowErrorTips(globalProperties, res.code);
-    return;
+  rejudgeAllLoading.value = true;
+  try {
+    const res = await PostRejudgeAll();
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+    ShowTextTipsInfo(globalProperties, "重判成功");
+  } finally {
+    rejudgeAllLoading.value = false;
   }
-  ShowTextTipsInfo(globalProperties, "重判成功");
 };
 </script>
 
@@ -28,7 +36,7 @@ const handleRejudgeAll = async () => {
     <t-button @click="handleRejudgeRecently">重判</t-button>
   </t-card>
   <t-card class="yj-manage-card" title="重判所有">
-    <t-button @click="handleRejudgeAll" theme="danger">重判</t-button>
+    <t-button @click="handleRejudgeAll" theme="danger" :loading="rejudgeAllLoading">重判</t-button>
   </t-card>
 </template>
 
