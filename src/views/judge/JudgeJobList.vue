@@ -1,12 +1,22 @@
 <script setup lang="tsx">
-import type { WatchStopHandle } from "vue";
+import { nextTick, WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
-import { GetJudgeJobList, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus, GetJudgeStatusOptions, ParseJudgeJob } from "@/apis/judge.ts";
+import { GetKeyByJudgeLanguage, GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
+import {
+  GetJudgeJobList,
+  GetJudgeJob,
+  GetJudgeStatusStr,
+  IsJudgeStatusRunning,
+  JudgeStatus,
+  GetJudgeStatusOptions,
+  ParseJudgeJob,
+} from "@/apis/judge.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
+import Vditor from "vditor";
+import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -15,6 +25,11 @@ const { globalProperties } = useCurrentInstance();
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
 let refreshTimeout: ReturnType<typeof setTimeout>;
+const codeShow = ref(false);
+const codeTitle = ref("");
+const judgeJobCode = ref("");
+const markdownCodeRef = ref<HTMLElement | null>(null);
+const isCodeLoading = ref(false);
 
 const searchForm = ref({
   problemId: "",
@@ -100,7 +115,7 @@ const ListColumns = ref([
     colKey: "code",
     cell: (_: any, data: any) => {
       return (
-        <t-button theme="default" onClick={() => handleGotoJudgeJob(data.row.id)}>
+        <t-button theme="default" onClick={() => handleShowCode(data.row.id)}>
           {data.row.language + " / " + data.row.codeLength}
         </t-button>
       );
@@ -145,6 +160,38 @@ const languageOptions = ref([] as { label: string; value: JudgeLanguage }[]);
 languageOptions.value = GetSubmitLanguages();
 const judgeStatusOptions = ref([] as { label: string; value: JudgeStatus }[]);
 judgeStatusOptions.value = GetJudgeStatusOptions();
+
+const handleShowCode = async (id: string) => {
+  if (!id) {
+    return;
+  }
+  isCodeLoading.value = true;
+  codeShow.value = true;
+  codeTitle.value = id;
+  judgeJobCode.value = ""
+  try {
+    const res = await GetJudgeJob(id);
+    if (res.code === 0) {
+      const response = res.data as JudgeJob;
+      const language = GetKeyByJudgeLanguage(response.language);
+      const codeMarkdown = `\`\`\`${language}\n${response.code}\n\`\`\``;
+
+      const options = {} as IPreviewOptions;
+      judgeJobCode.value = await Vditor.md2html(codeMarkdown, options);
+
+      await nextTick(() => {
+        if (markdownCodeRef.value) {
+          Vditor.highlightRender({ lineNumber: true, enable: true }, markdownCodeRef.value);
+          enhanceCodeCopy(markdownCodeRef.value);
+        }
+      });
+    } else {
+      ShowErrorTips(globalProperties, res.code);
+    }
+  } finally {
+    isCodeLoading.value = false;
+  }
+};
 
 const handleGotoProblem = (id: string) => {
   if (!id) {
@@ -285,7 +332,7 @@ onMounted(async () => {
       if (!pagination.value.pageSizeOptions.includes(currentPageSize)) {
         currentPageSize = pagination.value.defaultPageSize;
       }
-      pagination.value = { ...pagination.value, current: currentPage, pageSize: currentPageSize }
+      pagination.value = { ...pagination.value, current: currentPage, pageSize: currentPageSize };
       fetchData({ current: currentPage, pageSize: currentPageSize }, true);
     },
     { immediate: true }
@@ -339,6 +386,13 @@ onBeforeUnmount(() => {
       @page-change="onPageChange"
     />
   </t-card>
+
+  <t-dialog v-model:visible="codeShow" :header="codeTitle" width="800px"
+            :cancel-btn="null" :close-btn="false" @confirm="codeShow = false">
+    <t-loading :loading="isCodeLoading">
+      <div v-html="judgeJobCode" ref="markdownCodeRef" style="min-height: 100px"></div>
+    </t-loading>
+  </t-dialog>
 </template>
 
 <style scoped>
