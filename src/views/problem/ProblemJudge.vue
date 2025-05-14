@@ -188,9 +188,13 @@ const loadProblem = async () => {
 };
 
 onMounted(async () => {
-  if (route.params.problemId && route.params.problemId.length === 1) {
+  if (Array.isArray(route.params.problemId)) {
     problemId.value = route.params.problemId[0];
   } else {
+    problemId.value = route.params.problemId;
+  }
+  if (!problemId.value) {
+    ShowTextTipsError(globalProperties, "题目不存在");
     await router.push({ name: "problem" });
     return;
   }

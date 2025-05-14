@@ -5,7 +5,7 @@ import router from "@/router";
 import { ChevronDownIcon } from "tdesign-icons-vue-next";
 import Vditor from "vditor";
 import { GetProblem, GetProblemTagList, ParseProblem, PostProblemEdit } from "@/apis/problem.ts";
-import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ProblemTag, ProblemView } from "@/types/problem.ts";
 
@@ -139,8 +139,8 @@ const handleClickSave = async () => {
     }
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
-  } catch (e) {
-    isEditing.value = true;
+  } finally {
+    isEditing.value = false;
   }
 };
 
@@ -148,6 +148,7 @@ const loadProblem = async () => {
   const res = await GetProblem(problemId.value);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
+    console.error("problem get failed", res.code);
     await router.push({ name: "problem" });
     return;
   }
@@ -188,9 +189,13 @@ const loadProblem = async () => {
 };
 
 onMounted(async () => {
-  if (route.params.problemId && route.params.problemId.length === 1) {
+  if (Array.isArray(route.params.problemId)) {
     problemId.value = route.params.problemId[0];
   } else {
+    problemId.value = route.params.problemId;
+  }
+  if (!problemId.value) {
+    ShowTextTipsError(globalProperties, "题目不存在");
     await router.push({ name: "problem" });
     return;
   }
@@ -211,6 +216,7 @@ onMounted(async () => {
         await loadProblem();
       } else {
         ShowErrorTips(globalProperties, res.code);
+        console.error("problem tag get failed", res.code);
         await router.push({ name: "problem" });
       }
     })
@@ -313,6 +319,7 @@ onMounted(async () => {
 .dida-description-editor {
   margin: 20px;
   width: 100%;
+  max-width: calc(100vw - 300px);
   min-height: 500px;
   z-index: 9999 !important;
 }

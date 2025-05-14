@@ -144,6 +144,8 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   result.authorNickname = item.author_nickname;
   result.code = item.code;
   result.compileMessage = item.compile_message;
+  result.taskCurrent = item.task_current;
+  result.taskTotal = item.task_total;
   result.task = [];
   if (item.task) {
     for (let i = 0; i < item.task?.length; i++) {
@@ -212,6 +214,13 @@ export function GetJudgeJobList(problemId: string, username: string, language: J
 export function PostRejudgeRecently() {
   return httpRequest({
     url: "/judge/rejudge/recently",
+    method: "post",
+  });
+}
+
+export function PostRejudgeAll() {
+  return httpRequest({
+    url: "/judge/rejudge/all",
     method: "post",
   });
 }

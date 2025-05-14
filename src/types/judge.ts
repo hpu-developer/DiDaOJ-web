@@ -36,6 +36,8 @@ export interface JudgeJob {
   approve_time: string;
   code?: string;
   compile_message?: string;
+  task_current: number;
+  task_total: number;
   task?: JudgeTask[];
 }
 
@@ -54,5 +56,7 @@ export interface JudgeJobView {
   approveTime: string;
   code?: string;
   compileMessage?: string;
+  taskCurrent: number;
+  taskTotal: number;
   task?: JudgeTaskView[];
 }

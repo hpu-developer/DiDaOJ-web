@@ -2,14 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
-import {
-  GetJudgeJob,
-  GetJudgeStatusStr,
-  IsJudgeStatusRunning,
-  JudgeStatus,
-  ParseJudgeJob,
-  PostRejudgeJob,
-} from "@/apis/judge.ts";
+import { GetJudgeJob, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus, ParseJudgeJob, PostRejudgeJob } from "@/apis/judge.ts";
 import { GetKeyByJudgeLanguage } from "@/apis/language.ts";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
@@ -29,6 +22,13 @@ let judgeId = -1;
 const judgeJob = ref<JudgeJobView | null>(null);
 const judgeJobCode = ref("");
 const markdownCodeRef = ref<HTMLElement | null>(null);
+const jobProgress = ref(0);
+const jobProgressStatus = ref(null as null | string);
+const jobProgressToColor = ref({
+  from: "#5a96ff",
+  to: "#00A870",
+});
+let isInitHighlight = false;
 
 const ListColumns = ref([
   {
@@ -99,16 +99,13 @@ const ListColumns = ref([
     title: "代码",
     colKey: "language",
     cell: (_: any, data: any) => {
-      return (
-        <span>
-          {data.row.language + " / " + data.row.codeLength}
-        </span>
-      );
+      return <span>{data.row.language + " / " + data.row.codeLength}</span>;
     },
   },
   {
     title: "作者",
     colKey: "author",
+    width: 200,
     cell: (_: any, data: any) => {
       return (
         <t-button variant="text" onClick={() => handleGotoUser(data.row.authorUsername)}>
@@ -216,15 +213,43 @@ const fetchData = async (needLoading: boolean) => {
       const result = ParseJudgeJob(response);
       judgeJobViews.value?.push(result);
 
+      jobProgressToColor.value.to = "#00A870";
+
+      if (IsJudgeStatusRunning(response.status)) {
+        jobProgressStatus.value = "active";
+        if (result.taskTotal > 0) {
+          jobProgress.value = (result.taskCurrent / result.taskTotal) * 100;
+          if (result.taskCurrent >= result.taskTotal) {
+            jobProgress.value = 99
+          }
+        } else {
+          jobProgress.value = 0;
+        }
+      } else {
+        jobProgress.value = 100;
+        if (response.status === JudgeStatus.Accept) {
+          jobProgressStatus.value = "success";
+        } else if (response.status === JudgeStatus.PE) {
+          jobProgressToColor.value.to = "#F57C20";
+          jobProgressStatus.value = "warning";
+        } else {
+          jobProgressToColor.value.to = "#F56C6C";
+          jobProgressStatus.value = "error";
+        }
+      }
+
       const options = {} as IPreviewOptions;
       if (response.code) {
         const language = GetKeyByJudgeLanguage(response.language);
         const codeMarkdown = `\`\`\`${language}\n${response.code}\n\`\`\``;
         judgeJobCode.value = await Vditor.md2html(codeMarkdown, options);
+
         await nextTick(() => {
           if (markdownCodeRef.value) {
-            Vditor.highlightRender({ lineNumber: true, enable: true }, markdownCodeRef.value);
-
+            if (!isInitHighlight) {
+              isInitHighlight = true;
+              Vditor.highlightRender({ lineNumber: true, enable: true }, markdownCodeRef.value);
+            }
             enhanceCodeCopy(markdownCodeRef.value);
           }
         });
@@ -277,6 +302,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <t-progress :color="jobProgressToColor" :status="jobProgressStatus" class="dida-job-progress" :percentage="jobProgress" />
+
   <t-card style="margin: 10px">
     <t-table :data="judgeJobViews" :columns="ListColumns" row-key="id" vertical-align="top" :hover="true" :loading="dataLoading" />
   </t-card>
@@ -293,7 +320,7 @@ onBeforeUnmount(() => {
   </t-collapse>
 
   <div class="dida-edit-container" v-if="hasEditAuth">
-    <t-button  @click="handleClickRejudge" :loading="isRejudging">重新评测</t-button>
+    <t-button @click="handleClickRejudge" :loading="isRejudging">重新评测</t-button>
   </div>
 </template>
 
@@ -314,5 +341,9 @@ onBeforeUnmount(() => {
 .dida-edit-container {
   margin: 10px 20px;
   text-align: right;
+}
+
+.dida-job-progress {
+  margin: 20px;
 }
 </style>
