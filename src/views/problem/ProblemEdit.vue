@@ -138,6 +138,10 @@ const handleClickSave = async () => {
       return;
     }
 
+    if (res.data != undefined) {
+      problemData.value.updateTime = new Date(res.data).toLocaleString();
+    }
+
     ShowTextTipsSuccess(globalProperties, "保存成功");
   } finally {
     isEditing.value = false;

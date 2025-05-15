@@ -38,3 +38,9 @@ export interface ProblemView {
   source?: string;
   judgeMd5?: string;
 }
+
+export interface ProblemJudgeData {
+  key: string;
+  size : number;
+  last_modified: string;
+}

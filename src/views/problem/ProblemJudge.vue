@@ -5,7 +5,7 @@ import router from "@/router";
 import { GetJudgeDataDownload, GetProblemJudge, ParseProblem, PostJudgeData } from "@/apis/problem.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
-import type { ProblemView } from "@/types/problem.ts";
+import { ProblemJudgeData, ProblemView } from "@/types/problem.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -31,8 +31,25 @@ const listColumns = ref([
     colKey: "file",
   },
   {
+    title: "大小",
+    colKey: "size",
+    width: 150,
+    cell: (_: any, data: any) => {
+      return data.row.size.toFixed(0) + " B";
+    },
+  },
+  {
+    title: "最后修改时间",
+    colKey: "lastModified",
+    width: 180,
+    cell: (_: any, data: any) => {
+      return new Date(data.row.lastModified).toLocaleString();
+    },
+  },
+  {
     title: "操作",
     colKey: "action",
+    width: 100,
     cell: (_: any, data: any) => {
       return <t-button onClick={() => handleClickDownloadFile(data.row.file)}>下载</t-button>;
     },
@@ -175,9 +192,11 @@ const loadProblem = async () => {
 
   fileViews.value = [];
   if (res.data.judges) {
-    res.data.judges.forEach((judge: any) => {
+    res.data.judges.forEach((judge: ProblemJudgeData) => {
       fileViews.value.push({
-        file: judge,
+        file: judge.key,
+        size: judge.size,
+        lastModified: judge.last_modified,
       });
     });
   } else {
