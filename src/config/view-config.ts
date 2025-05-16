@@ -16,6 +16,9 @@ import JudgeJobDetail from "@/views/judge/JudgeJobDetail.vue";
 import ContestList from "@/views/contest/ContestList.vue";
 import ContestDetail from "@/views/contest/ContestDetail.vue";
 
+import DiscussList from "@/views/discuss/DiscussList.vue";
+import DiscussDetail from "@/views/discuss/DiscussDetail.vue";
+
 import ManageJudge from "@/views/manage/ManageJudge.vue";
 import ProblemEdit from "@/views/problem/ProblemEdit.vue";
 import ProblemJudge from "@/views/problem/ProblemJudge.vue";
@@ -140,6 +143,25 @@ const viewsConfig = [
     title: "比赛讨论",
     icon: "cpu",
     component: ContestList,
+  },
+
+  {
+    name: "discuss-list",
+    tab: "discuss",
+    sidebar: "discuss-list",
+    path: "",
+    title: "讨论列表",
+    icon: "cpu",
+    component: DiscussList,
+  },
+  {
+    name: "discuss-detail",
+    tab: "discuss",
+    sidebar: "discuss-list",
+    path: ":discussId+",
+    title: "讨论详情",
+    icon: "cpu",
+    component: DiscussDetail,
   },
 
   {

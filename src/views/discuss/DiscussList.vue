@@ -3,8 +3,8 @@ import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetProblemList, GetProblemTagList, ParseProblem, ProblemAttemptStatus } from "@/apis/problem.ts";
-import { Problem, ProblemTag, ProblemView } from "@/types/problem.ts";
+import { GetDiscussList, ParseDiscuss, PostCreateDiscuss } from "@/apis/discuss.ts";
+import { Discuss, DiscussCreateRequest, DiscussView } from "@/types/discuss.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -12,19 +12,17 @@ const { globalProperties } = useCurrentInstance();
 
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
-
-const showMoreTags = ref(false);
-const tagsMap = {} as { [key: number]: ProblemTag };
-let problemAttemptStatus = {} as { [key: string]: ProblemAttemptStatus };
+const modalShow = ref(false);
+const confirmLoading = ref(false);
 
 const ListColumns = ref([
   {
     title: "ID",
     colKey: "id",
+    width: "100",
     cell: (_: any, data: any) => {
-      let theme = getProblemIdTheme(data.row.id);
       return (
-        <t-button variant="dashed" theme={theme} onClick={() => handleGotoProblem(data.row.id)}>
+        <t-button variant="text" onClick={() => handleGotoDiscuss(data.row.id)}>
           {data.row.id}
         </t-button>
       );
@@ -35,39 +33,26 @@ const ListColumns = ref([
     colKey: "title",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoProblem(data.row.id)}>
+        <t-button variant="text" onClick={() => handleGotoDiscuss(data.row.id)}>
           {data.row.title}
         </t-button>
       );
     },
   },
   {
-    title: "标签",
-    colKey: "tags",
-    cell: (_: any, data: any) => {
-      const tags = data.row.tags;
-      if (!tags || tags.length === 0) {
-        return "";
-      }
-      let tagButtons = [];
-      for (let i = 0; i < tags.length; i++) {
-        const tag = tags[i];
-        tagButtons.push(
-          <t-button key={i} theme="default" variant="outline">
-            {tag.name}
-          </t-button>
-        );
-      }
-      return <t-space>{tagButtons}</t-space>;
-    },
+    title: "创建人",
+    colKey: "authorNickname",
+    width: "200",
   },
   {
-    title: "正确",
-    colKey: "accept",
+    title: "创建时间",
+    colKey: "insertTime",
+    width: "180",
   },
   {
-    title: "提交",
-    colKey: "attempt",
+    title: "更新时间",
+    colKey: "updateTime",
+    width: "180",
   },
 ]);
 
@@ -83,64 +68,32 @@ const pagination = ref({
   pageSizeOptions: [50, 100],
 });
 
-const problemViews = ref<ProblemView[]>();
-const problemTags = ref<ProblemTag[]>();
+const discussViews = ref<DiscussView[]>();
 
-const formItem = ref({
+const discussSearchForm = ref({
   title: "",
-  tag: "",
+  username: "",
 });
 
-const handleGotoProblem = (id: string) => {
+const discussCreateForm = ref<DiscussCreateRequest>({
+  title: "",
+  description: "",
+  open_time: [],
+});
+
+const handleGotoDiscuss = (id: string) => {
   if (!id) {
     return;
   }
-  router.push({ path: "/problem/" + id });
+  router.push({ path: "/discuss/" + id });
 };
 
-const getProblemIdTheme = (id: string) => {
-  if (!id) {
-    return "default";
-  }
-  if (!problemAttemptStatus) {
-    return "default";
-  }
-  const status = problemAttemptStatus[id];
-  if (!status) {
-    return "default";
-  }
-  switch (status) {
-    case ProblemAttemptStatus.Accept:
-      return "success";
-    case ProblemAttemptStatus.Attempt:
-      return "warning";
-    default:
-      return "default";
-  }
-};
-
-const handleClickSearch = async () => {
-  // 更新 URL 查询参数
+const handleSearchDiscuss = async () => {
   await router.push({
     query: {
       ...route.query,
-      title: formItem.value.title,
-      tag: formItem.value.tag,
-      page: 1,
-      page_size: pagination.value.defaultPageSize,
-    },
-  });
-};
-
-const handleClickTag = (tag: ProblemTag) => {
-  if (!tag) {
-    return;
-  }
-  router.push({
-    query: {
-      ...route.query,
-      title: "",
-      tag: tag.name,
+      title: discussSearchForm.value.title,
+      username: discussSearchForm.value.username,
       page: 1,
       page_size: pagination.value.defaultPageSize,
     },
@@ -153,22 +106,16 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   }
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetProblemList(formItem.value.title, formItem.value.tag, current, pageSize);
-    problemViews.value = [];
+    const res = await GetDiscussList(current, pageSize);
+    discussViews.value = [];
     if (res.code === 0) {
-      const responseList = res.data.list as Problem[];
-      if (!responseList || responseList.length <= 0) {
-        pagination.value = { ...pagination.value, total: 0 };
-        problemAttemptStatus = null;
-        ShowTextTipsInfo(globalProperties, "未找到记录");
-        return;
+      const responseList = res.data.list as Discuss[];
+      for (let i = 0; i < responseList.length; i++) {
+        const item = responseList[i];
+        const result = await ParseDiscuss(item);
+        discussViews.value?.push(result);
       }
-      responseList.forEach((item) => {
-        const result = ParseProblem(item, tagsMap);
-        problemViews.value?.push(result);
-      });
       pagination.value = { ...pagination.value, total: res.data.total_count };
-      problemAttemptStatus = res.data.problem_attempt_status;
     } else {
       if (needLoading) {
         ShowErrorTips(globalProperties, res.code);
@@ -193,45 +140,48 @@ const onPageChange = async (pageInfo: { current: number; pageSize: number }) => 
   });
 };
 
+const handleCreateDiscuss = () => {
+  modalShow.value = true;
+};
+
+const handleConfirmCreate = async () => {
+  confirmLoading.value = true;
+
+  console.log("discussCreateForm", discussCreateForm.value);
+
+  PostCreateDiscuss(discussCreateForm.value)
+    .then((res) => {
+      if (res.code === 0) {
+        ShowTextTipsInfo(globalProperties, "创建比赛成功");
+        modalShow.value = false;
+        router.push({ path: "/discuss/" + res.data.id });
+      } else {
+        ShowErrorTips(globalProperties, res.code);
+      }
+    })
+    .finally(() => {
+      confirmLoading.value = false;
+    });
+};
+
 // 初始化分页信息
 onMounted(async () => {
   viewActive = true;
 
-  dataLoading.value = true
-
-  problemTags.value = [];
-  GetProblemTagList(-1)
-    .then((res) => {
-      if (res.code === 0) {
-        problemTags.value = res.data.list;
-        showMoreTags.value = res.data.total_count > res.data.list.length;
-        for (let i = 0; i < res.data.list.length; i++) {
-          const tag = res.data.list[i] as ProblemTag;
-          tagsMap[tag.id] = tag;
-        }
-
-        watchHandle = watch(
-          () => route.query,
-          (newQuery) => {
-            formItem.value.title = (newQuery.title as string) || "";
-            formItem.value.tag = (newQuery.tag as string) || "";
-            const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
-            const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
-            currentPage = queryPage;
-            currentPageSize = queryPageSize;
-            pagination.value = { ...pagination.value, current: currentPage, pageSize: currentPageSize };
-            fetchData({ current: currentPage, pageSize: currentPageSize }, true);
-          },
-          { immediate: true }
-        );
-      } else {
-        showMoreTags.value = true;
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      showMoreTags.value = true;
-    });
+  watchHandle = watch(
+    () => route.query,
+    (newQuery) => {
+      discussSearchForm.value.title = (newQuery.title as string) || "";
+      discussSearchForm.value.username = (newQuery.username as string) || "";
+      const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
+      const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
+      currentPage = queryPage;
+      currentPageSize = queryPageSize;
+      pagination.value = { ...pagination.value, current: currentPage, pageSize: currentPageSize };
+      fetchData({ current: currentPage, pageSize: currentPageSize }, true);
+    },
+    { immediate: true }
+  );
 });
 
 onBeforeUnmount(() => {
@@ -248,7 +198,7 @@ onBeforeUnmount(() => {
     <t-col :span="9">
       <t-card style="margin: 10px">
         <t-table
-          :data="problemViews"
+          :data="discussViews"
           :columns="ListColumns"
           row-key="id"
           vertical-align="top"
@@ -262,43 +212,37 @@ onBeforeUnmount(() => {
     <t-col :span="3">
       <div style="margin: 10px">
         <t-card class="sh-card">
-          <t-form :model="formItem">
+          <t-form :model="discussSearchForm">
             <t-form-item label="标题">
-              <t-input v-model="formItem.title" placeholder="暂不支持模糊查询"></t-input>
+              <t-input v-model="discussSearchForm.title" placeholder="暂不支持模糊查询"></t-input>
             </t-form-item>
-            <t-form-item label="标签">
-              <t-input v-model="formItem.tag" placeholder="暂不支持模糊查询"></t-input>
+            <t-form-item label="创建人">
+              <t-input v-model="discussSearchForm.username" placeholder="仅支持输入完整用户名"></t-input>
             </t-form-item>
             <t-form-item>
-              <t-button theme="primary" @click="handleClickSearch">搜索</t-button>
+              <t-button theme="primary" @click="handleSearchDiscuss">提交</t-button>
             </t-form-item>
           </t-form>
         </t-card>
-        <t-card class="sh-card sh-background-black">
-          <t-button
-            v-for="tag in problemTags"
-            class="sh-tag-button"
-            theme="default"
-            variant="outline"
-            :ghost="true"
-            @click="() => handleClickTag(tag)"
-          >
-            {{ tag.name }}
-          </t-button>
-          <t-button
-            v-if="showMoreTags"
-            class="sh-tag-button"
-            theme="default"
-            variant="outline"
-            :ghost="true"
-            @click="() => $router.push('/problem/tags')"
-          >
-            ...
-          </t-button>
+        <t-card class="sh-card">
+          <t-space>
+            <t-button @click="handleCreateDiscuss">创建</t-button>
+          </t-space>
         </t-card>
       </div>
     </t-col>
   </t-row>
+
+  <t-dialog v-model:visible="modalShow" header="创建比赛" @confirm="handleConfirmCreate" :confirm-loading="confirmLoading">
+    <t-form :label-width="80" :model="discussCreateForm" @submit.prevent>
+      <t-form-item label="标题">
+        <t-input v-model="discussCreateForm.title" placeholder="请输入标题"></t-input>
+      </t-form-item>
+      <t-form-item label="开启时间">
+        <t-date-range-picker enable-time-picker allow-input clearable v-model="discussCreateForm.open_time" />
+      </t-form-item>
+    </t-form>
+  </t-dialog>
 </template>
 
 <style scoped>

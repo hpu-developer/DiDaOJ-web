@@ -64,7 +64,7 @@ onMounted(async () => {
   problemViews.value = contestData.value.problems;
 
   await nextTick(() => {
-    const contestDescriptions = document.querySelectorAll(".contest-description");
+    const contestDescriptions = document.querySelectorAll(".dida-content-description");
     if (contestDescriptions && contestDescriptions.length > 0) {
       contestDescriptions.forEach((description: any) => {
         Vditor.mathRender(description);
