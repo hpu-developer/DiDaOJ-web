@@ -75,8 +75,8 @@ onMounted(() => {
       </t-form-item>
     </t-form>
     <div class="dida-login-footer">
-      <t-link>忘记密码</t-link>
-      <t-link>注册账户</t-link>
+      <t-link @click="() => { globalProperties.$router.push({ name: 'login-forget' }) }">忘记密码</t-link>
+      <t-link @click="() => { globalProperties.$router.push({ name: 'register' }) }">注册账户</t-link>
     </div>
   </t-card>
 </template>

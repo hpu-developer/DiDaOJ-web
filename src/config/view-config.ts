@@ -4,6 +4,8 @@ import type { RouteRecordRaw } from "vue-router";
 import type { Tab, MenuGroup, MenuList, View } from "@/types/webStyle";
 import { IsViewGroup, ViewList } from "@/types/webStyle";
 
+import { AuthType } from "@/auth";
+
 import ProblemList from "@/views/problem/ProblemList.vue";
 import ProblemDetail from "@/views/problem/ProblemDetail.vue";
 import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
@@ -17,7 +19,6 @@ import ContestDetail from "@/views/contest/ContestDetail.vue";
 import ManageJudge from "@/views/manage/ManageJudge.vue";
 import ProblemEdit from "@/views/problem/ProblemEdit.vue";
 import ProblemJudge from "@/views/problem/ProblemJudge.vue";
-import { AuthType } from "@/auth";
 
 const viewsConfig = [
   {
@@ -173,6 +174,7 @@ const viewsConfig = [
     auths: ["i-manage-judge"],
     component: ManageJudge,
   },
+
 ] as ViewList;
 
 export const parseTabMenu = (list: MenuList, toSidebar: string, tabName: string, view: View) => {
