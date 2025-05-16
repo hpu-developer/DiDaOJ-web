@@ -189,6 +189,6 @@ onMounted(() => {
 }
 
 .sh-main-content {
-  min-width: 1100px;
+  min-width: 1240px;
 }
 </style>
