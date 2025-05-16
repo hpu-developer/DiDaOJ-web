@@ -305,6 +305,7 @@ onMounted(async () => {
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
+            <t-descriptions-item label="判题方式">{{ problemData?.judgeType }}</t-descriptions-item>
             <t-descriptions-item label="上传用户">{{ problemData?.creatorNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
