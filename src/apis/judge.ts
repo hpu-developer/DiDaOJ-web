@@ -218,6 +218,16 @@ export function PostRejudgeRecently() {
   });
 }
 
+export function PostRejudgeProblem(problemId: string) {
+  return httpRequest({
+    url: "/judge/rejudge/problem",
+    method: "post",
+    data: {
+     id: problemId,
+    },
+  });
+}
+
 export function PostRejudgeAll() {
   return httpRequest({
     url: "/judge/rejudge/all",
