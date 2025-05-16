@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { PostRejudgeRecently, PostRejudgeProblem, PostRejudgeAll } from "@/apis/judge.ts";
+import router from "@/router";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -10,12 +11,18 @@ const rejudgeProblemLoading = ref(false);
 const rejudgeAllLoading = ref(false);
 
 const handleRejudgeRecently = async () => {
-  const res = await PostRejudgeRecently();
-  if (res.code !== 0) {
-    ShowErrorTips(globalProperties, res.code);
-    return;
+  try {
+    const res = await PostRejudgeRecently();
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+    ShowTextTipsInfo(globalProperties, "重判成功");
+    await router.push({ name: "judge-list" });
+  } catch (e) {
+    console.error(e);
+    ShowErrorTips(globalProperties, "重判失败");
   }
-  ShowTextTipsInfo(globalProperties, "重判成功");
 };
 
 const handleRejudgeProblem = async () => {
@@ -31,6 +38,15 @@ const handleRejudgeProblem = async () => {
       return;
     }
     ShowTextTipsInfo(globalProperties, "重判成功");
+    await router.push({
+      name: "judge-list",
+      query: {
+        problem_id: rejudgeProblemId.value,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    ShowErrorTips(globalProperties, "重判失败");
   } finally {
     rejudgeProblemLoading.value = false;
   }
@@ -45,6 +61,10 @@ const handleRejudgeAll = async () => {
       return;
     }
     ShowTextTipsInfo(globalProperties, "重判成功");
+    await router.push({ name: "judge-list" });
+  } catch (e) {
+    console.error(e);
+    ShowErrorTips(globalProperties, "重判失败");
   } finally {
     rejudgeAllLoading.value = false;
   }
