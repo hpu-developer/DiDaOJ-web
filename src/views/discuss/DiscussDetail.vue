@@ -29,6 +29,7 @@ const discussLoading = ref(false);
 const discussData = ref<DiscussView | null>(null);
 
 const dataLoading = ref(false);
+let descriptionEditor = null as Vditor | null;
 
 let currentPage = 1;
 let currentPageSize = 20;
@@ -72,27 +73,11 @@ const handleClickEdit = () => {
   });
 };
 
-const handleClickJudgeStatus = () => {
-  router.push({
-    name: "judge-list",
-    query: {
-      discuss_id: discussId.value,
-    },
-  });
-};
-
 const renderCommentTotalContent = () => {
   return <div class="t-pagination__total">{`共 ${pagination.value.total} 条回复`}</div>;
 };
 
-const handleClickRecommend = () => {
-  router.push({
-    name: "discuss-recommend",
-    params: {
-      discussId: discussId.value,
-    },
-  });
-};
+const handleSaveReply = () => {};
 
 const fetchCommentList = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
   if (needLoading) {
@@ -211,6 +196,11 @@ onMounted(async () => {
     },
     { immediate: true }
   );
+
+  const codeEditOptions = {
+    after: () => {},
+  } as IOptions;
+  descriptionEditor = new Vditor("commentEditRef", codeEditOptions);
 });
 
 onBeforeUnmount(() => {
@@ -226,7 +216,26 @@ onBeforeUnmount(() => {
   <t-loading :loading="discussLoading">
     <t-row class="dida-main-content">
       <t-col :span="8">
-        <t-card style="margin: 10px" :header="discussData?.title">
+        <div style="margin: 20px" v-if="discussData?.problemTitle || discussData?.contestTitle">
+          <t-breadcrumb max-item-width="300">
+            <template v-if="discussData?.contestTitle">
+              <t-breadcrumb-item :to="{ name: 'contest-detail', params: { contestId: discussData?.contestId } }">
+                {{ discussData?.contestTitle }}
+              </t-breadcrumb-item>
+              <t-breadcrumb-item :to="{ name: 'contest-problem-detail', params: { problemId: discussData?.contestProblemSort } }">
+                {{ discussData?.problemTitle }}
+              </t-breadcrumb-item>
+            </template>
+            <template v-else>
+              <t-breadcrumb-item :to="{ name: 'discuss-list-problem' }"> 问题讨论</t-breadcrumb-item>
+              <t-breadcrumb-item :to="{ name: 'problem-detail', params: { problemId: discussData?.problemId } }">
+                {{ discussData?.problemTitle }}
+              </t-breadcrumb-item>
+            </template>
+          </t-breadcrumb>
+        </div>
+
+        <t-card style="margin: 10px" :header="discussData?.title" :header-bordered="true">
           <div v-html="content" class="dida-discuss-content"></div>
         </t-card>
         <t-card v-for="(comment, index) in discussCommentList" :key="index" style="margin: 10px" header-bordered>
@@ -249,6 +258,15 @@ onBeforeUnmount(() => {
             @change="onPageChange"
           />
         </div>
+
+        <div style="margin: 10px">
+          <div id="commentEditRef" class="dida-comment-editor"></div>
+          <div style="margin: 10px; text-align: right">
+            <t-space>
+              <t-button theme="primary" @click="handleSaveReply">提交</t-button>
+            </t-space>
+          </div>
+        </div>
       </t-col>
       <t-col :span="4">
         <div style="margin: 12px">
@@ -268,12 +286,6 @@ onBeforeUnmount(() => {
               </t-space>
             </t-descriptions-item>
           </t-descriptions>
-
-          <div class="dida-operation-container">
-            <t-space>
-              <t-button @click="handleClickRecommend">临时按钮</t-button>
-            </t-space>
-          </div>
         </div>
       </t-col>
     </t-row>
@@ -290,18 +302,8 @@ onBeforeUnmount(() => {
   text-align: right;
 }
 
-.dida-operation-container {
-  margin: 10px 0 20px;
-  text-align: right;
-}
-
-.dida-code-submit-div {
-  margin-top: 10px;
-}
-
-.dida-code-editor {
-  margin-top: 10px;
-  width: 100%;
-  min-height: 500px;
+.dida-comment-editor {
+  min-height: 300px;
+  z-index: 9999 !important;
 }
 </style>

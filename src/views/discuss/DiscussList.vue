@@ -15,7 +15,9 @@ let watchHandle: WatchStopHandle | null = null;
 const modalShow = ref(false);
 const confirmLoading = ref(false);
 
-const ListColumns = ref([
+let contestId = 0;
+
+const listColumns = ref([
   {
     title: "ID",
     colKey: "id",
@@ -106,14 +108,16 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   }
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetDiscussList(current, pageSize);
+    const res = await GetDiscussList(contestId, current, pageSize);
     discussViews.value = [];
     if (res.code === 0) {
-      const responseList = res.data.list as Discuss[];
-      for (let i = 0; i < responseList.length; i++) {
-        const item = responseList[i];
-        const result = await ParseDiscuss(item);
-        discussViews.value?.push(result);
+      if (res.data.list) {
+        const responseList = res.data.list as Discuss[];
+        for (let i = 0; i < responseList.length; i++) {
+          const item = responseList[i];
+          const result = await ParseDiscuss(item);
+          discussViews.value?.push(result);
+        }
       }
       pagination.value = { ...pagination.value, total: res.data.total_count };
     } else {
@@ -171,6 +175,12 @@ onMounted(async () => {
   watchHandle = watch(
     () => route.query,
     (newQuery) => {
+      if (Array.isArray(route.params.contestId)) {
+        contestId = route.params.contestId[0];
+      } else {
+        contestId = route.params.contestId;
+      }
+
       discussSearchForm.value.title = (newQuery.title as string) || "";
       discussSearchForm.value.username = (newQuery.username as string) || "";
       const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
@@ -199,7 +209,7 @@ onBeforeUnmount(() => {
       <t-card style="margin: 10px">
         <t-table
           :data="discussViews"
-          :columns="ListColumns"
+          :columns="listColumns"
           row-key="id"
           vertical-align="top"
           :hover="true"

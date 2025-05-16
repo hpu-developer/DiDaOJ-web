@@ -1,7 +1,7 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import type { Discuss, DiscussView, DiscussCreateRequest } from "@/types/discuss";
+import type { Discuss, DiscussView, DiscussCreateRequest, DiscussComment, DiscussCommentView } from "@/types/discuss";
 import Vditor from "vditor";
 
 export function ParseDiscuss(item: Discuss): DiscussView {
@@ -21,11 +21,18 @@ export function ParseDiscuss(item: Discuss): DiscussView {
   if (item.update_time) {
     result.updateTime = new Date(item.update_time).toLocaleString();
   }
+
+  result.problemId = item.problem_id;
+  result.problemTitle = item.problem_title;
+  result.contestId = item.contest_id;
+  result.contestTitle = item.contest_title;
+  result.contestProblemSort = item.contest_problem_sort;
+
   return result;
 }
 
-export async function ParseDiscussComment(item: Discuss): DiscussView {
-  const result: DiscussView = {} as DiscussView;
+export async function ParseDiscussComment(item: DiscussComment): DiscussCommentView {
+  const result = {} as DiscussCommentView;
   result.id = item.id;
   result.authorId = item.author_id;
   result.authorUsername = item.author_username;
@@ -59,9 +66,9 @@ export function GetDiscuss(discussId: string) {
   });
 }
 
-export function GetDiscussList(page: number, pageSize: number) {
+export function GetDiscussList(contestId: number, page: number, pageSize: number) {
   return httpRequest({
-    url: "/discuss/list" + "?page=" + page + "&page_size=" + pageSize,
+    url: "/discuss/list" + "?contest_id=" + contestId + "&page=" + page + "&page_size=" + pageSize,
     method: "get",
   });
 }

@@ -43,7 +43,7 @@ const tabsConfig: Tab[] = [
     redirect: "contest-list",
   },
   {
-    name: "contest-detail",
+    name: "contest-detail-tab",
     title: "比赛",
     path: "/contest",
     showSidebar: true,

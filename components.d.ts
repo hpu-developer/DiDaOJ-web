@@ -18,6 +18,8 @@ declare module 'vue' {
     TAside: typeof import('tdesign-vue-next')['Aside']
     TAvatar: typeof import('tdesign-vue-next')['Avatar']
     TBackTop: typeof import('tdesign-vue-next')['BackTop']
+    TBreadcrumb: typeof import('tdesign-vue-next')['Breadcrumb']
+    TBreadcrumbItem: typeof import('tdesign-vue-next')['BreadcrumbItem']
     TButton: typeof import('tdesign-vue-next')['Button']
     TCard: typeof import('tdesign-vue-next')['Card']
     TCheckboxGroup: typeof import('tdesign-vue-next')['CheckboxGroup']

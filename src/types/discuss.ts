@@ -13,6 +13,12 @@ export interface Discuss {
   insert_time: string;
   modify_time: string;
   update_time: string;
+
+  problem_id: string;
+  problem_title: string;
+  contest_id: string;
+  contest_title: string;
+  contest_problem_sort: string;
 }
 
 export interface DiscussView {
@@ -25,6 +31,12 @@ export interface DiscussView {
   insertTime: string;
   modifyTime: string;
   updateTime: string;
+
+  problemId: string;
+  problemTitle: string;
+  contestId: string;
+  contestTitle: string;
+  contestProblemSort: string;
 }
 
 export interface DiscussComment {
