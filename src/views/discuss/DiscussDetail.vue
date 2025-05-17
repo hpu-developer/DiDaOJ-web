@@ -12,6 +12,7 @@ import { useWebStyleStore } from "@/stores/webStyle.ts";
 
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
+import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -222,8 +223,8 @@ onBeforeUnmount(() => {
               <t-breadcrumb-item :to="{ name: 'contest-detail', params: { contestId: discussData?.contestId } }">
                 {{ discussData?.contestTitle }}
               </t-breadcrumb-item>
-              <t-breadcrumb-item :to="{ name: 'contest-problem-detail', params: { problemId: discussData?.contestProblemSort } }">
-                {{ discussData?.problemTitle }}
+              <t-breadcrumb-item :to="{ name: 'contest-problem-detail', params: { problemId: discussData?.contestProblemIndex } }">
+                {{ GetContestProblemIndexStr(discussData?.contestProblemIndex)}} - {{ discussData?.problemTitle }}
               </t-breadcrumb-item>
             </template>
             <template v-else>

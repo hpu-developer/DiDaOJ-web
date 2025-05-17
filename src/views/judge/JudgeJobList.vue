@@ -6,12 +6,12 @@ import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance
 import { GetKeyByJudgeLanguage, GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
 import {
   GetJudgeJobList,
-  GetJudgeJob,
   GetJudgeStatusStr,
   IsJudgeStatusRunning,
   JudgeStatus,
   GetJudgeStatusOptions,
   ParseJudgeJob,
+  GetJudgeJobCode,
 } from "@/apis/judge.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
@@ -25,9 +25,10 @@ const { globalProperties } = useCurrentInstance();
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
 let refreshTimeout: ReturnType<typeof setTimeout>;
+
 const codeShow = ref(false);
-const codeTitle = ref("");
-const judgeJobCode = ref("");
+const showJudgeJob = ref<JudgeJobView | null>(null);
+
 const markdownCodeRef = ref<HTMLElement | null>(null);
 const isCodeLoading = ref(false);
 
@@ -115,7 +116,7 @@ const ListColumns = ref([
     colKey: "code",
     cell: (_: any, data: any) => {
       return (
-        <t-button theme="default" onClick={() => handleShowCode(data.row.id)}>
+        <t-button theme="default" onClick={() => handleShowCode(data.row)}>
           {data.row.language + " / " + data.row.codeLength}
         </t-button>
       );
@@ -161,23 +162,21 @@ languageOptions.value = GetSubmitLanguages();
 const judgeStatusOptions = ref([] as { label: string; value: JudgeStatus }[]);
 judgeStatusOptions.value = GetJudgeStatusOptions();
 
-const handleShowCode = async (id: string) => {
-  if (!id) {
-    return;
-  }
+const handleShowCode = async (jobView: JudgeJobView) => {
   isCodeLoading.value = true;
   codeShow.value = true;
-  codeTitle.value = id;
-  judgeJobCode.value = ""
   try {
-    const res = await GetJudgeJob(id);
+    showJudgeJob.value = jobView;
+
+    const res = await GetJudgeJobCode(showJudgeJob.value.id);
     if (res.code === 0) {
-      const response = res.data as JudgeJob;
+      const response = res.data
       const language = GetKeyByJudgeLanguage(response.language);
+
       const codeMarkdown = `\`\`\`${language}\n${response.code}\n\`\`\``;
 
       const options = {} as IPreviewOptions;
-      judgeJobCode.value = await Vditor.md2html(codeMarkdown, options);
+      showJudgeJob.value.code = await Vditor.md2html(codeMarkdown, options);
 
       await nextTick(() => {
         if (markdownCodeRef.value) {
@@ -204,7 +203,12 @@ const handleGotoJudgeJob = (id: string) => {
   if (!id) {
     return;
   }
-  router.push({ path: "/judge/" + id });
+  router.push({
+    name: "judge-detail",
+    params: {
+      judgeId: id,
+    },
+  });
 };
 
 const handleGotoUser = (user: string) => {
@@ -384,13 +388,24 @@ onBeforeUnmount(() => {
       :pagination="pagination"
       :loading="dataLoading"
       @page-change="onPageChange"
+      table-layout="auto"
     />
   </t-card>
 
-  <t-dialog v-model:visible="codeShow" :header="codeTitle" width="800px"
-            :cancel-btn="null" :close-btn="false" @confirm="codeShow = false">
+  <t-dialog v-model:visible="codeShow" width="800px" :cancel-btn="null" :close-btn="false" @confirm="codeShow = false">
+    <template #header>
+      <t-link
+        @click="
+          () => {
+            handleGotoJudgeJob(showJudgeJob?.id);
+          }
+        "
+      >
+        {{ showJudgeJob?.id + " - " + showJudgeJob?.language }}
+      </t-link>
+    </template>
     <t-loading :loading="isCodeLoading">
-      <div v-html="judgeJobCode" ref="markdownCodeRef" style="min-height: 100px"></div>
+      <div v-html="showJudgeJob?.code" ref="markdownCodeRef" style="min-height: 100px"></div>
     </t-loading>
   </t-dialog>
 </template>

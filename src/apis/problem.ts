@@ -59,9 +59,16 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
   return result;
 }
 
-export function GetProblem(problemId: string) {
+export function GetProblem(problemId: string, contestId: number, problemIndex: number) {
+  const params = {} as any;
+  if (problemId) {
+    params.id = problemId;
+  } else {
+    params.contest_id = contestId;
+    params.problem_index = problemIndex;
+  }
   return httpRequest({
-    url: "/problem" + "?id=" + problemId,
+    url: `/problem?${new URLSearchParams(params).toString()}`,
     method: "get",
   });
 }

@@ -7,11 +7,11 @@ export interface ContestDescription {
 }
 
 export interface ContestProblem {
+  index: number;
   id: string;
   title: string;
   accept: number;
   attempt: number;
-  sort: number;
 }
 
 export interface Contest {

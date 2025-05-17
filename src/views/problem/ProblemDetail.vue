@@ -3,7 +3,7 @@ import { ref, computed, onMounted, nextTick } from "vue";
 import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetProblem, ParseProblem } from "@/apis/problem.ts";
+import { GetContestProblem, GetProblem, ParseProblem } from "@/apis/problem.ts";
 import { GetKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
@@ -18,6 +18,7 @@ import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
+import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -26,7 +27,11 @@ const webStyleStore = useWebStyleStore();
 const userStore = useUserStore();
 
 let content = ref("");
-const problemId = ref("");
+
+let problemId = "";
+let contestId = 0;
+let problemIndex = 0;
+
 const markdownRef = ref<HTMLElement | null>(null);
 const problemLoading = ref(false);
 const problemData = ref<ProblemView | null>(null);
@@ -62,40 +67,62 @@ const handleClickEdit = () => {
   router.push({
     name: "manage-problem",
     params: {
-      problemId: problemId.value,
+      problemId: problemId,
     },
   });
 };
 
 const handleClickJudgeStatus = () => {
-  router.push({
-    name: "judge-list",
-    query: {
-      problem_id: problemId.value,
-    },
-  });
+  if (problemId) {
+    router.push({
+      name: "judge-list",
+      query: {
+        problem_id: problemId,
+      },
+    });
+  } else {
+    router.push({
+      name: "contest-judge-list",
+      params: {
+        contestId: contestId,
+        problemIndex: problemIndex,
+      },
+    });
+  }
 };
 
 const handleClickDiscuss = () => {
-  // router.push({
-  //   name: "problem-discuss",
-  //   query: {
-  //     problem_id: problemId.value,
-  //   },
-  // });
+  if (problemId) {
+    router.push({
+      name: "discuss-list-problem",
+      query: {
+        problem_id: problemId,
+      },
+    });
+  } else {
+    router.push({
+      name: "contest-discuss",
+      params: {
+        contestId: contestId,
+      },
+      query: {
+        problem_id: GetContestProblemIndexStr(problemIndex),
+      },
+    });
+  }
 };
 
 const handleClickRecommend = () => {
   router.push({
     name: "problem-recommend",
     params: {
-      problemId: problemId.value,
+      problemId: problemId,
     },
   });
 };
 
 const handleSubmitCode = async () => {
-  if (!problemId.value) {
+  if (!problemId) {
     ShowTextTipsError(globalProperties, "问题ID无效");
     return;
   }
@@ -109,7 +136,8 @@ const handleSubmitCode = async () => {
     ShowTextTipsError(globalProperties, "请输入所需提交的代码");
     return;
   }
-  const res = await PostJudgeJob(problemId.value, selectValue, code);
+
+  const res = await PostJudgeJob(problemId, contestId, problemIndex, selectValue, code);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
     return;
@@ -130,19 +158,37 @@ const onSelectLanguageChanged = (value: JudgeLanguage) => {
 
 onMounted(async () => {
   if (Array.isArray(route.params.problemId)) {
-    problemId.value = route.params.problemId[0];
+    problemId = route.params.problemId[0];
   } else {
-    problemId.value = route.params.problemId;
+    problemId = route.params.problemId;
   }
-  if (!problemId.value) {
-    ShowTextTipsError(globalProperties, "题目不存在");
-    await router.push({ name: "problem" });
-    return;
+  if (!problemId) {
+    if (Array.isArray(route.params.contestId)) {
+      contestId = route.params.contestId[0];
+    } else {
+      contestId = route.params.contestId;
+    }
+    if (!contestId) {
+      ShowTextTipsError(globalProperties, "题目不存在");
+      await router.push({ name: "problem" });
+      return;
+    }
+    if (Array.isArray(route.params.problemIndex)) {
+      problemIndex = parseInt(route.params.problemIndex[0]);
+    } else {
+      problemIndex = parseInt(route.params.problemIndex);
+    }
+    if (!problemIndex) {
+      ShowTextTipsError(globalProperties, "题目不存在");
+      await router.push({ name: "problem" });
+      return;
+    }
   }
 
   problemLoading.value = true;
 
-  const res = await GetProblem(problemId.value);
+  let res = await GetProblem(problemId, contestId, problemIndex);
+
   if (res.code !== 0) {
     problemLoading.value = false;
     ShowErrorTips(globalProperties, res.code);
@@ -217,7 +263,7 @@ onMounted(async () => {
             <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
             <t-descriptions-item label="上传用户">{{ problemData?.creatorNickname }}</t-descriptions-item>
             <t-descriptions-item label="题目来源">{{ problemData?.source }}</t-descriptions-item>
-            <t-descriptions-item label="标签">
+            <t-descriptions-item label="标签" v-if="problemId">
               <t-space>
                 <t-button v-for="tag in problemData?.tags" :key="tag.id" variant="dashed" @click="() => handleClickTag(tag)">
                   {{ tag.name }}
@@ -230,7 +276,7 @@ onMounted(async () => {
             <t-space>
               <t-button @click="handleClickJudgeStatus">提交记录</t-button>
               <t-button @click="handleClickDiscuss">题目讨论</t-button>
-              <t-button @click="handleClickRecommend">题目推荐</t-button>
+              <t-button @click="handleClickRecommend" v-if="problemId">题目推荐</t-button>
             </t-space>
           </div>
 

@@ -30,7 +30,7 @@ const viewsConfig = [
     sidebar: "problem-list",
     path: "",
     title: "问题列表",
-    icon: "cpu",
+    icon: "list",
     component: ProblemList,
   },
   {
@@ -39,7 +39,7 @@ const viewsConfig = [
     sidebar: "problem-list",
     path: ":problemId+",
     title: "问题详情",
-    icon: "cpu",
+    icon: "list",
     component: ProblemDetail,
   },
   {
@@ -58,7 +58,7 @@ const viewsConfig = [
     sidebar: "judge-list",
     path: "",
     title: "评测列表",
-    icon: "cpu",
+    icon: "list",
     component: JudgeJobList,
   },
   {
@@ -77,7 +77,7 @@ const viewsConfig = [
     sidebar: "contest-list",
     path: "",
     title: "比赛列表",
-    icon: "cpu",
+    icon: "list",
     component: ContestList,
   },
   {
@@ -86,7 +86,7 @@ const viewsConfig = [
     sidebar: "contest-recent",
     path: "recent",
     title: "近期比赛",
-    icon: "cpu",
+    icon: "list",
     component: ContestList,
   },
 
@@ -100,13 +100,13 @@ const viewsConfig = [
     component: ContestDetail,
   },
   {
-    name: "contest-problem",
+    name: "contest-problem-detail",
     tab: "contest-detail-tab",
-    sidebar: "contest-problem",
-    path: ":contestId+/problem",
-    title: "问题列表",
+    sidebar: "contest-problem-detail",
+    path: ":contestId+/problem/:problemIndex+",
+    title: "问题详情",
     icon: "cpu",
-    component: ContestList,
+    component: ProblemDetail,
   },
   {
     name: "contest-judge",
@@ -114,7 +114,7 @@ const viewsConfig = [
     sidebar: "contest-judge",
     path: ":contestId+/judge",
     title: "评测列表",
-    icon: "cpu",
+    icon: "list",
     component: ContestList,
   },
   {
@@ -123,7 +123,7 @@ const viewsConfig = [
     sidebar: "contest-rank",
     path: ":contestId+/rank",
     title: "比赛排名",
-    icon: "cpu",
+    icon: "list",
     component: ContestList,
   },
   {
@@ -132,7 +132,7 @@ const viewsConfig = [
     sidebar: "contest-statistics",
     path: ":contestId+/statistics",
     title: "结果统计",
-    icon: "cpu",
+    icon: "list",
     component: ContestList,
   },
   {
@@ -141,8 +141,17 @@ const viewsConfig = [
     sidebar: "contest-discuss",
     path: ":contestId+/discuss",
     title: "比赛讨论",
-    icon: "cpu",
+    icon: "list",
     component: DiscussList,
+  },
+  {
+    name: "contest-discuss-detail",
+    tab: "contest-detail-tab",
+    sidebar: "contest-discuss",
+    path: ":contestId+/discuss/:discussId+",
+    title: "讨论详情",
+    icon: "list",
+    component: DiscussDetail,
   },
 
   {
@@ -151,7 +160,7 @@ const viewsConfig = [
     sidebar: "discuss-list",
     path: "",
     title: "讨论列表",
-    icon: "cpu",
+    icon: "list",
     component: DiscussList,
   },
   {
@@ -160,7 +169,7 @@ const viewsConfig = [
     sidebar: "discuss-list-problem",
     path: "problem",
     title: "问题讨论",
-    icon: "cpu",
+    icon: "list",
     component: DiscussList,
   },
   {
@@ -169,7 +178,7 @@ const viewsConfig = [
     sidebar: "discuss-list-judge",
     path: "judge",
     title: "评测讨论",
-    icon: "cpu",
+    icon: "list",
     component: DiscussList,
   },
   {
@@ -178,7 +187,7 @@ const viewsConfig = [
     sidebar: "discuss-list",
     path: ":discussId+",
     title: "讨论详情",
-    icon: "cpu",
+    icon: "list",
     component: DiscussDetail,
   },
 
@@ -189,7 +198,7 @@ const viewsConfig = [
     disableSidebar: true,
     path: "problem/:problemId+",
     title: "问题编辑",
-    icon: "cpu",
+    icon: "list",
     component: ProblemEdit,
     auths: [AuthType.ManageProblem],
   },
@@ -200,7 +209,7 @@ const viewsConfig = [
     disableSidebar: true,
     path: "problem/:problemId+/judge",
     title: "评测数据",
-    icon: "cpu",
+    icon: "list",
     component: ProblemJudge,
     auths: [AuthType.ManageProblem],
   },
@@ -210,7 +219,7 @@ const viewsConfig = [
     path: "judge",
     sidebar: "manage-judge",
     title: "评测管理",
-    icon: "cpu",
+    icon: "list",
     auths: ["i-manage-judge"],
     component: ManageJudge,
   },

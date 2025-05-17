@@ -177,12 +177,14 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   return result;
 }
 
-export function PostJudgeJob(problemId: string, language: JudgeLanguage, code: string) {
+export function PostJudgeJob(problemId: string, contestId: number, problemIndex: number, language: JudgeLanguage, code: string) {
   return httpRequest({
     url: "/judge/approve",
     method: "post",
     data: {
       problem_id: problemId,
+      contest_id: contestId,
+      problem_index: problemIndex,
       language: language,
       code: code,
     },
@@ -192,6 +194,13 @@ export function PostJudgeJob(problemId: string, language: JudgeLanguage, code: s
 export function GetJudgeJob(judgeId: number) {
   return httpRequest({
     url: "/judge" + "?id=" + judgeId,
+    method: "get",
+  });
+}
+
+export function GetJudgeJobCode(judgeId: number) {
+  return httpRequest({
+    url: "/judge/code" + "?id=" + judgeId,
     method: "get",
   });
 }
@@ -223,7 +232,7 @@ export function PostRejudgeProblem(problemId: string) {
     url: "/judge/rejudge/problem",
     method: "post",
     data: {
-     id: problemId,
+      id: problemId,
     },
   });
 }

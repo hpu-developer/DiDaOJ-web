@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { GetDiscussList, ParseDiscuss, PostCreateDiscuss } from "@/apis/discuss.ts";
 import { Discuss, DiscussCreateRequest, DiscussView } from "@/types/discuss.ts";
+import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -17,7 +18,9 @@ const confirmLoading = ref(false);
 
 let contestId = 0;
 
-const listColumns = ref([
+const listColumns = ref([]);
+
+const listColumns1 = [
   {
     title: "ID",
     colKey: "id",
@@ -30,6 +33,9 @@ const listColumns = ref([
       );
     },
   },
+];
+
+const listColumns2 = [
   {
     title: "标题",
     colKey: "title",
@@ -56,7 +62,7 @@ const listColumns = ref([
     colKey: "updateTime",
     width: "180",
   },
-]);
+];
 
 const dataLoading = ref(false);
 
@@ -64,8 +70,10 @@ let currentPage = 1;
 let currentPageSize = 50;
 
 const pagination = ref({
-  defaultPageSize: currentPageSize,
+  current: currentPage,
+  pageSize: currentPageSize,
   defaultCurrent: currentPage,
+  defaultPageSize: currentPageSize,
   total: 0,
   pageSizeOptions: [50, 100],
 });
@@ -73,6 +81,7 @@ const pagination = ref({
 const discussViews = ref<DiscussView[]>();
 
 const discussSearchForm = ref({
+  problemId: "",
   title: "",
   username: "",
 });
@@ -83,17 +92,33 @@ const discussCreateForm = ref<DiscussCreateRequest>({
   open_time: [],
 });
 
+const handleGotoProblem = (id: string) => {
+  if (!id) {
+    return;
+  }
+  router.push({ name: "problem-detail", params: { problemId: id } });
+};
+
+const handleGotoContestProblem = (contestId, problemIndex: string) => {
+  router.push({ name: "contest-problem-detail", params: { contestId: contestId, problemIndex: problemIndex } });
+};
+
 const handleGotoDiscuss = (id: string) => {
   if (!id) {
     return;
   }
-  router.push({ path: "/discuss/" + id });
+  if (contestId) {
+    router.push({ name: "contest-discuss-detail", params: { contestId: contestId, discussId: id } });
+    return;
+  }
+  router.push({ name: "discuss-detail", params: { discussId: id } });
 };
 
 const handleSearchDiscuss = async () => {
   await router.push({
     query: {
       ...route.query,
+      problem_id: discussSearchForm.value.problemId,
       title: discussSearchForm.value.title,
       username: discussSearchForm.value.username,
       page: 1,
@@ -108,7 +133,10 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   }
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetDiscussList(contestId, current, pageSize);
+    const res = await GetDiscussList(contestId,
+      discussSearchForm.value.problemId,
+      discussSearchForm.value.title, discussSearchForm.value.username,
+      current, pageSize);
     discussViews.value = [];
     if (res.code === 0) {
       if (res.data.list) {
@@ -181,6 +209,41 @@ onMounted(async () => {
         contestId = route.params.contestId;
       }
 
+      listColumns.value = listColumns1;
+      if (contestId) {
+        listColumns.value = listColumns.value.concat([
+          {
+            title: "问题ID",
+            colKey: "contestProblemIndex",
+            width: "100",
+            cell: (_: any, data: any) => {
+              return (
+                <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.contestProblemIndex)}>
+                  {GetContestProblemIndexStr(data.row.contestProblemIndex)}
+                </t-button>
+              );
+            },
+          },
+        ]);
+      } else {
+        listColumns.value = listColumns.value.concat([
+          {
+            title: "问题ID",
+            colKey: "problemId",
+            width: "100",
+            cell: (_: any, data: any) => {
+              return (
+                <t-button variant="text" onClick={() => handleGotoProblem(data.row.problemId)}>
+                  {data.row.problemId}
+                </t-button>
+              );
+            },
+          },
+        ]);
+      }
+      listColumns.value = listColumns.value.concat(listColumns2);
+
+      discussSearchForm.value.problemId = (newQuery.problem_id as string) || "";
       discussSearchForm.value.title = (newQuery.title as string) || "";
       discussSearchForm.value.username = (newQuery.username as string) || "";
       const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
@@ -215,6 +278,7 @@ onBeforeUnmount(() => {
           :hover="true"
           :pagination="pagination"
           :loading="dataLoading"
+          table-layout="auto"
           @page-change="onPageChange"
         />
       </t-card>
@@ -223,6 +287,9 @@ onBeforeUnmount(() => {
       <div style="margin: 10px">
         <t-card class="sh-card">
           <t-form :model="discussSearchForm">
+            <t-form-item label="问题ID">
+              <t-input v-model="discussSearchForm.problemId" placeholder="请输入完整问题ID"></t-input>
+            </t-form-item>
             <t-form-item label="标题">
               <t-input v-model="discussSearchForm.title" placeholder="暂不支持模糊查询"></t-input>
             </t-form-item>

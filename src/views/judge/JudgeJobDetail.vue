@@ -220,7 +220,7 @@ const fetchData = async (needLoading: boolean) => {
         if (result.taskTotal > 0) {
           jobProgress.value = (result.taskCurrent / result.taskTotal) * 100;
           if (result.taskCurrent >= result.taskTotal) {
-            jobProgress.value = 99
+            jobProgress.value = 99;
           }
         } else {
           jobProgress.value = 0;
@@ -286,9 +286,13 @@ const fetchData = async (needLoading: boolean) => {
 onMounted(async () => {
   viewActive = true;
 
-  if (route.params.judgeId && route.params.judgeId.length === 1) {
-    judgeId = parseInt(route.params.judgeId[0] as string);
+  if (Array.isArray(route.params.judgeId)) {
+    judgeId = route.params.judgeId[0];
   } else {
+    judgeId = route.params.judgeId;
+  }
+
+  if (!judgeId) {
     await router.push({ name: "judge" });
     return;
   }

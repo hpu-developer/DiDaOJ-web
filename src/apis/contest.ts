@@ -6,7 +6,6 @@ import Vditor from "vditor";
 
 export function GetContestProblemIndexStr(index: number): string {
   let result = "";
-  index++;
   while (index > 0) {
     index--;
     result = String.fromCharCode(65 + (index % 26)) + result;
@@ -47,7 +46,7 @@ export async function ParseContest(item: Contest): Promise<ContestView> {
     // item.problems根据sort字段排序
     result.problems = [];
     item.problems.sort((a: ContestProblem, b: ContestProblem) => {
-      return a.sort - b.sort;
+      return a.index - b.index;
     });
     for (let i = 0; i < item.problems.length; i++) {
       const problem = item.problems[i];
@@ -57,7 +56,7 @@ export async function ParseContest(item: Contest): Promise<ContestView> {
       if (!problem.attempt) {
         problem.attempt = 0;
       }
-      problem.id = GetContestProblemIndexStr(i);
+      problem.id = GetContestProblemIndexStr(problem.index);
       result.problems.push(problem);
     }
   }

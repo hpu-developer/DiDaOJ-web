@@ -26,7 +26,7 @@ export function ParseDiscuss(item: Discuss): DiscussView {
   result.problemTitle = item.problem_title;
   result.contestId = item.contest_id;
   result.contestTitle = item.contest_title;
-  result.contestProblemSort = item.contest_problem_sort;
+  result.contestProblemIndex = item.contest_problem_index;
 
   return result;
 }
@@ -66,9 +66,28 @@ export function GetDiscuss(discussId: string) {
   });
 }
 
-export function GetDiscussList(contestId: number, page: number, pageSize: number) {
+export function GetDiscussList(contestId: number, problemId: string, title: string, username: string, page: number, pageSize: number) {
+  const params = {} as any;
+  if (contestId) {
+    params.contest_id = contestId;
+  }
+  if (problemId) {
+    params.problem_id = problemId;
+  }
+  if (title) {
+    params.title = title;
+  }
+  if (username) {
+    params.username = username;
+  }
+  if (page) {
+    params.page = page;
+  }
+  if (pageSize) {
+    params.page_size = pageSize;
+  }
   return httpRequest({
-    url: "/discuss/list" + "?contest_id=" + contestId + "&page=" + page + "&page_size=" + pageSize,
+    url: `/discuss/list?${new URLSearchParams(params).toString()}`,
     method: "get",
   });
 }

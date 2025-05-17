@@ -62,8 +62,10 @@ let currentPage = 1;
 let currentPageSize = 50;
 
 const pagination = ref({
-  defaultPageSize: currentPageSize,
+  current: currentPage,
+  pageSize: currentPageSize,
   defaultCurrent: currentPage,
+  defaultPageSize: currentPageSize,
   total: 0,
   pageSizeOptions: [50, 100],
 });

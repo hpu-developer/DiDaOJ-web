@@ -7,27 +7,37 @@ import { GetContest, ParseContest } from "@/apis/contest.ts";
 import { ShowErrorTips, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { ContestView } from "@/types/contest.ts";
+import { useWebStyleStore } from "@/stores/webStyle.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
+const webStyleStore = useWebStyleStore();
 
-const contestId = ref("");
+let contestId = 0;
 const contestLoading = ref(false);
 const contestData = ref<ContestView | null>(null);
 
 const listColumns = ref([
   {
-    title: "ID",
+    title: "问题ID",
     colKey: "id",
     cell: (_: any, data: any) => {
-      return <t-button variant="text">{data.row.id}</t-button>;
+      return (
+        <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.index)}>
+          {data.row.id}
+        </t-button>
+      );
     },
   },
   {
     title: "标题",
     colKey: "title",
     cell: (_: any, data: any) => {
-      return <t-button variant="text">{data.row.title}</t-button>;
+      return (
+        <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.index)}>
+          {data.row.title}
+        </t-button>
+      );
     },
   },
   {
@@ -42,17 +52,24 @@ const listColumns = ref([
 
 const problemViews = ref([]);
 
+const handleGotoContestProblem = (contestId, problemIndex: string) => {
+  router.push({ name: "contest-problem-detail", params: { contestId: contestId, problemIndex: problemIndex } });
+};
+
 onMounted(async () => {
-  if (route.params.contestId && route.params.contestId.length === 1) {
-    contestId.value = route.params.contestId[0];
+  if (Array.isArray(route.params.contestId)) {
+    contestId = route.params.contestId[0];
   } else {
+    contestId = route.params.contestId;
+  }
+  if (!contestId) {
     await router.push({ name: "contest" });
     return;
   }
 
   contestLoading.value = true;
 
-  const res = await GetContest(contestId.value);
+  const res = await GetContest(contestId);
   if (res.code !== 0) {
     contestLoading.value = false;
     ShowErrorTips(globalProperties, res.code);
@@ -62,6 +79,8 @@ onMounted(async () => {
 
   contestData.value = await ParseContest(res.data);
   problemViews.value = contestData.value.problems;
+
+  webStyleStore.setTitle(contestData.value.title + " - " + webStyleStore.getTitle);
 
   await nextTick(() => {
     const contestDescriptions = document.querySelectorAll(".dida-content-description");
@@ -81,8 +100,10 @@ onMounted(async () => {
   <t-loading :loading="contestLoading">
     <t-row class="dida-main-content">
       <t-col :span="8">
-        <h1>{{ contestData?.title }}</h1>
-        <t-alert v-if="contestData?.notification" theme="info" :message="contestData?.notification" />
+        <div style="margin: 20px">
+          <h1>{{ contestData?.title }}</h1>
+          <t-alert v-if="contestData?.notification" theme="info" :message="contestData?.notification" />
+        </div>
         <t-collapse :default-value="[0]" :expand-icon="false" :borderless="true">
           <t-collapse-panel v-for="(description, index) in contestData?.descriptions" :key="index" :header="description.title">
             <template #headerRightContent v-if="index === 0">
