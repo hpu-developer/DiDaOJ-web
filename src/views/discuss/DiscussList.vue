@@ -20,20 +20,7 @@ let contestId = 0;
 
 const listColumns = ref([]);
 
-const listColumns1 = [
-  {
-    title: "ID",
-    colKey: "id",
-    width: "100",
-    cell: (_: any, data: any) => {
-      return (
-        <t-button variant="text" onClick={() => handleGotoDiscuss(data.row.id)}>
-          {data.row.id}
-        </t-button>
-      );
-    },
-  },
-];
+const listColumns1 = [];
 
 const listColumns2 = [
   {
@@ -133,10 +120,14 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   }
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetDiscussList(contestId,
+    const res = await GetDiscussList(
+      contestId,
       discussSearchForm.value.problemId,
-      discussSearchForm.value.title, discussSearchForm.value.username,
-      current, pageSize);
+      discussSearchForm.value.title,
+      discussSearchForm.value.username,
+      current,
+      pageSize
+    );
     discussViews.value = [];
     if (res.code === 0) {
       if (res.data.list) {
@@ -217,6 +208,9 @@ onMounted(async () => {
             colKey: "contestProblemIndex",
             width: "100",
             cell: (_: any, data: any) => {
+              if (!data.row.contestProblemIndex) {
+                return "";
+              }
               return (
                 <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.contestProblemIndex)}>
                   {GetContestProblemIndexStr(data.row.contestProblemIndex)}
@@ -232,6 +226,9 @@ onMounted(async () => {
             colKey: "problemId",
             width: "100",
             cell: (_: any, data: any) => {
+              if (!data.row.problemId) {
+                return "";
+              }
               return (
                 <t-button variant="text" onClick={() => handleGotoProblem(data.row.problemId)}>
                   {data.row.problemId}

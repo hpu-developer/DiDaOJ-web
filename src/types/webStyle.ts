@@ -28,6 +28,7 @@ export type View = {
   icon: string;
   disableSidebar?: boolean;
   needLogin?: boolean;
+  props: any;
   component: DefineComponent<unknown, unknown, unknown>;
   auths: string[]; // 所需要的权限，需要所配置全部的权限才会显示
 };

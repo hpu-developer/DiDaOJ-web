@@ -14,6 +14,8 @@ import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 
+const props = defineProps<{ discussId?: string }>();
+
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
 
@@ -136,13 +138,16 @@ const onPageChange = async (pageInfo: { current: number; pageSize: number }) => 
 onMounted(async () => {
   viewActive = true;
 
-  if (Array.isArray(route.params.discussId)) {
-    discussId.value = route.params.discussId[0];
-  } else {
-    discussId.value = route.params.discussId;
+  discussId.value = props.discussId;
+  if (!discussId.value) {
+    if (Array.isArray(route.params.discussId)) {
+      discussId.value = route.params.discussId[0];
+    } else {
+      discussId.value = route.params.discussId;
+    }
   }
   if (!discussId.value) {
-    ShowTextTipsError(globalProperties, "题目不存在");
+    ShowTextTipsError(globalProperties, "讨论不存在");
     await router.push({ name: "discuss" });
     return;
   }
@@ -223,8 +228,11 @@ onBeforeUnmount(() => {
               <t-breadcrumb-item :to="{ name: 'contest-detail', params: { contestId: discussData?.contestId } }">
                 {{ discussData?.contestTitle }}
               </t-breadcrumb-item>
-              <t-breadcrumb-item :to="{ name: 'contest-problem-detail', params: { problemId: discussData?.contestProblemIndex } }">
-                {{ GetContestProblemIndexStr(discussData?.contestProblemIndex)}} - {{ discussData?.problemTitle }}
+              <t-breadcrumb-item
+                v-if="discussData?.contestProblemIndex"
+                :to="{ name: 'contest-problem-detail', params: { problemIndex: discussData?.contestProblemIndex } }"
+              >
+                {{ GetContestProblemIndexStr(discussData?.contestProblemIndex) }} - {{ discussData?.problemTitle }}
               </t-breadcrumb-item>
             </template>
             <template v-else>

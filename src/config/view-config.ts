@@ -218,9 +218,20 @@ const viewsConfig = [
     tab: "system",
     sidebar: "system-status",
     path: "",
-    title: "系统状态",
+    title: "运行状态",
     icon: "base-station",
     component: SystemStatus,
+  },
+
+  {
+    name: "system-about",
+    tab: "system",
+    sidebar: "system-about",
+    path: "about",
+    title: "关于",
+    icon: "base-station",
+    props: { discussId: '2' },
+    component: DiscussDetail,
   },
 
   {
@@ -312,6 +323,7 @@ export const parseViewRouter = (routers: RouteRecordRaw[], view: View) => {
       tabAuths: tabConfig.auths,
       auths: view.auths,
     },
+    props: view.props,
     component: view.component,
   };
 
