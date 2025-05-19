@@ -7,10 +7,12 @@ import router from "@/router";
 const { globalProperties } = useCurrentInstance();
 
 const rejudgeProblemId = ref("");
+const rejudgeRecentlyLoading = ref(false);
 const rejudgeProblemLoading = ref(false);
 const rejudgeAllLoading = ref(false);
 
 const handleRejudgeRecently = async () => {
+  rejudgeRecentlyLoading.value = true;
   try {
     const res = await PostRejudgeRecently();
     if (res.code !== 0) {
@@ -22,6 +24,8 @@ const handleRejudgeRecently = async () => {
   } catch (e) {
     console.error(e);
     ShowErrorTips(globalProperties, "重判失败");
+  } finally {
+    rejudgeRecentlyLoading.value = false;
   }
 };
 
@@ -73,7 +77,7 @@ const handleRejudgeAll = async () => {
 
 <template>
   <t-card class="yj-manage-card" title="重判最近提交">
-    <t-button @click="handleRejudgeRecently">重判</t-button>
+    <t-button @click="handleRejudgeRecently" :loading="rejudgeRecentlyLoading">重判</t-button>
   </t-card>
   <t-card class="yj-manage-card" title="重判问题">
     <t-space>

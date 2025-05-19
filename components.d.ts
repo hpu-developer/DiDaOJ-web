@@ -39,6 +39,8 @@ declare module 'vue' {
     TInputNumber: typeof import('tdesign-vue-next')['InputNumber']
     TLayout: typeof import('tdesign-vue-next')['Layout']
     TLink: typeof import('tdesign-vue-next')['Link']
+    TList: typeof import('tdesign-vue-next')['List']
+    TListItem: typeof import('tdesign-vue-next')['ListItem']
     TLoading: typeof import('tdesign-vue-next')['Loading']
     TMenu: typeof import('tdesign-vue-next')['Menu']
     TMenuGroup: typeof import('tdesign-vue-next')['MenuGroup']
@@ -50,7 +52,11 @@ declare module 'vue' {
     TSelect: typeof import('tdesign-vue-next')['Select']
     TSelectInput: typeof import('tdesign-vue-next')['SelectInput']
     TSpace: typeof import('tdesign-vue-next')['Space']
+    TStatistic: typeof import('tdesign-vue-next')['Statistic']
     TSubmenu: typeof import('tdesign-vue-next')['Submenu']
+    TSwiper: typeof import('tdesign-vue-next')['Swiper']
+    TSwiperItem: typeof import('tdesign-vue-next')['SwiperItem']
     TTable: typeof import('tdesign-vue-next')['Table']
+    TTag: typeof import('tdesign-vue-next')['Tag']
   }
 }

@@ -10,6 +10,7 @@ import type { ButtonProps } from "tdesign-vue-next";
 import Vditor from "vditor";
 import { AuthType } from "@/auth";
 import { useUserStore } from "@/stores/user.ts";
+import { GetJudgerStatus } from "@/apis/system.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -19,6 +20,7 @@ const { globalProperties } = useCurrentInstance();
 let viewActive = false;
 let refreshTimeout: ReturnType<typeof setTimeout>;
 let judgeId = -1;
+const judgerName = ref("");
 const judgeJob = ref<JudgeJobView | null>(null);
 const judgeJobCode = ref("");
 const markdownCodeRef = ref<HTMLElement | null>(null);
@@ -213,6 +215,13 @@ const fetchData = async (needLoading: boolean) => {
       const result = ParseJudgeJob(response);
       judgeJobViews.value?.push(result);
 
+      if (response.judger) {
+        const judgerStatus = await GetJudgerStatus(response.judger);
+        judgerName.value = judgerStatus.name;
+      } else {
+        judgerName.value = "";
+      }
+
       jobProgressToColor.value.to = "#00A870";
 
       if (IsJudgeStatusRunning(response.status)) {
@@ -312,17 +321,26 @@ onBeforeUnmount(() => {
     <t-table :data="judgeJobViews" :columns="ListColumns" row-key="id" vertical-align="top" :hover="true" :loading="dataLoading" />
   </t-card>
 
-  <div v-html="judgeJobCode" ref="markdownCodeRef"></div>
+  <t-row>
+    <t-col :span="8">
+      <div v-html="judgeJobCode" ref="markdownCodeRef"></div>
+    </t-col>
+    <t-col :span="4">
+      <t-descriptions layout="vertical" :bordered="true" style="margin: 10px">
+        <t-descriptions-item label="判题机">{{ judgerName }}</t-descriptions-item>
+        <t-descriptions-item label="判题时间">{{ judgeJob?.judgeTime }}</t-descriptions-item>
+      </t-descriptions>
+    </t-col>
+  </t-row>
 
   <t-card v-if="judgeJob?.compileMessage" class="compile-message">{{ judgeJob?.compileMessage }}</t-card>
 
   <t-collapse v-if="judgeJob?.task.length > 0" class="task-panel">
-    <t-collapse-panel v-for="task in judgeJob?.task" :key="task.taskId" :header="() => taskRender(task)">
+    <t-collapse-panel v-for="(task, index) in judgeJob?.task" :key="task.taskId" :header="() => taskRender(task)">
       {{ task.content }}
       {{ task.waHint }}
     </t-collapse-panel>
   </t-collapse>
-
   <div class="dida-edit-container" v-if="hasEditAuth">
     <t-button @click="handleClickRejudge" :loading="isRejudging">重新评测</t-button>
   </div>

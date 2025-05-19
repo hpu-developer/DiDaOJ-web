@@ -174,6 +174,13 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
       result.task.push(taskView);
     }
   }
+  if (item.judger) {
+    result.judger = item.judger;
+  }
+  if (item.judge_time) {
+    result.judgeTime = new Date(item.judge_time).toLocaleString();
+  }
+
   return result;
 }
 
@@ -251,7 +258,7 @@ export function PostRejudgeJob(id: number) {
     url: "/judge/rejudge",
     method: "post",
     data: {
-      id: id,
+      id: Number(id),
     },
   });
 }

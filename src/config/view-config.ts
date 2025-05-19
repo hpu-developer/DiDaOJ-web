@@ -19,6 +19,8 @@ import ContestDetail from "@/views/contest/ContestDetail.vue";
 import DiscussList from "@/views/discuss/DiscussList.vue";
 import DiscussDetail from "@/views/discuss/DiscussDetail.vue";
 
+import SystemStatus from "@/views/system/SystemStatus.vue";
+
 import ManageJudge from "@/views/manage/ManageJudge.vue";
 import ProblemEdit from "@/views/problem/ProblemEdit.vue";
 import ProblemJudge from "@/views/problem/ProblemJudge.vue";
@@ -189,6 +191,16 @@ const viewsConfig = [
     title: "讨论详情",
     icon: "list",
     component: DiscussDetail,
+  },
+
+  {
+    name: "system-status",
+    tab: "system",
+    sidebar: "system-status",
+    path: "",
+    title: "系统状态",
+    icon: "base-station",
+    component: SystemStatus,
   },
 
   {

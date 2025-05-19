@@ -64,7 +64,7 @@ const tabsConfig: Tab[] = [
     title: "系统",
     icon: "dashboard",
     showSidebar: true,
-    redirect: "discuss-list",
+    redirect: "system-status",
   },
   {
     name: "manage",

@@ -21,6 +21,11 @@ body {
   margin: 0;
 }
 
+.t-swiper:hover .t-swiper__arrow-left,
+.t-swiper:hover .t-swiper__arrow-right {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
 .t-head-menu .t-menu__item {
   gap: var(--td-comp-margin-xxs)
 }

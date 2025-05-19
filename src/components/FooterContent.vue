@@ -22,15 +22,20 @@ onMounted(() => {
     </div>
 
     <div class="footer-center">
-      <a href="https://boiltask.com" target="_blank">
-        <t-button theme="default" variant="outline" :ghost="true">@BoilTask</t-button>
+      <a href="https://beiancx.miit.gov.cn/" target="_blank">
+        <t-button theme="default" variant="outline" :ghost="true">豫ICP备15024677号-4</t-button>
       </a>
     </div>
 
     <div class="footer-right">
       <p class="foot-text">
-        <a href="https://github.com/hpu-user/DiDaOJ-web" target="_blank">
+        <a href="https://github.com/hpu-developer/DiDaOJ-web" target="_blank">
           <t-button theme="default" variant="outline" :ghost="true">@didaoj-web</t-button>
+        </a>
+      </p>
+      <p class="foot-text">
+        <a href="https://github.com/hpu-developer/DiDaOJ-go" target="_blank">
+          <t-button theme="default" variant="outline" :ghost="true">@didaoj-go</t-button>
         </a>
       </p>
     </div>
@@ -41,7 +46,7 @@ onMounted(() => {
 .footer {
   margin-top: 30px;
   display: flex;
-  min-width: 1100px;
+  min-width: 1400px;
   color: #ffffff;
   background-color: #000000;
   justify-content: space-between;

@@ -39,6 +39,9 @@ export interface JudgeJob {
   task_current: number;
   task_total: number;
   task?: JudgeTask[];
+
+  judger?: string
+  judge_time?: string;
 }
 
 export interface JudgeJobView {
@@ -59,4 +62,7 @@ export interface JudgeJobView {
   taskCurrent: number;
   taskTotal: number;
   task?: JudgeTaskView[];
+
+  judger?: string
+  judgeTime?: string;
 }

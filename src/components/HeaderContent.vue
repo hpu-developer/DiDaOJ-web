@@ -99,7 +99,7 @@ onMounted(() => {
 
 <style scoped>
 .sh-menu {
-  min-width: 1300px;
+  min-width: 1440px;
 }
 
 .sh-logo {
