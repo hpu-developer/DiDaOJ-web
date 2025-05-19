@@ -194,6 +194,26 @@ const viewsConfig = [
   },
 
   {
+    name: "rank-ac-all",
+    tab: "rank",
+    sidebar: "rank-ac-all",
+    path: "ac/all",
+    title: "AC排名",
+    icon: "base-station",
+    component: SystemStatus,
+  },
+
+  {
+    name: "tool-paste",
+    tab: "tool",
+    sidebar: "tool-paste",
+    path: "paste",
+    title: "码池",
+    icon: "base-station",
+    component: SystemStatus,
+  },
+
+  {
     name: "system-status",
     tab: "system",
     sidebar: "system-status",

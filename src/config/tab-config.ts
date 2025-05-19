@@ -59,6 +59,24 @@ const tabsConfig: Tab[] = [
     redirect: "discuss-list",
   },
   {
+    name: "rank",
+    path: "/rank",
+    title: "排名",
+    icon: "chart-column",
+    showSidebar: true,
+    redirect: "rank-ac-all",
+  },
+
+  {
+    name: "tool",
+    path: "/tool",
+    title: "工具",
+    icon: "tools",
+    showSidebar: true,
+    redirect: "tool-paste",
+  },
+
+  {
     name: "system",
     path: "/system",
     title: "系统",
