@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { Swiper } from "tdesign-vue-next";
 import SystemStatus from "@/views/system/SystemStatus.vue";
 import { GetWebNotification } from "@/apis/system.ts";
+import { Notification } from "@/types/notification.ts";
 
-let intervalId = null;
-const notification = ref(null);
+let intervalId = -1;
+const notification = ref<Notification | null>(null);
 
 const handleReloadStatus = async () => {
   notification.value = await GetWebNotification();
