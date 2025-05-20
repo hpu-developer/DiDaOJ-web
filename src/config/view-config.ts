@@ -19,7 +19,7 @@ import ContestDetail from "@/views/contest/ContestDetail.vue";
 import DiscussList from "@/views/discuss/DiscussList.vue";
 import DiscussDetail from "@/views/discuss/DiscussDetail.vue";
 
-import RankAC from "@/views/rank/RankAC.vue";
+import RankUser from "@/views/rank/RankUser.vue";
 
 import SystemStatus from "@/views/system/SystemStatus.vue";
 
@@ -199,10 +199,26 @@ const viewsConfig = [
     name: "rank-ac-all",
     tab: "rank",
     sidebar: "rank-ac-all",
-    path: "ac/all",
+    path: "ac",
     title: "AC排名",
     icon: "base-station",
-    component: RankAC,
+    props: {
+      type: "all",
+    },
+    component: RankUser,
+  },
+
+  {
+    name: "rank-ac-problem",
+    tab: "rank",
+    sidebar: "rank-ac-problem",
+    path: "ac/problem",
+    title: "题量排名",
+    icon: "base-station",
+    props: {
+      type: "problem",
+    },
+    component: RankUser,
   },
 
   {
@@ -232,7 +248,7 @@ const viewsConfig = [
     path: "about",
     title: "关于",
     icon: "base-station",
-    props: { discussId: '52' },
+    props: { discussId: "52" },
     component: DiscussDetail,
   },
 
@@ -268,7 +284,6 @@ const viewsConfig = [
     auths: ["i-manage-judge"],
     component: ManageJudge,
   },
-
 ] as ViewList;
 
 export const parseTabMenu = (list: MenuList, toSidebar: string, tabName: string, view: View) => {

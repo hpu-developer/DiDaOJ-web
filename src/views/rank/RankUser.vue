@@ -3,7 +3,7 @@ import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetRankAC } from "@/apis/rank.ts";
+import { GetRankACAll, GetRankACProblem } from "@/apis/rank.ts";
 import { UserRank } from "@/types/rank.ts";
 import { JudgeStatus } from "@/apis/judge.ts";
 
@@ -13,7 +13,25 @@ const { globalProperties } = useCurrentInstance();
 
 let watchHandle: WatchStopHandle | null = null;
 
-const listColumns = ref([
+const props = defineProps<{ type?: string }>();
+
+const descriptionHeader = ref("");
+const descriptionContent = ref("");
+
+const descriptionConfig = {
+  all: {
+    header: "统计所有用户在本站的提交记录",
+    content: "优先以AC记录数量排序，如果相同则提交所用次数较少的优先，如果仍相同，注册较早的用户靠前",
+  },
+  problem: {
+    header: "统计所有用户在本站的提交记录",
+    content: "以题目记录数量排序，如果相同，注册较早的用户靠前",
+  },
+};
+
+const listColumns = ref([] as any);
+
+const userColumns = [
   {
     title: "序号",
     colKey: "index",
@@ -33,6 +51,23 @@ const listColumns = ref([
     title: "昵称",
     colKey: "nickname",
   },
+];
+
+const problemColumns = [
+  {
+    title: "题目数量",
+    colKey: "problem_count",
+    cell: (_: any, data: any) => {
+      return (
+        <t-button variant="dashed" onClick={() => handleGotoJudgeAccept(data.row.username)}>
+          {data.row.problem_count}
+        </t-button>
+      );
+    },
+  },
+];
+
+const acColumns = [
   {
     title: "正确",
     colKey: "accept",
@@ -55,7 +90,7 @@ const listColumns = ref([
       );
     },
   },
-]);
+];
 
 const dataLoading = ref(false);
 
@@ -91,7 +126,15 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   }
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetRankAC(current, pageSize);
+    let res = null;
+    switch (props.type) {
+      case "problem":
+        res = await GetRankACProblem(current, pageSize);
+        break;
+      default:
+        res = await GetRankACAll(current, pageSize);
+        break;
+    }
     problemViews.value = [];
     if (res.code === 0) {
       const responseList = res.data.list as UserRank[];
@@ -140,6 +183,22 @@ onMounted(async () => {
   watchHandle = watch(
     () => route.query,
     (newQuery) => {
+      if (props.type && descriptionConfig[props.type]) {
+        descriptionHeader.value = descriptionConfig[props.type].header;
+        descriptionContent.value = descriptionConfig[props.type].content;
+      } else {
+        descriptionHeader.value = descriptionConfig.all.header;
+        descriptionContent.value = descriptionConfig.all.content;
+      }
+      switch (props.type) {
+        case "problem":
+          listColumns.value = userColumns.concat(problemColumns);
+          break;
+        default:
+          listColumns.value = userColumns.concat(acColumns);
+          break;
+      }
+
       const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
       const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
       currentPage = queryPage;
@@ -170,14 +229,15 @@ onBeforeUnmount(() => {
           :hover="true"
           :pagination="pagination"
           :loading="dataLoading"
+          table-layout="auto"
           @page-change="onPageChange"
         />
       </t-card>
     </t-col>
     <t-col :span="3">
       <div style="margin: 10px">
-        <t-card class="sh-card" header="统计所有用户在本站的提交记录" :header-bordered="true">
-          优先以AC记录数量排序，如果相同则提交所用次数较少的优先，如果仍相同，注册较早的用户考前
+        <t-card class="sh-card" :header="descriptionHeader" :header-bordered="true">
+          {{ descriptionContent }}
         </t-card>
       </div>
     </t-col>
@@ -187,13 +247,5 @@ onBeforeUnmount(() => {
 <style scoped>
 .sh-card {
   margin: 10px;
-}
-
-.sh-background-black {
-  background-color: #212121;
-}
-
-.sh-tag-button {
-  margin: 2px;
 }
 </style>
