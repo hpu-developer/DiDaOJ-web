@@ -282,6 +282,12 @@ const fetchData = async (needLoading: boolean) => {
   }
 };
 
+function updateWidth() {
+  if (markdownCodeRef.value && markdownCodeRef.value.parentElement) {
+    markdownCodeRef.value.style.maxWidth = markdownCodeRef.value.parentElement.clientWidth + "px";
+  }
+}
+
 // 初始化分页信息
 onMounted(async () => {
   viewActive = true;
@@ -298,10 +304,14 @@ onMounted(async () => {
   }
 
   await fetchData(true);
+
+  updateWidth();
+  window.addEventListener("resize", updateWidth);
 });
 
 onBeforeUnmount(() => {
   viewActive = false;
+  window.removeEventListener("resize", updateWidth);
 });
 </script>
 
@@ -314,7 +324,9 @@ onBeforeUnmount(() => {
 
   <t-row>
     <t-col :span="8">
-      <div v-html="judgeJobCode" ref="markdownCodeRef"></div>
+      <div class="dida-code-container">
+        <div v-html="judgeJobCode" ref="markdownCodeRef" class="dida-code-div"></div>
+      </div>
     </t-col>
     <t-col :span="4">
       <t-descriptions layout="vertical" :bordered="true" style="margin: 10px">
@@ -358,5 +370,14 @@ onBeforeUnmount(() => {
 
 .dida-job-progress {
   margin: 20px;
+}
+
+.dida-code-container {
+  width: 100%;
+}
+
+.dida-code-div {
+  width: 100%;
+  max-width: 1000px;
 }
 </style>

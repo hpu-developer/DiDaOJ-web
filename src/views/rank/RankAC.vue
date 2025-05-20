@@ -1,0 +1,199 @@
+<script setup lang="tsx">
+import type { WatchStopHandle } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { GetRankAC } from "@/apis/rank.ts";
+import { UserRank } from "@/types/rank.ts";
+import { JudgeStatus } from "@/apis/judge.ts";
+
+const route = useRoute();
+const router = useRouter();
+const { globalProperties } = useCurrentInstance();
+
+let watchHandle: WatchStopHandle | null = null;
+
+const listColumns = ref([
+  {
+    title: "序号",
+    colKey: "index",
+  },
+  {
+    title: "用户名",
+    colKey: "username",
+    cell: (_: any, data: any) => {
+      return (
+        <t-button variant="dashed" onClick={() => handleGotoUsername(data.row.username)}>
+          {data.row.username}
+        </t-button>
+      );
+    },
+  },
+  {
+    title: "昵称",
+    colKey: "nickname",
+  },
+  {
+    title: "正确",
+    colKey: "accept",
+    cell: (_: any, data: any) => {
+      return (
+        <t-button variant="dashed" onClick={() => handleGotoJudgeAccept(data.row.username)}>
+          {data.row.accept}
+        </t-button>
+      );
+    },
+  },
+  {
+    title: "提交",
+    colKey: "attempt",
+    cell: (_: any, data: any) => {
+      return (
+        <t-button variant="dashed" onClick={() => handleGotoJudgeAttempt(data.row.username)}>
+          {data.row.attempt}
+        </t-button>
+      );
+    },
+  },
+]);
+
+const dataLoading = ref(false);
+
+let currentPage = 1;
+let currentPageSize = 50;
+
+const pagination = ref({
+  current: currentPage,
+  pageSize: currentPageSize,
+  defaultCurrent: currentPage,
+  defaultPageSize: currentPageSize,
+  total: 0,
+  pageSizeOptions: [50],
+});
+
+const problemViews = ref<UserRank[]>();
+
+const handleGotoUsername = (username: string) => {
+  router.push({ name: "user", params: { username: username } });
+};
+
+const handleGotoJudgeAccept = (username: string) => {
+  router.push({ name: "judge-list", query: { username: username, status: JudgeStatus.Accept } });
+};
+
+const handleGotoJudgeAttempt = (username: string) => {
+  router.push({ name: "judge-list", query: { username: username } });
+};
+
+const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
+  if (needLoading) {
+    dataLoading.value = true;
+  }
+  try {
+    const { current, pageSize } = paginationInfo;
+    const res = await GetRankAC(current, pageSize);
+    problemViews.value = [];
+    if (res.code === 0) {
+      const responseList = res.data.list as UserRank[];
+      if (!responseList || responseList.length <= 0) {
+        pagination.value = { ...pagination.value, total: 0 };
+        ShowTextTipsInfo(globalProperties, "未找到记录");
+        return;
+      }
+      problemViews.value = [];
+      const offsetStart = pagination.value.pageSize * (pagination.value.current - 1);
+      let index = 1;
+      responseList.forEach((item) => {
+        const result = item;
+        result.index = offsetStart + index++;
+        problemViews.value?.push(result);
+      });
+      pagination.value = { ...pagination.value, total: res.data.total_count };
+    } else {
+      if (needLoading) {
+        ShowErrorTips(globalProperties, res.code);
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    if (needLoading) {
+      ShowErrorTips(globalProperties, GetCommonErrorCode());
+    }
+  } finally {
+    if (needLoading) {
+      dataLoading.value = false;
+    }
+  }
+};
+
+const onPageChange = async (pageInfo: { current: number; pageSize: number }) => {
+  // 更新 URL 查询参数
+  await router.push({
+    query: { ...route.query, page: pageInfo.current, page_size: pageInfo.pageSize },
+  });
+};
+
+// 初始化分页信息
+onMounted(async () => {
+  dataLoading.value = true;
+
+  watchHandle = watch(
+    () => route.query,
+    (newQuery) => {
+      const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
+      const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
+      currentPage = queryPage;
+      currentPageSize = queryPageSize;
+      pagination.value = { ...pagination.value, current: currentPage, pageSize: currentPageSize };
+      fetchData({ current: currentPage, pageSize: currentPageSize }, true);
+    },
+    { immediate: true }
+  );
+});
+
+onBeforeUnmount(() => {
+  if (watchHandle) {
+    watchHandle();
+  }
+});
+</script>
+
+<template>
+  <t-row>
+    <t-col :span="9">
+      <t-card style="margin: 10px">
+        <t-table
+          :data="problemViews"
+          :columns="listColumns"
+          row-key="id"
+          vertical-align="top"
+          :hover="true"
+          :pagination="pagination"
+          :loading="dataLoading"
+          @page-change="onPageChange"
+        />
+      </t-card>
+    </t-col>
+    <t-col :span="3">
+      <div style="margin: 10px">
+        <t-card class="sh-card" header="统计所有用户在本站的提交记录" :header-bordered="true">
+          优先以AC记录数量排序，如果相同则提交所用次数较少的优先，如果仍相同，注册较早的用户考前
+        </t-card>
+      </div>
+    </t-col>
+  </t-row>
+</template>
+
+<style scoped>
+.sh-card {
+  margin: 10px;
+}
+
+.sh-background-black {
+  background-color: #212121;
+}
+
+.sh-tag-button {
+  margin: 2px;
+}
+</style>

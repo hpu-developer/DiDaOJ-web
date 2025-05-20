@@ -19,6 +19,8 @@ import ContestDetail from "@/views/contest/ContestDetail.vue";
 import DiscussList from "@/views/discuss/DiscussList.vue";
 import DiscussDetail from "@/views/discuss/DiscussDetail.vue";
 
+import RankAC from "@/views/rank/RankAC.vue";
+
 import SystemStatus from "@/views/system/SystemStatus.vue";
 
 import ManageJudge from "@/views/manage/ManageJudge.vue";
@@ -200,7 +202,7 @@ const viewsConfig = [
     path: "ac/all",
     title: "AC排名",
     icon: "base-station",
-    component: SystemStatus,
+    component: RankAC,
   },
 
   {
