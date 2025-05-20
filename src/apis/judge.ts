@@ -3,6 +3,7 @@ import httpRequest from "@/apis/axios-api";
 
 import type { JudgeTaskView, JudgeJob, JudgeJobView } from "@/types/judge";
 import { GetJudgeLanguageStr, JudgeLanguage } from "@/apis/language.ts";
+import type { ButtonProps } from "tdesign-vue-next";
 
 export enum JudgeType {
   Normal = 0,
@@ -81,6 +82,24 @@ export const GetJudgeStatusStr = (status: JudgeStatus) => {
       return "未知";
     default:
       return status;
+  }
+};
+
+export const GetJudgeStatusTheme = (status: JudgeStatus): ButtonProps["theme"] => {
+  switch (status) {
+    case JudgeStatus.Init:
+    case JudgeStatus.Rejudge:
+    case JudgeStatus.Submitting:
+    case JudgeStatus.Queuing:
+    case JudgeStatus.Compiling:
+    case JudgeStatus.Running:
+      return "default";
+    case JudgeStatus.Accept:
+      return "success";
+    case JudgeStatus.PE:
+      return "warning";
+    default:
+      return "danger";
   }
 };
 

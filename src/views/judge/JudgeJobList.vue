@@ -11,10 +11,9 @@ import {
   JudgeStatus,
   GetJudgeStatusOptions,
   ParseJudgeJob,
-  GetJudgeJobCode,
+  GetJudgeJobCode, GetJudgeStatusTheme,
 } from "@/apis/judge.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
-import type { ButtonProps } from "tdesign-vue-next";
 import Vditor from "vditor";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 
@@ -69,24 +68,7 @@ const ListColumns = ref([
     cell: (_: any, data: any) => {
       const status = data.row.status as JudgeStatus;
       const statusStr = GetJudgeStatusStr(status);
-      let theme: ButtonProps["theme"];
-      switch (status) {
-        case JudgeStatus.Init:
-        case JudgeStatus.Rejudge:
-        case JudgeStatus.Compiling:
-        case JudgeStatus.Running:
-          theme = "default";
-          break;
-        case JudgeStatus.Accept:
-          theme = "success";
-          break;
-        case JudgeStatus.PE:
-          theme = "warning";
-          break;
-        default:
-          theme = "danger";
-          break;
-      }
+      const theme = GetJudgeStatusTheme(status);
       let finalElements = [];
       if (IsJudgeStatusRunning(status)) {
         finalElements.push(<t-loading text={data.row.state} size="small" class="dida-status-loading"></t-loading>);

@@ -32,6 +32,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "1000": {
         zh: "系统错误",
       },
+      "1002": {
+        zh: "未知错误",
+      },
       "10001": {
         zh: "权限异常，请重新登陆后再试",
       },

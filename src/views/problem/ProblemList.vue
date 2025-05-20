@@ -264,7 +264,7 @@ onBeforeUnmount(() => {
     <t-col :span="3">
       <div style="margin: 10px">
         <t-card class="sh-card">
-          <t-form :model="formItem">
+          <t-form :model="formItem" @submit="handleClickSearch" >
             <t-form-item label="标题">
               <t-input v-model="formItem.title" placeholder="暂不支持模糊查询"></t-input>
             </t-form-item>
@@ -272,7 +272,7 @@ onBeforeUnmount(() => {
               <t-input v-model="formItem.tag" placeholder="暂不支持模糊查询"></t-input>
             </t-form-item>
             <t-form-item>
-              <t-button theme="primary" @click="handleClickSearch">搜索</t-button>
+              <t-button theme="primary" type="submit">搜索</t-button>
             </t-form-item>
           </t-form>
         </t-card>

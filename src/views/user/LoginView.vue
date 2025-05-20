@@ -24,6 +24,7 @@ const onSubmit = ({ validateResult, firstError }: any) => {
   if (isLoginRunning.value) {
     return;
   }
+  isLoginRunning.value = true;
   RequestLogin(formData.value.account, formData.value.password)
     .then((res) => {
       if (res.code === 0) {
@@ -41,6 +42,9 @@ const onSubmit = ({ validateResult, firstError }: any) => {
     .catch((e) => {
       console.error("Login error", e);
       ShowTextTipsError(globalProperties, "登录失败");
+    })
+    .finally(() => {
+      isLoginRunning.value = false;
     });
 };
 
@@ -75,8 +79,22 @@ onMounted(() => {
       </t-form-item>
     </t-form>
     <div class="dida-login-footer">
-      <t-link @click="() => { globalProperties.$router.push({ name: 'login-forget' }) }">忘记密码</t-link>
-      <t-link @click="() => { globalProperties.$router.push({ name: 'register' }) }">注册账户</t-link>
+      <t-link
+        @click="
+          () => {
+            globalProperties.$router.push({ name: 'login-forget' });
+          }
+        "
+        >忘记密码</t-link
+      >
+      <t-link
+        @click="
+          () => {
+            globalProperties.$router.push({ name: 'register' });
+          }
+        "
+        >注册账户</t-link
+      >
     </div>
   </t-card>
 </template>

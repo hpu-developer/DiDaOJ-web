@@ -2,7 +2,15 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
-import { GetJudgeJob, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus, ParseJudgeJob, PostRejudgeJob } from "@/apis/judge.ts";
+import {
+  GetJudgeJob,
+  GetJudgeStatusStr,
+  GetJudgeStatusTheme,
+  IsJudgeStatusRunning,
+  JudgeStatus,
+  ParseJudgeJob,
+  PostRejudgeJob,
+} from "@/apis/judge.ts";
 import { GetKeyByJudgeLanguage } from "@/apis/language.ts";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
@@ -55,24 +63,7 @@ const ListColumns = ref([
     cell: (_: any, data: any) => {
       const status = data.row.status as JudgeStatus;
       const statusStr = GetJudgeStatusStr(status);
-      let theme: ButtonProps["theme"];
-      switch (status) {
-        case JudgeStatus.Init:
-        case JudgeStatus.Rejudge:
-        case JudgeStatus.Compiling:
-        case JudgeStatus.Running:
-          theme = "default";
-          break;
-        case JudgeStatus.Accept:
-          theme = "success";
-          break;
-        case JudgeStatus.PE:
-          theme = "warning";
-          break;
-        default:
-          theme = "danger";
-          break;
-      }
+      const theme = GetJudgeStatusTheme(status);
       let finalElements = [];
       if (IsJudgeStatusRunning(status)) {
         finalElements.push(<t-loading text={data.row.state} size="small" class="dida-status-loading"></t-loading>);

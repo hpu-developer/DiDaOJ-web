@@ -230,7 +230,7 @@ const viewsConfig = [
     path: "about",
     title: "关于",
     icon: "base-station",
-    props: { discussId: '2' },
+    props: { discussId: '52' },
     component: DiscussDetail,
   },
 
