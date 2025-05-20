@@ -10,7 +10,7 @@ export enum JudgeLanguage {
 }
 
 export function GetSubmitLanguages() {
-  const exclude = [JudgeLanguage.Unknown, JudgeLanguage.Pascal, JudgeLanguage.Golang, JudgeLanguage.Max]; // 不想包含的语言
+  const exclude = [JudgeLanguage.Unknown, JudgeLanguage.Golang, JudgeLanguage.Max]; // 不想包含的语言
   return Object.values(JudgeLanguage)
     .filter((v) => typeof v === "number" && !exclude.includes(v))
     .map((value) => ({
