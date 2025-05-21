@@ -55,6 +55,10 @@ const userColumns = [
     title: "昵称",
     colKey: "nickname",
   },
+  {
+    title: "Slogan",
+    colKey: "slogan",
+  },
 ];
 
 const problemColumns = [
@@ -62,9 +66,13 @@ const problemColumns = [
     title: "题目数量",
     colKey: "problem_count",
     cell: (_: any, data: any) => {
+      let problemCount = 0;
+      if (data.row.problem_count) {
+        problemCount = data.row.problem_count;
+      }
       return (
         <t-button variant="dashed" onClick={() => handleGotoJudgeAccept(data.row.username)}>
-          {data.row.problem_count}
+          {problemCount}
         </t-button>
       );
     },
@@ -76,9 +84,13 @@ const acColumns = [
     title: "正确",
     colKey: "accept",
     cell: (_: any, data: any) => {
+      let acceptCount = 0;
+      if (data.row.accept) {
+        acceptCount = data.row.accept;
+      }
       return (
         <t-button variant="dashed" onClick={() => handleGotoJudgeAccept(data.row.username)}>
-          {data.row.accept}
+          {acceptCount}
         </t-button>
       );
     },
@@ -87,9 +99,13 @@ const acColumns = [
     title: "提交",
     colKey: "attempt",
     cell: (_: any, data: any) => {
+      let attemptCount = 0;
+      if (data.row.attempt) {
+        attemptCount = data.row.attempt;
+      }
       return (
         <t-button variant="dashed" onClick={() => handleGotoJudgeAttempt(data.row.username)}>
-          {data.row.attempt}
+          {attemptCount}
         </t-button>
       );
     },
