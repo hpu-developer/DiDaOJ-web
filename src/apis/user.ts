@@ -1,5 +1,7 @@
 import httpRequest from "@/apis/axios-api";
 
+import md5 from 'md5';
+
 import type { UserInfo, UserInfoView } from "@/types/user.ts";
 
 export function ParseUser(item: UserInfo): UserInfoView {
@@ -12,6 +14,9 @@ export function ParseUser(item: UserInfo): UserInfoView {
   result.organization = item.organization;
   result.accept = item.accept;
   result.attempt = item.attempt;
+  if (item.email) {
+    result.avatar = `https://www.gravatar.com/avatar/${md5(item.email.toLowerCase().trim())}?d=identicon&s=100`;
+  }
   return result;
 }
 

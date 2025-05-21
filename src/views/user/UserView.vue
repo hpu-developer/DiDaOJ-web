@@ -76,6 +76,9 @@ onMounted(async () => {
       <t-col :span="4">
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
+            <t-descriptions-item label="头像">
+              <t-avatar shape="round" size="100px" :image="userData?.avatar" :hide-on-load-failed="false" />
+            </t-descriptions-item>
             <t-descriptions-item label="昵称">{{ userData?.nickname }}</t-descriptions-item>
             <t-descriptions-item label="Slogan">{{ userData?.slogan }}</t-descriptions-item>
             <t-descriptions-item label="邮箱">{{ userData?.email }}</t-descriptions-item>

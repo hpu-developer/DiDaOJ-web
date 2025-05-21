@@ -26,4 +26,5 @@ export interface UserInfoView {
   organization: string;
   accepted: number;
   attempt: number;
+  avatar: string;
 }
