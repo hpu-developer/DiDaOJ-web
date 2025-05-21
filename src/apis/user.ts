@@ -8,6 +8,10 @@ export function ParseUser(item: UserInfo): UserInfoView {
   result.username = item.username;
   result.nickname = item.nickname;
   result.email = item.email;
+  result.slogan = item.slogan;
+  result.organization = item.organization;
+  result.accept = item.accept;
+  result.attempt = item.attempt;
   return result;
 }
 

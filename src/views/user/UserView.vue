@@ -80,6 +80,8 @@ onMounted(async () => {
             <t-descriptions-item label="Slogan">{{ userData?.slogan }}</t-descriptions-item>
             <t-descriptions-item label="邮箱">{{ userData?.email }}</t-descriptions-item>
             <t-descriptions-item label="组织">{{ userData?.organization }}</t-descriptions-item>
+            <t-descriptions-item label="通过数量">{{ userData?.accept }}</t-descriptions-item>
+            <t-descriptions-item label="提交数量">{{ userData?.attempt }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>

@@ -13,6 +13,8 @@ export interface UserInfo {
   slogan: string;
   email: string;
   organization: string;
+  accept: number;
+  attempt: number;
 }
 
 export interface UserInfoView {
@@ -22,4 +24,6 @@ export interface UserInfoView {
   slogan: string;
   email: string;
   organization: string;
+  accepted: number;
+  attempt: number;
 }
