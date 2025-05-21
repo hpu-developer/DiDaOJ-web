@@ -53,7 +53,7 @@ const ListColumns = ref([
       for (let i = 0; i < tags.length; i++) {
         const tag = tags[i];
         tagButtons.push(
-          <t-button key={i} theme="default" variant="outline">
+          <t-button key={i} theme="default" variant="outline" size="small" onClick={() => handleClickTag(tag)}>
             {tag.name}
           </t-button>
         );
@@ -199,7 +199,7 @@ const onPageChange = async (pageInfo: { current: number; pageSize: number }) => 
 onMounted(async () => {
   viewActive = true;
 
-  dataLoading.value = true
+  dataLoading.value = true;
 
   problemTags.value = [];
   GetProblemTagList(-1)
@@ -264,7 +264,7 @@ onBeforeUnmount(() => {
     <t-col :span="3">
       <div style="margin: 10px">
         <t-card class="sh-card">
-          <t-form :model="formItem" @submit="handleClickSearch" >
+          <t-form :model="formItem" @submit="handleClickSearch">
             <t-form-item label="标题">
               <t-input v-model="formItem.title" placeholder="暂不支持模糊查询"></t-input>
             </t-form-item>

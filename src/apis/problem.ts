@@ -88,8 +88,22 @@ export function GetProblemJudge(problemId: string) {
 }
 
 export function GetProblemList(title: string, tag: string, page: number, pageSize: number) {
+  const params = {} as any;
+  if (title) {
+    params.title = title;
+  }
+  if (tag) {
+    params.tag = tag;
+  }
+  if (page) {
+    params.page = page;
+  }
+  if (pageSize) {
+    params.page_size = pageSize;
+  }
+
   return httpRequest({
-    url: "/problem/list" + "?title=" + title + "&tag=" + tag + "&page=" + page + "&page_size=" + pageSize,
+    url: `/problem/list?${new URLSearchParams(params).toString()}`,
     method: "get",
   });
 }
