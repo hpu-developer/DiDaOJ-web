@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import SystemStatus from "@/views/system/SystemStatus.vue";
+import Hitokoto from "@/components/Hitokoto.vue";
 import { GetWebNotification } from "@/apis/system.ts";
 import { Notification } from "@/types/notification.ts";
 
@@ -27,7 +28,7 @@ onUnmounted(() => {
   <t-row>
     <t-col :span="8">
       <div class="sh-main">
-        <t-alert v-if="notification" style="margin: 20px" :theme="notification.theme"> {{ notification.content }}</t-alert>
+        <t-alert v-if="notification" style="margin: 20px" :theme="notification.theme"> {{ notification.content }} </t-alert>
 
         <div class="dida-swiper-div">
           <t-swiper class="dida-swiper">
@@ -47,6 +48,8 @@ onUnmounted(() => {
       </div>
     </t-col>
     <t-col :span="4">
+      <Hitokoto style="margin: 10px" />
+
       <SystemStatus />
       <t-card style="margin: 10px" :bordered="true">
         <template #header>
