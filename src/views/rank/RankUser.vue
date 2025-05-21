@@ -3,7 +3,7 @@ import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetRankACAll, GetRankACProblem, GetRankACProblemToday } from "@/apis/rank.ts";
+import { GetRankACAll, GetRankACProblem, GetRankACProblemToday, GetRankACProblemDay7, GetRankACProblemYear } from "@/apis/rank.ts";
 import { UserRank } from "@/types/rank.ts";
 import { JudgeStatus } from "@/apis/judge.ts";
 
@@ -30,6 +30,14 @@ const descriptionConfig = {
   "problem-today": {
     header: "统计所有用户今日在本站的提交记录",
     content: "以今日题目记录数量排序，如果相同，注册较早的用户靠前",
+  },
+  "problem-day7": {
+    header: "统计所有用户最近7日在本站的提交记录",
+    content: "以7日题目记录数量排序（从7日前的0点开始计算），如果相同，注册较早的用户靠前",
+  },
+  "problem-year": {
+    header: "统计所有用户最近1年在本站的提交记录",
+    content: "以最近1年题目记录数量排序（从365日前的0点开始计算），如果相同，注册较早的用户靠前",
   },
 };
 
@@ -155,6 +163,12 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
       case "problem-today":
         res = await GetRankACProblemToday(current, pageSize);
         break;
+      case "problem-day7":
+        res = await GetRankACProblemDay7(current, pageSize);
+        break;
+      case "problem-year":
+        res = await GetRankACProblemYear(current, pageSize);
+        break;
       default:
         res = await GetRankACAll(current, pageSize);
         break;
@@ -214,12 +228,11 @@ onMounted(async () => {
         descriptionContent.value = descriptionConfig.all.content;
       }
       switch (props.type) {
-        case "problem":
-        case "problem-today":
-          listColumns.value = userColumns.concat(problemColumns);
+        case "all":
+          listColumns.value = userColumns.concat(acColumns);
           break;
         default:
-          listColumns.value = userColumns.concat(acColumns);
+          listColumns.value = userColumns.concat(problemColumns);
           break;
       }
 

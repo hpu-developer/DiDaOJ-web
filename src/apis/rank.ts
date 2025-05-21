@@ -20,3 +20,17 @@ export function GetRankACProblemToday(page: number, pageSize: number) {
     method: "get",
   });
 }
+
+export function GetRankACProblemDay7(page: number, pageSize: number) {
+  return httpRequest({
+    url: "/rank/ac/problem/day7" + "?page=" + page + "&page_size=" + pageSize,
+    method: "get",
+  });
+}
+
+export function GetRankACProblemYear(page: number, pageSize: number) {
+  return httpRequest({
+    url: "/rank/ac/problem/year" + "?page=" + page + "&page_size=" + pageSize,
+    method: "get",
+  });
+}

@@ -207,7 +207,6 @@ const viewsConfig = [
     },
     component: RankUser,
   },
-
   {
     name: "rank-ac-problem",
     tab: "rank",
@@ -220,7 +219,6 @@ const viewsConfig = [
     },
     component: RankUser,
   },
-
   {
     name: "rank-ac-problem-today",
     tab: "rank",
@@ -230,6 +228,30 @@ const viewsConfig = [
     icon: "base-station",
     props: {
       type: "problem-today",
+    },
+    component: RankUser,
+  },
+  {
+    name: "rank-ac-problem-day7",
+    tab: "rank",
+    sidebar: "rank-ac-problem-day7",
+    path: "ac/problem/day7",
+    title: "7日题量",
+    icon: "base-station",
+    props: {
+      type: "problem-day7",
+    },
+    component: RankUser,
+  },
+  {
+    name: "rank-ac-problem-year",
+    tab: "rank",
+    sidebar: "rank-ac-problem-year",
+    path: "ac/problem/year",
+    title: "1年题量",
+    icon: "base-station",
+    props: {
+      type: "problem-year",
     },
     component: RankUser,
   },
