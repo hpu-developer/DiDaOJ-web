@@ -1,6 +1,6 @@
 import httpRequest from "@/apis/axios-api";
 
-import md5 from 'md5';
+import md5 from "md5";
 
 import type { UserInfo, UserInfoView } from "@/types/user.ts";
 
@@ -45,5 +45,15 @@ export function GetUserInfo(username: string) {
   return httpRequest({
     url: `/user/info?${new URLSearchParams(params).toString()}`,
     method: "get",
+  });
+}
+
+export function PostUserRegisterEmailKey(email: string) {
+  return httpRequest({
+    url: "/user/register/email",
+    method: "post",
+    data: {
+      email: email,
+    },
   });
 }

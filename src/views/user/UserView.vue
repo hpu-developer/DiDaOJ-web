@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, onBeforeRouteUpdate } from "vue-router";
 import router from "@/router";
 import { GetUserInfo, ParseUser } from "@/apis/user.ts";
 import { ShowErrorTips, ShowTextTipsError, useCurrentInstance } from "@/util";
@@ -20,17 +20,7 @@ const userData = ref<UserInfoView | null>(null);
 
 const problemsAc = ref([] as string[]);
 
-onMounted(async () => {
-  if (Array.isArray(route.params.username)) {
-    username = route.params.username[0];
-  } else {
-    username = route.params.username;
-  }
-  if (!username) {
-    await router.push({ name: "home" });
-    return;
-  }
-
+const loadUserInfo = async (username: string) => {
   userLoading.value = true;
   try {
     let res = await GetUserInfo(username);
@@ -53,6 +43,33 @@ onMounted(async () => {
   } finally {
     userLoading.value = false;
   }
+};
+
+onBeforeRouteUpdate(async (to: any, from: any, next: any) => {
+  if (Array.isArray(to.params.username)) {
+    username = to.params.username[0];
+  } else {
+    username = to.params.username;
+  }
+  if (!username) {
+    await router.push({ name: "home" });
+    return;
+  }
+  await loadUserInfo(username);
+  next();
+});
+
+onMounted(async () => {
+  if (Array.isArray(route.params.username)) {
+    username = route.params.username[0];
+  } else {
+    username = route.params.username;
+  }
+  if (!username) {
+    await router.push({ name: "home" });
+    return;
+  }
+  await loadUserInfo(username);
 });
 </script>
 
