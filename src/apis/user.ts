@@ -1,5 +1,16 @@
 import httpRequest from "@/apis/axios-api";
 
+import type { UserInfo, UserInfoView } from "@/types/user.ts";
+
+export function ParseUser(item: UserInfo): UserInfoView {
+  const result: any = {};
+  result.id = item.id;
+  result.username = item.username;
+  result.nickname = item.nickname;
+  result.email = item.email;
+  return result;
+}
+
 export function RequestLogin(username: string, password: string) {
   return httpRequest({
     url: "/user/login",
@@ -18,27 +29,12 @@ export function PostLoginRefresh() {
   });
 }
 
-export interface UserInfo {
-  tapd: string;
-  svn: string;
-  git: string;
-}
-
-export type UserInfoResponse = UserInfo;
-
-export type UserInfoSaveRequest = UserInfo;
-
-export function GetUserInfo() {
+export function GetUserInfo(username: string) {
+  const params = {
+    username: username,
+  };
   return httpRequest({
-    url: "/user/info",
+    url: `/user/info?${new URLSearchParams(params).toString()}`,
     method: "get",
-  });
-}
-
-export function SaveUserConfig(config: UserInfoSaveRequest) {
-  return httpRequest({
-    url: "/user/info/save",
-    method: "post",
-    data: config,
   });
 }

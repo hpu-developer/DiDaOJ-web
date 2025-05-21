@@ -11,6 +11,7 @@ declare module 'vue' {
     FooterContent: typeof import('./src/components/FooterContent.vue')['default']
     ForceHiddenSidebarButton: typeof import('./src/components/ForceHiddenSidebarButton.vue')['default']
     HeaderContent: typeof import('./src/components/HeaderContent.vue')['default']
+    Hitokoto: typeof import('./src/components/Hitokoto.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SidebarContent: typeof import('./src/components/SidebarContent.vue')['default']

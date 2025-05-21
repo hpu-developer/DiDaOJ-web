@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { UserState } from "@/types/user";
+import type { UserState } from "@/types/user.ts";
 import { isRolesHasAllAuths } from "@/auth";
 
 export const useUserStore = defineStore("user", {
