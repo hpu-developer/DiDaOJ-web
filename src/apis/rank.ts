@@ -13,3 +13,10 @@ export function GetRankACProblem(page: number, pageSize: number) {
     method: "get",
   });
 }
+
+export function GetRankACProblemToday(page: number, pageSize: number) {
+  return httpRequest({
+    url: "/rank/ac/problem/today" + "?page=" + page + "&page_size=" + pageSize,
+    method: "get",
+  });
+}

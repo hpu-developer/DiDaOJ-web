@@ -3,7 +3,7 @@ import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetRankACAll, GetRankACProblem } from "@/apis/rank.ts";
+import { GetRankACAll, GetRankACProblem, GetRankACProblemToday } from "@/apis/rank.ts";
 import { UserRank } from "@/types/rank.ts";
 import { JudgeStatus } from "@/apis/judge.ts";
 
@@ -26,6 +26,10 @@ const descriptionConfig = {
   problem: {
     header: "统计所有用户在本站的提交记录",
     content: "以题目记录数量排序，如果相同，注册较早的用户靠前",
+  },
+  "problem-today": {
+    header: "统计所有用户今日在本站的提交记录",
+    content: "以今日题目记录数量排序，如果相同，注册较早的用户靠前",
   },
 };
 
@@ -125,17 +129,20 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
     dataLoading.value = true;
   }
   try {
+    problemViews.value = [];
     const { current, pageSize } = paginationInfo;
     let res = null;
     switch (props.type) {
       case "problem":
         res = await GetRankACProblem(current, pageSize);
         break;
+      case "problem-today":
+        res = await GetRankACProblemToday(current, pageSize);
+        break;
       default:
         res = await GetRankACAll(current, pageSize);
         break;
     }
-    problemViews.value = [];
     if (res.code === 0) {
       const responseList = res.data.list as UserRank[];
       if (!responseList || responseList.length <= 0) {
@@ -192,6 +199,7 @@ onMounted(async () => {
       }
       switch (props.type) {
         case "problem":
+        case "problem-today":
           listColumns.value = userColumns.concat(problemColumns);
           break;
         default:

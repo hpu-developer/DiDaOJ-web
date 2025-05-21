@@ -222,6 +222,19 @@ const viewsConfig = [
   },
 
   {
+    name: "rank-ac-problem-today",
+    tab: "rank",
+    sidebar: "rank-ac-problem-today",
+    path: "ac/problem/today",
+    title: "今日题量",
+    icon: "base-station",
+    props: {
+      type: "problem-today",
+    },
+    component: RankUser,
+  },
+
+  {
     name: "tool-paste",
     tab: "tool",
     sidebar: "tool-paste",
