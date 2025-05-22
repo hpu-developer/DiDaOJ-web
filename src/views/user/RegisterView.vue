@@ -20,6 +20,7 @@ const formData = ref({
   username: "",
   password: "",
   confirmPassword: "",
+  nickname: "",
   email: "",
   emailKey: "",
 });
@@ -80,7 +81,8 @@ const onSubmit = ({ validateResult, firstError }: any) => {
   }
 
   isRegisterRunning.value = true;
-  PostUserRegister(formData.value.username, formData.value.password, formData.value.email, formData.value.emailKey, "")
+  PostUserRegister(formData.value.username, formData.value.password, formData.value.email, formData.value.emailKey,
+    formData.value.nickname)
     .then((res) => {
       if (res.code === 0) {
         ShowTextTipsInfo(globalProperties, "注册成功，可使用账号信息登录");
@@ -130,6 +132,13 @@ onBeforeUnmount(() => {
       </t-form-item>
       <t-form-item name="confirm-password">
         <t-input v-model="formData.confirmPassword" type="password" clearable placeholder="请确认密码">
+          <template #prefix-icon>
+            <LockOnIcon />
+          </template>
+        </t-input>
+      </t-form-item>
+      <t-form-item name="nickname">
+        <t-input v-model="formData.nickname" clearable placeholder="昵称">
           <template #prefix-icon>
             <LockOnIcon />
           </template>
