@@ -105,6 +105,15 @@ onMounted(() => {
     globalProperties.$router.push({ path: "/user" });
     return;
   }
+
+  window.turnstile.ready(function () {
+    window.turnstile.render("#example-container", {
+      sitekey: "0x4AAAAAABeM4SYPu2Rn7PmI",
+      callback: function (token) {
+        console.log(`Challenge Success ${token}`);
+      },
+    });
+  });
 });
 
 onBeforeUnmount(() => {
@@ -160,6 +169,7 @@ onBeforeUnmount(() => {
           </t-input>
         </t-input-adornment>
       </t-form-item>
+      <div id="example-container" data-theme="light"></div>
       <t-form-item>
         <t-button theme="primary" type="submit" block :loading="isRegisterRunning">注册</t-button>
       </t-form-item>
@@ -180,7 +190,6 @@ onBeforeUnmount(() => {
 <style scoped>
 .yj-login-card {
   width: 500px;
-  height: 500px;
   margin: 20px auto;
   display: flex;
   flex-direction: column;
