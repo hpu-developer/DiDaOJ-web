@@ -35,6 +35,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "1002": {
         zh: "未知错误",
       },
+      "1003": {
+        zh: "操作过于频繁，请稍后重试",
+      },
       "10001": {
         zh: "权限异常，请重新登陆后再试",
       },
@@ -46,6 +49,15 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       },
       "100001": {
         zh: "用户名不存在或密码不匹配",
+      },
+      "100002": {
+        zh: "邮件发送失败，可能是邮箱无效或达到了每日注册上限，如有问题可联系管理员解决",
+      },
+      "100003": {
+        zh: "验证码错误或已过期，请重新获取",
+      },
+      "100004": {
+        zh: "注册用户失败，可能存在同名用户",
       },
     });
   });

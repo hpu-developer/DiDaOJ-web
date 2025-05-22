@@ -12,7 +12,7 @@ const userStore = useUserStore();
 const isLoginRunning = ref(false);
 
 const formData = ref({
-  account: "",
+  username: "",
   password: "",
 });
 
@@ -25,7 +25,7 @@ const onSubmit = ({ validateResult, firstError }: any) => {
     return;
   }
   isLoginRunning.value = true;
-  RequestLogin(formData.value.account, formData.value.password)
+  RequestLogin(formData.value.username, formData.value.password)
     .then((res) => {
       if (res.code === 0) {
         userStore.loadResponse(res.data);
@@ -59,8 +59,8 @@ onMounted(() => {
 <template>
   <t-card class="yj-login-card" title="欢迎使用DidaOJ~">
     <t-form ref="form" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit" class="yj-login-form" :label-width="0">
-      <t-form-item name="account">
-        <t-input v-model="formData.account" clearable placeholder="请输入账户名">
+      <t-form-item name="username">
+        <t-input v-model="formData.username" clearable placeholder="请输入用户名">
           <template #prefix-icon>
             <DesktopIcon />
           </template>

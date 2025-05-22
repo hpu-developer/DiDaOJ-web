@@ -57,3 +57,23 @@ export function PostUserRegisterEmailKey(email: string) {
     },
   });
 }
+
+export function PostUserRegister(
+  username: string,
+  password: string,
+  email: string,
+  key: string,
+  nickname: string
+) {
+  return httpRequest({
+    url: "/user/register",
+    method: "post",
+    data: {
+      username: username,
+      password: password,
+      email: email,
+      key: key,
+      nickname: nickname,
+    },
+  });
+}
