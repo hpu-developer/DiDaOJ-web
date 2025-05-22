@@ -48,23 +48,18 @@ export function GetUserInfo(username: string) {
   });
 }
 
-export function PostUserRegisterEmailKey(email: string) {
+export function PostUserRegisterEmailKey(token: string, email: string) {
   return httpRequest({
     url: "/user/register/email",
     method: "post",
     data: {
+      token: token,
       email: email,
     },
   });
 }
 
-export function PostUserRegister(
-  username: string,
-  password: string,
-  email: string,
-  key: string,
-  nickname: string
-) {
+export function PostUserRegister(username: string, password: string, email: string, key: string, nickname: string) {
   return httpRequest({
     url: "/user/register",
     method: "post",
