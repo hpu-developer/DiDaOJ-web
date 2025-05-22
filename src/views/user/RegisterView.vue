@@ -245,7 +245,7 @@ onBeforeUnmount(() => {
     </div>
   </t-card>
 
-  <t-dialog v-model:visible="dialogShow" header="请完成人机验证" :close-btn="false" :footer="false">
+  <t-dialog v-model:visible="dialogShow" header="正在加载人机验证" :close-btn="false" :footer="false">
     <div ref="dialogContainer" class="cf-confirm-container"></div>
   </t-dialog>
 </template>

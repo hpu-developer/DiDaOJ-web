@@ -83,3 +83,15 @@ export function PostUserLoginForget(token: string, username: string) {
     },
   });
 }
+
+export function PostUserPasswordModify(username: string, password: string, key: string) {
+  return httpRequest({
+    url: "/user/password/modify",
+    method: "post",
+    data: {
+      username: username,
+      password: password,
+      key: key,
+    },
+  });
+}

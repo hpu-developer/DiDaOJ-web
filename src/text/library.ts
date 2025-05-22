@@ -65,6 +65,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100005": {
         zh: "用户名不存在，或您未在本系统绑定邮箱，请联系管理员寻求帮助",
       },
+      "100006": {
+        zh: "验证码错误或已过期，请重新获取",
+      },
     });
   });
 }
