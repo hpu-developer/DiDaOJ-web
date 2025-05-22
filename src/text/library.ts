@@ -30,7 +30,10 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
         zh: "接口未找到",
       },
       "1000": {
-        zh: "系统错误",
+        zh: "系统错误，请重试或等待管理员修复",
+      },
+      "1001": {
+        zh: "系统异常，请重试或等待管理员修复",
       },
       "1002": {
         zh: "未知错误",
@@ -58,6 +61,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       },
       "100004": {
         zh: "注册用户失败，可能存在同名用户",
+      },
+      "100005": {
+        zh: "用户名不存在，或您未在本系统绑定邮箱，请联系管理员寻求帮助",
       },
     });
   });

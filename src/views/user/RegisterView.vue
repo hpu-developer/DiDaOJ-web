@@ -2,7 +2,6 @@
 import { onMounted, onBeforeUnmount, ref, nextTick } from "vue";
 import { useUserStore } from "@/stores/user.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { DesktopIcon, LockOnIcon } from "tdesign-icons-vue-next";
 import { PostUserRegisterEmailKey, PostUserRegister } from "@/apis/user.ts";
 
 const { globalProperties } = useCurrentInstance();
@@ -105,8 +104,9 @@ const handleSendEmailKey = async () => {
   div.setAttribute("data-theme", "light");
   dialogContainer.value?.appendChild(div);
 
-  window.turnstile.ready(function () {
-    window.turnstile.render("#cf-confirm-div", {
+  const windowRef = window as any;
+  windowRef.turnstile.ready(function () {
+    windowRef.turnstile.render("#cf-confirm-div", {
       sitekey: "0x4AAAAAABeM4SYPu2Rn7PmI",
       callback: async function (token: string) {
         dialogShow.value = false;

@@ -72,3 +72,14 @@ export function PostUserRegister(username: string, password: string, email: stri
     },
   });
 }
+
+export function PostUserLoginForget(token: string, username: string) {
+  return httpRequest({
+    url: "/user/forget",
+    method: "post",
+    data: {
+      token: token,
+      username: username,
+    },
+  });
+}

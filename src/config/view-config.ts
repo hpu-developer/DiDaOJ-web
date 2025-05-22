@@ -26,6 +26,7 @@ import SystemStatus from "@/views/system/SystemStatus.vue";
 import ManageJudge from "@/views/manage/ManageJudge.vue";
 import ProblemEdit from "@/views/problem/ProblemEdit.vue";
 import ProblemJudge from "@/views/problem/ProblemJudge.vue";
+import UserForget from "@/views/user/UserForget.vue";
 
 const viewsConfig = [
   {
@@ -318,6 +319,14 @@ const viewsConfig = [
     icon: "list",
     auths: ["i-manage-judge"],
     component: ManageJudge,
+  },
+
+  {
+    name: "login-forget",
+    tab: "login",
+    path: "forget",
+    title: "忘记密码",
+    component: UserForget,
   },
 ] as ViewList;
 
