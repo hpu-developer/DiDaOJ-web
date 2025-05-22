@@ -28,6 +28,46 @@ const formData = ref({
   emailKey: "",
 });
 
+const rePassword = (val: any) =>
+  new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      resolve(formData.value.password === val);
+      clearTimeout(timer);
+    });
+  });
+
+const formRules = ref({
+  username: [
+    { required: true, message: "请填写用户名" },
+    { min: 4, message: "用户名至少4个字符" },
+    { max: 20, message: "用户名最多20个字符" },
+    { pattern: /^[a-zA-Z0-9_]+$/, message: "用户名只能包含字母、数字和下划线" },
+  ],
+  password: [
+    { required: true, message: "请填写密码" },
+    { min: 6, message: "密码至少6个字符" },
+    { max: 20, message: "密码最多20个字符" },
+  ],
+  confirmPassword: [
+    { required: true, message: "请确认密码" },
+    { validator: rePassword, message: "两次密码不一致" },
+  ],
+  nickname: [
+    { required: true, message: "请填写昵称" },
+    { min: 1, message: "昵称至少1个字符" },
+    { max: 30, message: "昵称最多30个字符" },
+  ],
+  email: [
+    { required: true, message: "请填写邮箱" },
+    { pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, message: "邮箱格式不正确" },
+  ],
+  emailKey: [
+    { required: true, message: "请填写验证码" },
+    { min: 6, message: "请输入完整字符" },
+    { max: 6, message: "请输入完整字符" },
+  ],
+});
+
 const confirmEmail = ref(() => (
   <t-button onClick={handleSendEmailKey} disabled={isSendEmailKeyDisabled.value} loading={isSendEmailKeying.value} style="width:120px">
     {sendEmailButtonText.value}
@@ -69,8 +109,8 @@ const handleSendEmailKey = async () => {
     window.turnstile.render("#cf-confirm-div", {
       sitekey: "0x4AAAAAABeM4SYPu2Rn7PmI",
       callback: async function (token: string) {
-        await requestSendEmailKey(token);
         dialogShow.value = false;
+        await requestSendEmailKey(token);
       },
       "before-interactive-callback": function () {
         console.log("before-interactive-callback");
@@ -119,10 +159,16 @@ const onReset = () => {
   ShowTextTipsInfo(globalProperties, "重置成功");
 };
 
-const onSubmit = ({ validateResult, firstError }: any) => {
+const onSubmit = ({ validateResult, firstError, e }: any) => {
   if (isRegisterRunning.value) {
     return;
   }
+  e.preventDefault();
+  if (validateResult !== true) {
+    ShowTextTipsError(globalProperties, firstError);
+    return;
+  }
+
   if (formData.value.password !== formData.value.confirmPassword) {
     ShowTextTipsError(globalProperties, "两次密码不一致");
     return;
@@ -161,50 +207,26 @@ onBeforeUnmount(() => {
 
 <template>
   <t-card class="yj-login-card" title="欢迎使用DidaOJ~">
-    <t-form ref="form" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit" class="yj-login-form" :label-width="0">
-      <t-form-item name="account">
-        <t-input v-model="formData.username" clearable placeholder="请输入用户名">
-          <template #prefix-icon>
-            <DesktopIcon />
-          </template>
-        </t-input>
+    <t-form ref="form" :rules="formRules" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit" class="yj-login-form">
+      <t-form-item name="username" label="用户名">
+        <t-input v-model="formData.username" clearable placeholder="用于登录与查找"></t-input>
       </t-form-item>
 
-      <t-form-item name="password">
-        <t-input v-model="formData.password" type="password" clearable placeholder="请输入密码">
-          <template #prefix-icon>
-            <LockOnIcon />
-          </template>
-        </t-input>
+      <t-form-item name="password" label="密码">
+        <t-input v-model="formData.password" type="password" clearable placeholder="请输入密码"></t-input>
       </t-form-item>
-      <t-form-item name="confirm-password">
-        <t-input v-model="formData.confirmPassword" type="password" clearable placeholder="请确认密码">
-          <template #prefix-icon>
-            <LockOnIcon />
-          </template>
-        </t-input>
+      <t-form-item name="confirmPassword" label="确认密码">
+        <t-input v-model="formData.confirmPassword" type="password" clearable placeholder="请确认密码"></t-input>
       </t-form-item>
-      <t-form-item name="nickname">
-        <t-input v-model="formData.nickname" clearable placeholder="昵称">
-          <template #prefix-icon>
-            <LockOnIcon />
-          </template>
-        </t-input>
+      <t-form-item name="nickname" label="昵称">
+        <t-input v-model="formData.nickname" clearable placeholder="用于优先在网站各处展示"></t-input>
       </t-form-item>
-      <t-form-item name="email">
-        <t-input v-model="formData.email" clearable placeholder="邮箱">
-          <template #prefix-icon>
-            <LockOnIcon />
-          </template>
-        </t-input>
+      <t-form-item name="email" label="邮箱">
+        <t-input v-model="formData.email" clearable placeholder="请填写常用邮箱"></t-input>
       </t-form-item>
-      <t-form-item name="emailKey">
+      <t-form-item name="emailKey" label="验证码">
         <t-input-adornment :append="confirmEmail">
-          <t-input v-model="formData.emailKey" clearable placeholder="验证码" style="width: 240px">
-            <template #prefix-icon>
-              <LockOnIcon />
-            </template>
-          </t-input>
+          <t-input v-model="formData.emailKey" clearable placeholder="请输入验证码" style="width: 140px"></t-input>
         </t-input-adornment>
       </t-form-item>
       <t-form-item>
@@ -230,7 +252,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .yj-login-card {
-  width: 500px;
+  width: 600px;
   margin: 20px auto;
   display: flex;
   flex-direction: column;
