@@ -54,6 +54,7 @@ const viewsConfig = [
     path: "recommend/:problemId*",
     title: "问题推荐",
     icon: "cpu",
+    needLogin: true,
     component: ProblemRecommend,
   },
 
@@ -111,6 +112,7 @@ const viewsConfig = [
     path: ":contestId+/problem/:problemIndex+",
     title: "问题详情",
     icon: "cpu",
+    disableSidebar: true,
     component: ProblemDetail,
   },
   {
