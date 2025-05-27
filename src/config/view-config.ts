@@ -122,7 +122,17 @@ const viewsConfig = [
     path: ":contestId+/judge",
     title: "评测列表",
     icon: "list",
-    component: ContestList,
+    component: JudgeJobList,
+  },
+  {
+    name: "contest-judge-detail",
+    tab: "contest-detail-tab",
+    sidebar: "contest-judge-detail",
+    path: ":contestId+/judge/:judgeId+",
+    title: "评测详情",
+    icon: "cpu",
+    component: JudgeJobDetail,
+    disableSidebar: true,
   },
   {
     name: "contest-rank",

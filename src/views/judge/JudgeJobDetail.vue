@@ -293,9 +293,9 @@ onMounted(async () => {
   viewActive = true;
 
   if (Array.isArray(route.params.judgeId)) {
-    judgeId = route.params.judgeId[0];
+    judgeId = Number(route.params.judgeId[0]);
   } else {
-    judgeId = route.params.judgeId;
+    judgeId = Number(route.params.judgeId);
   }
 
   if (!judgeId) {
@@ -312,6 +312,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   viewActive = false;
   window.removeEventListener("resize", updateWidth);
+  clearTimeout(refreshTimeout);
 });
 </script>
 
@@ -338,8 +339,8 @@ onBeforeUnmount(() => {
 
   <t-card v-if="judgeJob?.compileMessage" class="compile-message">{{ judgeJob?.compileMessage }}</t-card>
 
-  <t-collapse v-if="judgeJob?.task.length > 0" class="task-panel">
-    <t-collapse-panel v-for="(task, index) in judgeJob?.task" :key="task.taskId" :header="() => taskRender(task)">
+  <t-collapse v-if="judgeJob?.task && judgeJob?.task.length > 0" class="task-panel">
+    <t-collapse-panel v-for="(task, _) in judgeJob?.task" :key="task.taskId" :header="() => taskRender(task)">
       {{ task.content }}
       {{ task.waHint }}
     </t-collapse-panel>

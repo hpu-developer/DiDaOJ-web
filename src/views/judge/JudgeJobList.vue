@@ -11,7 +11,8 @@ import {
   JudgeStatus,
   GetJudgeStatusOptions,
   ParseJudgeJob,
-  GetJudgeJobCode, GetJudgeStatusTheme,
+  GetJudgeJobCode,
+  GetJudgeStatusTheme,
 } from "@/apis/judge.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import Vditor from "vditor";
@@ -30,6 +31,8 @@ const showJudgeJob = ref<JudgeJobView | null>(null);
 
 const markdownCodeRef = ref<HTMLElement | null>(null);
 const isCodeLoading = ref(false);
+
+let contestId = -1;
 
 const searchForm = ref({
   problemId: "",
@@ -150,9 +153,9 @@ const handleShowCode = async (jobView: JudgeJobView) => {
   try {
     showJudgeJob.value = jobView;
 
-    const res = await GetJudgeJobCode(showJudgeJob.value.id);
+    const res = await GetJudgeJobCode(Number(showJudgeJob.value.id));
     if (res.code === 0) {
-      const response = res.data
+      const response = res.data;
       const language = GetKeyByJudgeLanguage(response.language);
 
       const codeMarkdown = `\`\`\`${language}\n${response.code}\n\`\`\``;
@@ -181,16 +184,26 @@ const handleGotoProblem = (id: string) => {
   router.push({ path: "/problem/" + id });
 };
 
-const handleGotoJudgeJob = (id: string) => {
+const handleGotoJudgeJob = (id: string | undefined) => {
   if (!id) {
     return;
   }
-  router.push({
-    name: "judge-detail",
-    params: {
-      judgeId: id,
-    },
-  });
+  if (contestId > 0) {
+    router.push({
+      name: "contest-judge-detail",
+      params: {
+        contestId: contestId,
+        judgeId: id,
+      },
+    });
+  } else {
+    router.push({
+      name: "judge-detail",
+      params: {
+        judgeId: id,
+      },
+    });
+  }
 };
 
 const handleGotoUser = (user: string) => {
@@ -240,6 +253,7 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   try {
     const { current, pageSize } = paginationInfo;
     const res = await GetJudgeJobList(
+      contestId,
       searchForm.value.problemId,
       searchForm.value.username,
       searchForm.value.language,
@@ -299,6 +313,11 @@ onMounted(async () => {
   watchHandle = watch(
     () => route.query,
     (newQuery) => {
+      if (Array.isArray(route.params.contestId)) {
+        contestId = Number(route.params.contestId[0]);
+      } else {
+        contestId = Number(route.params.contestId);
+      }
       searchForm.value.problemId = (newQuery.problem_id as string) || "";
       searchForm.value.username = (newQuery.username as string) || "";
       if (newQuery.language != undefined) {
@@ -331,6 +350,8 @@ onBeforeUnmount(() => {
   if (watchHandle) {
     watchHandle();
   }
+
+  clearTimeout(refreshTimeout);
 });
 </script>
 

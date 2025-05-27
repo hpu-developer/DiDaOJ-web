@@ -6,6 +6,7 @@ import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance
 import { GetDiscussList, ParseDiscuss, PostCreateDiscuss } from "@/apis/discuss.ts";
 import { Discuss, DiscussCreateRequest, DiscussView } from "@/types/discuss.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
+import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 
 const route = useRoute();
 const router = useRouter();
@@ -16,11 +17,11 @@ let watchHandle: WatchStopHandle | null = null;
 const modalShow = ref(false);
 const confirmLoading = ref(false);
 
-let contestId = 0;
+let contestId = -1;
 
-const listColumns = ref([]);
+const listColumns = ref<BaseTableCol[]>([] as BaseTableCol[]);
 
-const listColumns1 = [];
+const listColumns1 = [] as BaseTableCol[];
 
 const listColumns2 = [
   {
@@ -49,7 +50,7 @@ const listColumns2 = [
     colKey: "updateTime",
     width: "180",
   },
-];
+] as BaseTableCol[];
 
 const dataLoading = ref(false);
 
@@ -75,8 +76,7 @@ const discussSearchForm = ref({
 
 const discussCreateForm = ref<DiscussCreateRequest>({
   title: "",
-  description: "",
-  open_time: [],
+  content: "",
 });
 
 const handleGotoProblem = (id: string) => {
@@ -86,7 +86,7 @@ const handleGotoProblem = (id: string) => {
   router.push({ name: "problem-detail", params: { problemId: id } });
 };
 
-const handleGotoContestProblem = (contestId, problemIndex: string) => {
+const handleGotoContestProblem = (contestId: number, problemIndex: string) => {
   router.push({ name: "contest-problem-detail", params: { contestId: contestId, problemIndex: problemIndex } });
 };
 
@@ -195,9 +195,9 @@ onMounted(async () => {
     () => route.query,
     (newQuery) => {
       if (Array.isArray(route.params.contestId)) {
-        contestId = route.params.contestId[0];
+        contestId = Number(route.params.contestId[0]);
       } else {
-        contestId = route.params.contestId;
+        contestId = Number(route.params.contestId);
       }
 
       listColumns.value = listColumns1;
@@ -238,7 +238,7 @@ onMounted(async () => {
           },
         ]);
       }
-      listColumns.value = listColumns.value.concat(listColumns2);
+      listColumns.value = listColumns.value.concat(listColumns2 as BaseTableCol[]);
 
       discussSearchForm.value.problemId = (newQuery.problem_id as string) || "";
       discussSearchForm.value.title = (newQuery.title as string) || "";
@@ -307,13 +307,10 @@ onBeforeUnmount(() => {
     </t-col>
   </t-row>
 
-  <t-dialog v-model:visible="modalShow" header="创建比赛" @confirm="handleConfirmCreate" :confirm-loading="confirmLoading">
+  <t-dialog v-model:visible="modalShow" header="创建讨论" @confirm="handleConfirmCreate" :confirm-loading="confirmLoading">
     <t-form :label-width="80" :model="discussCreateForm" @submit.prevent>
       <t-form-item label="标题">
         <t-input v-model="discussCreateForm.title" placeholder="请输入标题"></t-input>
-      </t-form-item>
-      <t-form-item label="开启时间">
-        <t-date-range-picker enable-time-picker allow-input clearable v-model="discussCreateForm.open_time" />
       </t-form-item>
     </t-form>
   </t-dialog>

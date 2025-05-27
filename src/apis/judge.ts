@@ -231,8 +231,17 @@ export function GetJudgeJobCode(judgeId: number) {
   });
 }
 
-export function GetJudgeJobList(problemId: string, username: string, language: JudgeLanguage, status: JudgeStatus, page: number, pageSize: number) {
+export function GetJudgeJobList(
+  contestId: number,
+  problemId: string,
+  username: string,
+  language: JudgeLanguage | undefined,
+  status: JudgeStatus | undefined,
+  page: number,
+  pageSize: number
+) {
   const params = new URLSearchParams({
+    contest_id: String(contestId),
     problem_id: problemId,
     username: username,
     language: String(language),
