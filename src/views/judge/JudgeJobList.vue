@@ -14,6 +14,7 @@ import {
   GetJudgeJobCode,
   GetJudgeStatusTheme,
 } from "@/apis/judge.ts";
+import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import Vditor from "vditor";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
@@ -41,7 +42,7 @@ const searchForm = ref({
   status: undefined as JudgeStatus | undefined,
 });
 
-const ListColumns = ref([
+const listColumns = ref([
   {
     title: "ID",
     colKey: "id",
@@ -57,6 +58,13 @@ const ListColumns = ref([
     title: "问题",
     colKey: "problemId",
     cell: (_: any, data: any) => {
+      if (contestId){
+        return (
+          <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.contestProblemIndex)}>
+            {GetContestProblemIndexStr(data.row.contestProblemIndex)}
+          </t-button>
+        );
+      }
       return (
         <t-button variant="text" onClick={() => handleGotoProblem(data.row.problemId)}>
           {data.row.problemId}
@@ -182,6 +190,10 @@ const handleGotoProblem = (id: string) => {
     return;
   }
   router.push({ path: "/problem/" + id });
+};
+
+const handleGotoContestProblem = (contestId: number, problemIndex: string) => {
+  router.push({ name: "contest-problem-detail", params: { contestId: contestId, problemIndex: problemIndex } });
 };
 
 const handleGotoJudgeJob = (id: string | undefined) => {
@@ -384,7 +396,7 @@ onBeforeUnmount(() => {
 
     <t-table
       :data="judgeJobViews"
-      :columns="ListColumns"
+      :columns="listColumns"
       row-key="id"
       vertical-align="top"
       :hover="true"

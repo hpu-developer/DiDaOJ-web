@@ -2,9 +2,11 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetContestList, GetContestRank, ParseContest, PostCreateContest } from "@/apis/contest.ts";
-import { Contest, ContestCreateRequest, ContestView } from "@/types/contest.ts";
+import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
+import { GetContestProblemIndexStr, GetContestRank } from "@/apis/contest.ts";
+import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
+import { BaseTableCol } from "tdesign-vue-next/es/table/type";
+import { JudgeStatus } from "@/apis/judge.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -12,112 +14,217 @@ const { globalProperties } = useCurrentInstance();
 
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
-const modalShow = ref(false);
-const confirmLoading = ref(false);
 let contestId = 0;
 
-const ListColumns = ref([
+const getDurationText = (duration: number) => {
+  if (duration === undefined || duration === null) {
+    return "-";
+  }
+  const hours = Math.floor(duration / 3600)
+    .toString()
+    .padStart(2, "0");
+  const minutes = Math.floor((duration % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (duration % 60).toString().padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
+};
+
+const listColumns1 = [
   {
-    title: "ID",
-    colKey: "id",
+    title: "Rank",
+    colKey: "rank",
+    align: "center",
     width: "100",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoContest(data.row.id)}>
-          {data.row.id}
+        <t-button
+          variant="text"
+          onClick={() =>
+            router.push({
+              name: "contest-user-rank",
+              params: { contestId, userId: data.row.user_id },
+            })
+          }
+        >
+          {data.row.rank}
         </t-button>
       );
     },
   },
   {
-    title: "标题",
-    colKey: "title",
+    title: "Nickname",
+    colKey: "nickname",
+    width: "200",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoContest(data.row.id)}>
-          {data.row.title}
+        <t-button
+          variant="text"
+          onClick={() =>
+            router.push({
+              name: "user",
+              params: { username: data.row.username },
+            })
+          }
+        >
+          {data.row.nickname}
+        </t-button>
+      );
+    }
+  },
+  {
+    title: "Solved",
+    colKey: "solved",
+    align: "center",
+    width: "100",
+    cell: (_: any, data: any) => {
+      return (
+        <t-button
+          variant="text"
+          onClick=
+          {() =>
+            router.push({
+              name: "contest-judge",
+              params: {
+                contestId: contestId,
+              },
+              query: {
+                username: data.row.username,
+                status: JudgeStatus.Accept,
+              },
+            })
+          }
+        >
+          {data.row.solved}
         </t-button>
       );
     },
   },
   {
-    title: "负责人",
-    colKey: "ownerNickname",
-    width: "200",
+    title: "Penalty",
+    colKey: "penalty",
+    align: "center",
+    width: "100",
+    cell: (_: any, data: any) => {
+      return getDurationText(data.row.penalty);
+    },
   },
-  {
-    title: "开始时间",
-    colKey: "startTime",
-    width: "180",
-  },
-  {
-    title: "结束时间",
-    colKey: "endTime",
-    width: "180",
-  },
-]);
+] as BaseTableCol[];
+
+const listColumns = ref<BaseTableCol[]>([]);
 
 const dataLoading = ref(false);
 
-let currentPage = 1;
-let currentPageSize = 50;
+const contestRankViews = ref<ContestRankView[]>();
 
-const pagination = ref({
-  current: currentPage,
-  pageSize: currentPageSize,
-  defaultCurrent: currentPage,
-  defaultPageSize: currentPageSize,
-  total: 0,
-  pageSizeOptions: [50, 100],
-});
-
-const contestViews = ref<ContestView[]>();
-
-const contestSearchForm = ref({
-  title: "",
-  username: "",
-});
-
-const contestCreateForm = ref<ContestCreateRequest>({
-  title: "",
-  description: "",
-  open_time: [],
-});
-
-const handleGotoContest = (id: string) => {
-  if (!id) {
-    return;
-  }
-  router.push({ path: "/contest/" + id });
-};
-
-const handleSearchContest = async () => {
-  await router.push({
-    query: {
-      ...route.query,
-      title: contestSearchForm.value.title,
-      username: contestSearchForm.value.username,
-      page: 1,
-      page_size: pagination.value.defaultPageSize,
-    },
-  });
-};
-
-const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
+const fetchData = async (needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
   }
   try {
     const res = await GetContestRank(contestId);
-    contestViews.value = [];
+    listColumns.value = listColumns1;
+    contestRankViews.value = [];
     if (res.code === 0) {
-      const responseList = res.data.list as Contest[];
+      res.data.problems.sort((a: number, b: number) => a - b);
+      res.data.problems.forEach((problemIndex: number, _: number) => {
+        listColumns.value.push({
+          title: GetContestProblemIndexStr(problemIndex),
+          colKey: `problem_${problemIndex}`,
+          align: "center",
+          width: "100",
+          title: (h, { colIndex }) => {
+            return (
+              <t-button
+                variant="text"
+                onClick={() =>
+                  router.push({
+                    name: "contest-problem-detail",
+                    params: { contestId, problemIndex },
+                  })
+                }
+              >
+                {GetContestProblemIndexStr(problemIndex)}
+              </t-button>
+            );
+          },
+          cell: (_: any, data: any) => {
+            const problem = data.row[`problem_${problemIndex}`];
+            if (!problem) {
+              return "";
+            }
+            let text = "";
+            if (problem.acDuration >= 0) {
+              text = getDurationText(problem.acDuration);
+            }
+            if (problem.attempt > 0) {
+              if (text) {
+                text += " ";
+              }
+              text += `(-${problem.attempt})`;
+            }
+            return <span>{text}</span>;
+          },
+          attrs: (data: any) => {
+            const problem = data.row[`problem_${problemIndex}`];
+            if (!problem) {
+              return {};
+            }
+            if (problem.acDuration >= 0) {
+              return {
+                style: {
+                  backgroundColor: "rgba(130,255,30,0.5)",
+                },
+              };
+            }
+            return {
+              style: {
+                backgroundColor: "rgba(255,120,120,0.5)",
+              },
+            };
+          },
+        });
+      });
+      const startTime = new Date(res.data.start_time);
+      const responseList = res.data.ranks as ContestRank[];
+      const results = [];
       for (let i = 0; i < responseList.length; i++) {
         const item = responseList[i];
-        const result = await ParseContest(item);
-        contestViews.value?.push(result);
+        let result = {
+          username: item.author_username,
+          nickname: item.author_nickname,
+        } as ContestRankView;
+        let acCount = 0;
+        let penalty = 0;
+        item.problems.forEach((problem: ContestRankProblem, index: number) => {
+          let acDuration = -1;
+          if (problem.ac) {
+            acCount++;
+            acDuration = (new Date(problem.ac).getTime() - startTime.getTime()) / 1000; // 转换为秒
+            penalty += acDuration;
+            // 每一次尝试罚时20分钟
+            penalty += problem.attempt * 20 * 60;
+          }
+          const problemIndex = problem.index;
+          result[`problem_${problemIndex}`] = {
+            acDuration: acDuration,
+            attempt: problem.attempt,
+          };
+        });
+        result.solved = acCount;
+        result.penalty = penalty; // 转换为分钟
+        results.push(result);
       }
-      pagination.value = { ...pagination.value, total: res.data.total_count };
+      results.sort((a: ContestRankView, b: ContestRankView) => {
+        if (a.solved !== b.solved) {
+          return b.solved - a.solved; // 降序
+        }
+        return a.penalty - b.penalty; // 升序
+      });
+      for (let i = 0; i < results.length; i++) {
+        results[i].rank = i + 1;
+      }
+      contestRankViews.value = results;
     } else {
       if (needLoading) {
         ShowErrorTips(globalProperties, res.code);
@@ -133,37 +240,6 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
       dataLoading.value = false;
     }
   }
-};
-
-const onPageChange = async (pageInfo: { current: number; pageSize: number }) => {
-  // 更新 URL 查询参数
-  await router.push({
-    query: { ...route.query, page: pageInfo.current, page_size: pageInfo.pageSize },
-  });
-};
-
-const handleCreateContest = () => {
-  modalShow.value = true;
-};
-
-const handleConfirmCreate = async () => {
-  confirmLoading.value = true;
-
-  console.log("contestCreateForm", contestCreateForm.value);
-
-  PostCreateContest(contestCreateForm.value)
-    .then((res) => {
-      if (res.code === 0) {
-        ShowTextTipsInfo(globalProperties, "创建比赛成功");
-        modalShow.value = false;
-        router.push({ path: "/contest/" + res.data.id });
-      } else {
-        ShowErrorTips(globalProperties, res.code);
-      }
-    })
-    .finally(() => {
-      confirmLoading.value = false;
-    });
 };
 
 // 初始化分页信息
@@ -182,14 +258,7 @@ onMounted(async () => {
         await router.push({ name: "contest" });
         return;
       }
-      contestSearchForm.value.title = (newQuery.title as string) || "";
-      contestSearchForm.value.username = (newQuery.username as string) || "";
-      const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
-      const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
-      currentPage = queryPage;
-      currentPageSize = queryPageSize;
-      pagination.value = { ...pagination.value, current: currentPage, pageSize: currentPageSize };
-      fetchData({ current: currentPage, pageSize: currentPageSize }, true);
+      await fetchData(true);
     },
     { immediate: true }
   );
@@ -206,67 +275,10 @@ onBeforeUnmount(() => {
 
 <template>
   <t-row>
-    123
-    <t-col :span="9">
-      <t-card style="margin: 10px">
-        <t-table
-          :data="contestViews"
-          :columns="ListColumns"
-          row-key="id"
-          vertical-align="top"
-          :hover="true"
-          :pagination="pagination"
-          :loading="dataLoading"
-          @page-change="onPageChange"
-        />
-      </t-card>
-    </t-col>
-    <t-col :span="3">
-      <div style="margin: 10px">
-        <t-card class="sh-card">
-          <t-form :model="contestSearchForm">
-            <t-form-item label="标题">
-              <t-input v-model="contestSearchForm.title" placeholder="暂不支持模糊查询"></t-input>
-            </t-form-item>
-            <t-form-item label="负责人">
-              <t-input v-model="contestSearchForm.username" placeholder="仅支持输入完整用户名"></t-input>
-            </t-form-item>
-            <t-form-item>
-              <t-button theme="primary" @click="handleSearchContest">提交</t-button>
-            </t-form-item>
-          </t-form>
-        </t-card>
-        <t-card class="sh-card">
-          <t-space>
-            <t-button @click="handleCreateContest">创建</t-button>
-          </t-space>
-        </t-card>
-      </div>
-    </t-col>
+    <t-card style="margin: 10px">
+      <t-table :data="contestRankViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true" table-layout="fixed" :loading="dataLoading" />
+    </t-card>
   </t-row>
-
-  <t-dialog v-model:visible="modalShow" header="创建比赛" @confirm="handleConfirmCreate" :confirm-loading="confirmLoading">
-    <t-form :label-width="80" :model="contestCreateForm" @submit.prevent>
-      <t-form-item label="标题">
-        <t-input v-model="contestCreateForm.title" placeholder="请输入标题"></t-input>
-      </t-form-item>
-      <t-form-item label="开启时间">
-        <t-date-range-picker enable-time-picker allow-input clearable v-model="contestCreateForm.open_time" />
-      </t-form-item>
-    </t-form>
-  </t-dialog>
 </template>
 
-<style scoped>
-.sh-card {
-  margin: 10px;
-}
-
-.sh-background-black {
-  background-color: #212121;
-}
-
-.sh-tag-button {
-  margin: 2px;
-}
-</style>
+<style scoped></style>

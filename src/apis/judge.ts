@@ -131,6 +131,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   const result: JudgeJobView = {} as JudgeJobView;
   result.id = item.id;
   result.problemId = item.problem_id;
+  result.contestProblemIndex = item.contest_problem_index;
   result.status = item.status;
 
   if (IsJudgeStatusRunning(item.status)) {

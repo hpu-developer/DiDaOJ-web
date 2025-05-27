@@ -82,10 +82,12 @@ const handleClickJudgeStatus = () => {
     });
   } else {
     router.push({
-      name: "contest-judge-list",
+      name: "contest-judge",
       params: {
         contestId: contestId,
-        problemIndex: problemIndex,
+      },
+      query: {
+        problem_id: GetContestProblemIndexStr(problemIndex),
       },
     });
   }

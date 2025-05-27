@@ -145,15 +145,6 @@ const viewsConfig = [
     component: ContestRank,
   },
   {
-    name: "contest-statistics",
-    tab: "contest-detail-tab",
-    sidebar: "contest-statistics",
-    path: ":contestId+/statistics",
-    title: "结果统计",
-    icon: "list",
-    component: ContestList,
-  },
-  {
     name: "contest-discuss",
     tab: "contest-detail-tab",
     sidebar: "contest-discuss",

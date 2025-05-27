@@ -40,6 +40,29 @@ export interface ContestView {
   problems: ContestProblem[];
 }
 
+export interface ContestRankProblem {
+  index: number;
+  attempt: number;
+  ac: string;
+}
+
+export interface ContestRank {
+  author_id: number;
+  author_username: string;
+  author_nickname: string;
+  problems: ContestRankProblem[];
+}
+
+export interface ContestRankView {
+  rank: number;
+  username:string
+  nickname: string;
+  solved: number;
+  penalty: number;
+
+  [key: string]: any; // 索引签名，允许添加任意名字的字段
+}
+
 export interface ContestCreateRequest {
   title: string;
   description: string;
