@@ -58,9 +58,9 @@ const handleGotoContestProblem = (contestId, problemIndex: string) => {
 
 onMounted(async () => {
   if (Array.isArray(route.params.contestId)) {
-    contestId = route.params.contestId[0];
+    contestId = Number(route.params.contestId[0]);
   } else {
-    contestId = route.params.contestId;
+    contestId = Number(route.params.contestId);
   }
   if (!contestId) {
     await router.push({ name: "contest" });

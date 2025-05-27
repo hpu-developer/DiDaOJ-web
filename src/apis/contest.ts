@@ -77,6 +77,13 @@ export function GetContestList(page: number, pageSize: number) {
   });
 }
 
+export function GetContestRank(id: number) {
+  return httpRequest({
+    url: "/contest/rank" + "?id=" + id,
+    method: "get",
+  });
+}
+
 export function PostCreateContest(request: ContestCreateRequest) {
   return httpRequest({
     url: "/contest/create",

@@ -15,6 +15,7 @@ import JudgeJobDetail from "@/views/judge/JudgeJobDetail.vue";
 
 import ContestList from "@/views/contest/ContestList.vue";
 import ContestDetail from "@/views/contest/ContestDetail.vue";
+import ContestRank from "@/views/contest/ContestRank.vue";
 
 import DiscussList from "@/views/discuss/DiscussList.vue";
 import DiscussDetail from "@/views/discuss/DiscussDetail.vue";
@@ -141,7 +142,7 @@ const viewsConfig = [
     path: ":contestId+/rank",
     title: "比赛排名",
     icon: "list",
-    component: ContestList,
+    component: ContestRank,
   },
   {
     name: "contest-statistics",
