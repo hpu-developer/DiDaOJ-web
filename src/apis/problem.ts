@@ -108,6 +108,17 @@ export function GetProblemList(title: string, tag: string, page: number, pageSiz
   });
 }
 
+export function GetProblemRecommend(problemId:string ) {
+  const params = {} as any;
+  if (problemId) {
+    params.problem_id = problemId;
+  }
+  return httpRequest({
+    url: `/problem/recommend?${new URLSearchParams(params).toString()}`,
+    method: "get",
+  });
+}
+
 export function PostProblemEdit(
   problemId: string,
   title: string,
