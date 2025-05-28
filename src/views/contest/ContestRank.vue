@@ -35,7 +35,6 @@ const listColumns1 = [
     title: "Rank",
     colKey: "rank",
     align: "center",
-    width: "100",
     cell: (_: any, data: any) => {
       return (
         <t-button
@@ -53,9 +52,8 @@ const listColumns1 = [
     },
   },
   {
-    title: "Nickname",
+    title: "昵称",
     colKey: "nickname",
-    width: "200",
     cell: (_: any, data: any) => {
       return (
         <t-button
@@ -76,7 +74,6 @@ const listColumns1 = [
     title: "Solved",
     colKey: "solved",
     align: "center",
-    width: "100",
     cell: (_: any, data: any) => {
       return (
         <t-button
@@ -104,7 +101,6 @@ const listColumns1 = [
     title: "Penalty",
     colKey: "penalty",
     align: "center",
-    width: "100",
     cell: (_: any, data: any) => {
       return getDurationText(data.row.penalty);
     },
@@ -116,6 +112,19 @@ const listColumns = ref<BaseTableCol[]>([]);
 const dataLoading = ref(false);
 
 const contestRankViews = ref<ContestRankView[]>();
+
+const updateWidth = () => {
+  const width = document.body.clientWidth;
+  if (width < 1000) {
+    listColumns.value.forEach((col) => {
+      col.width = "auto";
+    });
+  } else {
+    listColumns.value.forEach((col) => {
+      col.width = "150px";
+    });
+  }
+};
 
 const fetchData = async (needLoading: boolean) => {
   if (needLoading) {
@@ -132,7 +141,6 @@ const fetchData = async (needLoading: boolean) => {
           title: GetContestProblemIndexStr(problemIndex),
           colKey: `problem_${problemIndex}`,
           align: "center",
-          width: "100",
           title: (h, { colIndex }) => {
             return (
               <t-button
@@ -259,6 +267,9 @@ onMounted(async () => {
         return;
       }
       await fetchData(true);
+
+      updateWidth();
+      window.addEventListener("resize", updateWidth);
     },
     { immediate: true }
   );
@@ -266,7 +277,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   viewActive = false;
-
+  window.removeEventListener("resize", updateWidth);
   if (watchHandle) {
     watchHandle();
   }
@@ -276,7 +287,9 @@ onBeforeUnmount(() => {
 <template>
   <t-row>
     <t-card style="margin: 10px">
-      <t-table :data="contestRankViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true" table-layout="fixed" :loading="dataLoading" />
+      <div>
+        <t-table :data="contestRankViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true" table-layout="auto" :loading="dataLoading" />
+      </div>
     </t-card>
   </t-row>
 </template>
