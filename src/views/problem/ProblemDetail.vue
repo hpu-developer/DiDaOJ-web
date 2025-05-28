@@ -3,7 +3,7 @@ import { ref, computed, onMounted, nextTick } from "vue";
 import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetContestProblem, GetProblem, ParseProblem } from "@/apis/problem.ts";
+import { GetProblem, ParseProblem, PostProblemCrawl } from "@/apis/problem.ts";
 import { GetKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
@@ -37,6 +37,7 @@ const problemLoading = ref(false);
 const problemData = ref<ProblemView | null>(null);
 let codeEditor = null as IStandaloneCodeEditor | null;
 const codeEditRef = ref<HTMLElement | null>(null);
+const problemCrawlLoading = ref(false);
 
 const tagsMap = {} as { [key: number]: ProblemTag };
 
@@ -123,6 +124,29 @@ const handleClickRecommend = () => {
   });
 };
 
+const handleClickCrawl = async () => {
+  const originOj = problemData.value?.originOj;
+  const originId = problemData.value?.originId;
+  if (!originOj || !originId) {
+    return;
+  }
+
+  try {
+    problemCrawlLoading.value = true;
+    const res = await PostProblemCrawl(originOj, originId);
+    if (res.code === 0) {
+      await fetchProblemData();
+      ShowTextTipsInfo(globalProperties, "更新成功");
+    } else {
+      ShowErrorTips(globalProperties, res.code);
+    }
+  } catch (error) {
+    ShowErrorTips(globalProperties, "更新失败，请稍后再试");
+  } finally {
+    problemCrawlLoading.value = false;
+  }
+};
+
 const handleSubmitCode = async () => {
   if (!problemId) {
     ShowTextTipsError(globalProperties, "问题ID无效");
@@ -155,40 +179,14 @@ const onSelectLanguageChanged = (value: JudgeLanguage) => {
   if (!codeEditor) {
     return;
   }
-  monaco.editor.setModelLanguage(codeEditor.getModel(), GetKeyByJudgeLanguage(value));
+  const model = codeEditor.getModel();
+  if (!model) {
+    return;
+  }
+  monaco.editor.setModelLanguage(model, GetKeyByJudgeLanguage(value));
 };
 
-onMounted(async () => {
-  if (Array.isArray(route.params.problemId)) {
-    problemId = route.params.problemId[0];
-  } else {
-    problemId = route.params.problemId;
-  }
-  if (!problemId) {
-    if (Array.isArray(route.params.contestId)) {
-      contestId = route.params.contestId[0];
-    } else {
-      contestId = route.params.contestId;
-    }
-    if (!contestId) {
-      ShowTextTipsError(globalProperties, "题目不存在");
-      await router.push({ name: "problem" });
-      return;
-    }
-    if (Array.isArray(route.params.problemIndex)) {
-      problemIndex = parseInt(route.params.problemIndex[0]);
-    } else {
-      problemIndex = parseInt(route.params.problemIndex);
-    }
-    if (!problemIndex) {
-      ShowTextTipsError(globalProperties, "题目不存在");
-      await router.push({ name: "problem" });
-      return;
-    }
-  }
-
-  problemLoading.value = true;
-
+const fetchProblemData = async () => {
   let res = await GetProblem(problemId, contestId, problemIndex);
 
   if (res.code !== 0) {
@@ -223,7 +221,7 @@ onMounted(async () => {
       Vditor.highlightRender({ lineNumber: true, enable: true }, markdownRef.value);
       enhanceCodeCopy(markdownRef.value);
 
-      if (codeEditRef.value) {
+      if (!codeEditor && codeEditRef.value) {
         codeEditor = monaco.editor.create(codeEditRef.value, {
           value: "",
           language: "cpp",
@@ -238,6 +236,40 @@ onMounted(async () => {
     }
     problemLoading.value = false;
   });
+};
+
+onMounted(async () => {
+  if (Array.isArray(route.params.problemId)) {
+    problemId = route.params.problemId[0];
+  } else {
+    problemId = route.params.problemId;
+  }
+  if (!problemId) {
+    if (Array.isArray(route.params.contestId)) {
+      contestId = Number(route.params.contestId[0]);
+    } else {
+      contestId = Number(route.params.contestId);
+    }
+    if (!contestId) {
+      ShowTextTipsError(globalProperties, "题目不存在");
+      await router.push({ name: "problem" });
+      return;
+    }
+    if (Array.isArray(route.params.problemIndex)) {
+      problemIndex = parseInt(route.params.problemIndex[0]);
+    } else {
+      problemIndex = parseInt(route.params.problemIndex);
+    }
+    if (!problemIndex) {
+      ShowTextTipsError(globalProperties, "题目不存在");
+      await router.push({ name: "problem" });
+      return;
+    }
+  }
+
+  problemLoading.value = true;
+
+  await fetchProblemData();
 });
 </script>
 
@@ -251,9 +283,6 @@ onMounted(async () => {
       </t-col>
       <t-col :span="4">
         <div style="margin: 12px">
-          <div v-if="hasEditAuth" class="dida-edit-container">
-            <t-button @click="handleClickEdit">编辑</t-button>
-          </div>
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="标题">{{ problemData?.title }}</t-descriptions-item>
             <t-descriptions-item label="时间限制">{{ problemData?.timeLimit }}</t-descriptions-item>
@@ -265,6 +294,11 @@ onMounted(async () => {
             <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
             <t-descriptions-item label="上传用户">{{ problemData?.creatorNickname }}</t-descriptions-item>
             <t-descriptions-item label="题目来源">{{ problemData?.source }}</t-descriptions-item>
+            <t-descriptions-item v-if="problemData?.originUrl" label="原题链接">
+              <t-link :href="problemData?.originUrl" target="_blank">
+                {{ problemData?.originOj }} - {{ problemData?.originId }}
+              </t-link>
+            </t-descriptions-item>
             <t-descriptions-item label="标签" v-if="problemId">
               <t-space>
                 <t-button v-for="tag in problemData?.tags" :key="tag.id" variant="dashed" @click="() => handleClickTag(tag)">
@@ -279,6 +313,12 @@ onMounted(async () => {
               <t-button @click="handleClickJudgeStatus">提交记录</t-button>
               <t-button @click="handleClickDiscuss">题目讨论</t-button>
               <t-button @click="handleClickRecommend" v-if="problemId">题目推荐</t-button>
+            </t-space>
+          </div>
+          <div class="dida-operation-container">
+            <t-space>
+              <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
+              <t-button v-if="problemData?.originId" @click="handleClickCrawl" :loading="problemCrawlLoading">更新描述 </t-button>
             </t-space>
           </div>
 

@@ -31,11 +31,15 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
   if (item.description != undefined) {
     result.description = item.description;
   }
-  if (item.time_limit != undefined) {
+  if (item.time_limit != undefined && item.time_limit >= 0) {
     result.timeLimit = item.time_limit.toString() + " ms";
+  } else {
+    result.timeLimit = "未知";
   }
-  if (item.memory_limit != undefined) {
+  if (item.memory_limit != undefined && item.memory_limit >= 0) {
     result.memoryLimit = (item.memory_limit / 1024).toFixed(2) + " MB";
+  } else {
+    result.memoryLimit = "未知";
   }
   if (item.judge_type != undefined) {
     result.judgeType = GetJudgeTypeStr(item.judge_type);
@@ -54,6 +58,15 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
   }
   if (item.judge_md5 != undefined) {
     result.judgeMd5 = item.judge_md5;
+  }
+  if (item.origin_oj != undefined) {
+    result.originOj = item.origin_oj;
+  }
+  if (item.origin_id != undefined) {
+    result.originId = item.origin_id;
+  }
+  if (item.origin_url != undefined) {
+    result.originUrl = item.origin_url;
   }
 
   return result;
@@ -87,8 +100,11 @@ export function GetProblemJudge(problemId: string) {
   });
 }
 
-export function GetProblemList(title: string, tag: string, page: number, pageSize: number) {
+export function GetProblemList(oj: string, title: string, tag: string, page: number, pageSize: number) {
   const params = {} as any;
+  if (oj) {
+    params.oj = oj;
+  }
   if (title) {
     params.title = title;
   }
@@ -108,7 +124,7 @@ export function GetProblemList(title: string, tag: string, page: number, pageSiz
   });
 }
 
-export function GetProblemRecommend(problemId:string ) {
+export function GetProblemRecommend(problemId: string) {
   const params = {} as any;
   if (problemId) {
     params.problem_id = problemId;
@@ -116,6 +132,17 @@ export function GetProblemRecommend(problemId:string ) {
   return httpRequest({
     url: `/problem/recommend?${new URLSearchParams(params).toString()}`,
     method: "get",
+  });
+}
+
+export function PostProblemCrawl(oj: string, problemId: string) {
+  return httpRequest({
+    url: "/problem/crawl",
+    method: "post",
+    data: {
+      oj: oj,
+      id: problemId,
+    },
   });
 }
 

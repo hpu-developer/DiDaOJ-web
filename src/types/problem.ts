@@ -19,6 +19,9 @@ export interface Problem {
   creator_nickname?: string;
   source?: string;
   judge_md5?: string;
+  origin_oj?: string;
+  origin_id?: string;
+  origin_url?: string;
 }
 
 export interface ProblemView {
@@ -37,10 +40,13 @@ export interface ProblemView {
   creatorNickname?: string;
   source?: string;
   judgeMd5?: string;
+  originOj?: string;
+  originId?: string;
+  originUrl?: string;
 }
 
 export interface ProblemJudgeData {
   key: string;
-  size : number;
+  size: number;
   last_modified: string;
 }

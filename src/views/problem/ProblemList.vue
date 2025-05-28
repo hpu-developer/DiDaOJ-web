@@ -3,7 +3,7 @@ import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetProblemList, GetProblemTagList, ParseProblem, ProblemAttemptStatus } from "@/apis/problem.ts";
+import { GetProblemList, GetProblemTagList, ParseProblem, ProblemAttemptStatus, PostProblemCrawl } from "@/apis/problem.ts";
 import { Problem, ProblemTag, ProblemView } from "@/types/problem.ts";
 
 const route = useRoute();
@@ -16,6 +16,8 @@ let watchHandle: WatchStopHandle | null = null;
 const showMoreTags = ref(false);
 const tagsMap = {} as { [key: number]: ProblemTag };
 let problemAttemptStatus = {} as { [key: string]: ProblemAttemptStatus };
+
+const isCrawling = ref(false);
 
 const listColumns = ref([
   {
@@ -88,9 +90,22 @@ const pagination = ref({
 const problemViews = ref<ProblemView[]>();
 const problemTags = ref<ProblemTag[]>();
 
-const formItem = ref({
+const ojOptions = [
+  { label: "DidaOJ", value: "didaoj" },
+  { label: "HDU", value: "hdu" },
+  { label: "POJ", value: "poj" },
+  { label: "NYOJ", value: "nyoj" },
+];
+
+const searchProblemForm = ref({
+  oj: "",
   title: "",
   tag: "",
+});
+
+const crawlProblemForm = ref({
+  oj: "",
+  problem: "",
 });
 
 const handleGotoProblem = (id: string) => {
@@ -126,12 +141,34 @@ const handleClickSearch = async () => {
   await router.push({
     query: {
       ...route.query,
-      title: formItem.value.title,
-      tag: formItem.value.tag,
+      oj: searchProblemForm.value.oj,
+      title: searchProblemForm.value.title,
+      tag: searchProblemForm.value.tag,
       page: 1,
       page_size: pagination.value.defaultPageSize,
     },
   });
+};
+
+const handleClickCrawl = async () => {
+  try {
+    isCrawling.value = true;
+    const res = await PostProblemCrawl(crawlProblemForm.value.oj, crawlProblemForm.value.problem);
+    if (res.code === 0) {
+      ShowTextTipsInfo(globalProperties, "搜索成功");
+      await router.push({
+        name: "problem-detail",
+        params: { problemId: res.data },
+      });
+    } else {
+      ShowErrorTips(globalProperties, res.code);
+    }
+  } catch (err) {
+    console.error(err);
+    ShowErrorTips(globalProperties, GetCommonErrorCode());
+  } finally {
+    isCrawling.value = false;
+  }
 };
 
 const handleClickTag = (tag: ProblemTag) => {
@@ -155,13 +192,13 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   }
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetProblemList(formItem.value.title, formItem.value.tag, current, pageSize);
+    const res = await GetProblemList(searchProblemForm.value.oj, searchProblemForm.value.title, searchProblemForm.value.tag, current, pageSize);
     problemViews.value = [];
     if (res.code === 0) {
       const responseList = res.data.list as Problem[];
       if (!responseList || responseList.length <= 0) {
         pagination.value = { ...pagination.value, total: 0 };
-        problemAttemptStatus = null;
+        problemAttemptStatus = {};
         ShowTextTipsInfo(globalProperties, "未找到记录");
         return;
       }
@@ -215,8 +252,9 @@ onMounted(async () => {
         watchHandle = watch(
           () => route.query,
           (newQuery) => {
-            formItem.value.title = (newQuery.title as string) || "";
-            formItem.value.tag = (newQuery.tag as string) || "";
+            searchProblemForm.value.oj = (newQuery.oj as string) || "";
+            searchProblemForm.value.title = (newQuery.title as string) || "";
+            searchProblemForm.value.tag = (newQuery.tag as string) || "";
             const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
             const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
             currentPage = queryPage;
@@ -265,15 +303,31 @@ onBeforeUnmount(() => {
     <t-col :span="3">
       <div style="margin: 10px">
         <t-card class="sh-card">
-          <t-form :model="formItem" @submit="handleClickSearch">
+          <t-form :model="searchProblemForm" @submit="handleClickSearch">
+            <t-form-item label="OJ">
+              <t-select v-model="searchProblemForm.oj" :options="ojOptions" placeholder="请选择OJ" clearable></t-select>
+            </t-form-item>
             <t-form-item label="标题">
-              <t-input v-model="formItem.title" placeholder="暂不支持模糊查询"></t-input>
+              <t-input v-model="searchProblemForm.title" placeholder="暂不支持模糊查询"></t-input>
             </t-form-item>
             <t-form-item label="标签">
-              <t-input v-model="formItem.tag" placeholder="暂不支持模糊查询"></t-input>
+              <t-input v-model="searchProblemForm.tag" placeholder="暂不支持模糊查询"></t-input>
             </t-form-item>
             <t-form-item>
               <t-button theme="primary" type="submit">搜索</t-button>
+            </t-form-item>
+          </t-form>
+        </t-card>
+        <t-card class="sh-card">
+          <t-form :model="crawlProblemForm" @submit="handleClickCrawl">
+            <t-form-item label="OJ">
+              <t-select v-model="crawlProblemForm.oj" :options="ojOptions" placeholder="请选择OJ" clearable></t-select>
+            </t-form-item>
+            <t-form-item label="题目">
+              <t-input v-model="crawlProblemForm.problem" placeholder="请输入原始题号"></t-input>
+            </t-form-item>
+            <t-form-item>
+              <t-button theme="primary" type="submit" :loading="isCrawling">前往</t-button>
             </t-form-item>
           </t-form>
         </t-card>
