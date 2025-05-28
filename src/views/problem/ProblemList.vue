@@ -17,7 +17,7 @@ const showMoreTags = ref(false);
 const tagsMap = {} as { [key: number]: ProblemTag };
 let problemAttemptStatus = {} as { [key: string]: ProblemAttemptStatus };
 
-const ListColumns = ref([
+const listColumns = ref([
   {
     title: "ID",
     colKey: "id",
@@ -251,11 +251,12 @@ onBeforeUnmount(() => {
       <t-card style="margin: 10px">
         <t-table
           :data="problemViews"
-          :columns="ListColumns"
+          :columns="listColumns"
           row-key="id"
           vertical-align="top"
           :hover="true"
           :pagination="pagination"
+          table-layout="auto"
           :loading="dataLoading"
           @page-change="onPageChange"
         />

@@ -3,26 +3,20 @@ import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import {
-  GetProblemRecommend,
-  GetProblemTagList,
-  ParseProblem,
-  ProblemAttemptStatus,
-} from "@/apis/problem.ts";
+import { GetProblemRecommend, ParseProblem, ProblemAttemptStatus } from "@/apis/problem.ts";
 import { Problem, ProblemTag, ProblemView } from "@/types/problem.ts";
 
 const route = useRoute();
 const router = useRouter();
 const { globalProperties } = useCurrentInstance();
 
-let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
+let problemId = "";
 
-const showMoreTags = ref(false);
-const tagsMap = {} as { [key: number]: ProblemTag };
+let tagsMap = {} as { [key: number]: ProblemTag };
 let problemAttemptStatus = {} as { [key: string]: ProblemAttemptStatus };
 
-const ListColumns = ref([
+const listColumns = ref([
   {
     title: "ID",
     colKey: "id",
@@ -78,25 +72,7 @@ const ListColumns = ref([
 
 const dataLoading = ref(false);
 
-let currentPage = 1;
-let currentPageSize = 50;
-
-const pagination = ref({
-  current: currentPage,
-  pageSize: currentPageSize,
-  defaultCurrent: currentPage,
-  defaultPageSize: currentPageSize,
-  total: 0,
-  pageSizeOptions: [50, 100],
-});
-
 const problemViews = ref<ProblemView[]>();
-const problemTags = ref<ProblemTag[]>();
-
-const formItem = ref({
-  title: "",
-  tag: "",
-});
 
 const handleGotoProblem = (id: string) => {
   if (!id) {
@@ -126,56 +102,41 @@ const getProblemIdTheme = (id: string) => {
   }
 };
 
-const handleClickSearch = async () => {
-  // 更新 URL 查询参数
-  await router.push({
-    query: {
-      ...route.query,
-      title: formItem.value.title,
-      tag: formItem.value.tag,
-      page: 1,
-      page_size: pagination.value.defaultPageSize,
-    },
-  });
-};
-
 const handleClickTag = (tag: ProblemTag) => {
   if (!tag) {
     return;
   }
   router.push({
+    name: "problem-list",
     query: {
-      ...route.query,
-      title: "",
       tag: tag.name,
-      page: 1,
-      page_size: pagination.value.defaultPageSize,
     },
   });
 };
 
-const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
+const fetchData = async (needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
   }
   try {
-    const { current, pageSize } = paginationInfo;
-    const res = await GetProblemRecommend(undefined);
+    const res = await GetProblemRecommend(problemId);
     problemViews.value = [];
     if (res.code === 0) {
       const responseList = res.data.list as Problem[];
       if (!responseList || responseList.length <= 0) {
-        pagination.value = { ...pagination.value, total: 0 };
-        problemAttemptStatus = null;
         ShowTextTipsInfo(globalProperties, "未找到记录");
         return;
+      }
+      tagsMap = {} as { [key: number]: ProblemTag };
+      if (res.data.tags) {
+        res.data.tags.forEach((tag: ProblemTag) => {
+          tagsMap[tag.id] = tag;
+        });
       }
       responseList.forEach((item) => {
         const result = ParseProblem(item, tagsMap);
         problemViews.value?.push(result);
       });
-      pagination.value = { ...pagination.value, total: res.data.total_count };
-      problemAttemptStatus = res.data.problem_attempt_status;
     } else {
       if (needLoading) {
         ShowErrorTips(globalProperties, res.code);
@@ -193,56 +154,26 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   }
 };
 
-const onPageChange = async (pageInfo: { current: number; pageSize: number }) => {
-  // 更新 URL 查询参数
-  await router.push({
-    query: { ...route.query, page: pageInfo.current, page_size: pageInfo.pageSize },
-  });
-};
-
 // 初始化分页信息
 onMounted(async () => {
-  viewActive = true;
 
   dataLoading.value = true;
 
-  problemTags.value = [];
-  GetProblemTagList(-1)
-    .then((res) => {
-      if (res.code === 0) {
-        problemTags.value = res.data.list;
-        showMoreTags.value = res.data.total_count > res.data.list.length;
-        for (let i = 0; i < res.data.list.length; i++) {
-          const tag = res.data.list[i] as ProblemTag;
-          tagsMap[tag.id] = tag;
-        }
-
-        watchHandle = watch(
-          () => route.query,
-          (newQuery) => {
-            formItem.value.title = (newQuery.title as string) || "";
-            formItem.value.tag = (newQuery.tag as string) || "";
-            const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
-            const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
-            currentPage = queryPage;
-            currentPageSize = queryPageSize;
-            pagination.value = { ...pagination.value, current: currentPage, pageSize: currentPageSize };
-            fetchData({ current: currentPage, pageSize: currentPageSize }, true);
-          },
-          { immediate: true }
-        );
+  watchHandle = watch(
+    () => route.query,
+    (_: any) => {
+      if (Array.isArray(route.params.problemId)) {
+        problemId = route.params.problemId[0];
       } else {
-        showMoreTags.value = true;
+        problemId = route.params.problemId;
       }
-    })
-    .catch((err) => {
-      console.error(err);
-      showMoreTags.value = true;
-    });
+      fetchData(true);
+    },
+    { immediate: true }
+  );
 });
 
 onBeforeUnmount(() => {
-  viewActive = false;
 
   if (watchHandle) {
     watchHandle();
@@ -256,52 +187,19 @@ onBeforeUnmount(() => {
       <t-card style="margin: 10px">
         <t-table
           :data="problemViews"
-          :columns="ListColumns"
+          :columns="listColumns"
           row-key="id"
           vertical-align="top"
           :hover="true"
-          :pagination="pagination"
+          table-layout="auto"
           :loading="dataLoading"
-          @page-change="onPageChange"
         />
       </t-card>
     </t-col>
     <t-col :span="3">
       <div style="margin: 10px">
-        <t-card class="sh-card">
-          <t-form :model="formItem" @submit="handleClickSearch">
-            <t-form-item label="标题">
-              <t-input v-model="formItem.title" placeholder="暂不支持模糊查询"></t-input>
-            </t-form-item>
-            <t-form-item label="标签">
-              <t-input v-model="formItem.tag" placeholder="暂不支持模糊查询"></t-input>
-            </t-form-item>
-            <t-form-item>
-              <t-button theme="primary" type="submit">搜索</t-button>
-            </t-form-item>
-          </t-form>
-        </t-card>
-        <t-card class="sh-card sh-background-black">
-          <t-button
-            v-for="tag in problemTags"
-            class="sh-tag-button"
-            theme="default"
-            variant="outline"
-            :ghost="true"
-            @click="() => handleClickTag(tag)"
-          >
-            {{ tag.name }}
-          </t-button>
-          <t-button
-            v-if="showMoreTags"
-            class="sh-tag-button"
-            theme="default"
-            variant="outline"
-            :ghost="true"
-            @click="() => $router.push('/problem/tags')"
-          >
-            ...
-          </t-button>
+        <t-card class="sh-card" header="题目推荐" :header-bordered="true">
+          根据本站其他用户的提交记录推荐类似题目<br />依据推荐算法来计算，与本用户相似度最高的用户做的题，大概率被自己感兴趣。
         </t-card>
       </div>
     </t-col>
