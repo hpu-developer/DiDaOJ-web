@@ -4,8 +4,8 @@ import { useRoute } from "vue-router";
 import router from "@/router";
 import { ChevronDownIcon } from "tdesign-icons-vue-next";
 import Vditor from "vditor";
-import { GetProblem, GetProblemTagList, ParseProblem, PostProblemEdit } from "@/apis/problem.ts";
-import { ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { GetProblem, GetProblemTagList, ParseProblem, PostProblemCreate, PostProblemEdit } from "@/apis/problem.ts";
+import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ProblemTag, ProblemView } from "@/types/problem.ts";
 
@@ -105,6 +105,51 @@ const handleClickJudge = () => {
   });
 };
 
+const handleClickCreate = async () => {
+  if (!descriptionEditor) {
+    return;
+  }
+
+  isEditing.value = true;
+
+  problemEditForm.value.tags = [];
+  for (let i = 0; i < problemTags.value.length; i++) {
+    const tag = problemTags.value[i];
+    if (tag && tag.label) {
+      problemEditForm.value.tags.push(tag.label);
+    }
+  }
+
+  try {
+    const res = await PostProblemCreate(
+      problemEditForm.value.title,
+      problemEditForm.value.timeLimit,
+      problemEditForm.value.memoryLimit,
+      problemEditForm.value.source,
+      problemEditForm.value.tags,
+      descriptionEditor.getValue()
+    );
+
+    isEditing.value = true;
+
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+
+    if (res.data != undefined) {
+      await router.push({
+        name: "problem-detail",
+        params: { problemId: res.data },
+      });
+    }
+
+    ShowTextTipsSuccess(globalProperties, "创建成功");
+  } finally {
+    isEditing.value = false;
+  }
+};
+
 const handleClickSave = async () => {
   if (!descriptionEditor) {
     return;
@@ -148,8 +193,18 @@ const handleClickSave = async () => {
   }
 };
 
+const loadDescriptionEditor = (description: string) => {
+  const codeEditOptions = {
+    after: () => {
+      descriptionEditor?.setValue(description);
+      problemLoading.value = false;
+    },
+  } as IOptions;
+  descriptionEditor = new Vditor("problemEditDiv", codeEditOptions);
+};
+
 const loadProblem = async () => {
-  const res = await GetProblem(problemId.value);
+  const res = await GetProblem(problemId.value, undefined, undefined);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
     console.error("problem get failed", res.code);
@@ -182,14 +237,7 @@ const loadProblem = async () => {
 
   let problemDescription = problem.description as string;
 
-  const codeEditOptions = {
-    after: () => {
-      descriptionEditor?.setValue(problemDescription);
-    },
-  } as IOptions;
-  descriptionEditor = new Vditor("codeEditRef", codeEditOptions);
-
-  problemLoading.value = false;
+  loadDescriptionEditor(problemDescription);
 };
 
 onMounted(async () => {
@@ -198,37 +246,39 @@ onMounted(async () => {
   } else {
     problemId.value = route.params.problemId;
   }
-  if (!problemId.value) {
-    ShowTextTipsError(globalProperties, "题目不存在");
-    await router.push({ name: "problem" });
-    return;
-  }
 
-  problemLoading.value = true;
-
-  GetProblemTagList(-1)
-    .then(async (res) => {
-      if (res.code === 0) {
-        if (res.data.list) {
-          res.data.list.forEach((tag: ProblemTag) => {
-            problemTagOptions.value.push({
-              label: tag.name,
-              value: tag.id,
+  if (problemId.value) {
+    problemLoading.value = true;
+    GetProblemTagList(-1)
+      .then(async (res) => {
+        if (res.code === 0) {
+          if (res.data.list) {
+            res.data.list.forEach((tag: ProblemTag) => {
+              problemTagOptions.value.push({
+                label: tag.name,
+                value: tag.id,
+              });
             });
-          });
+          }
+          await loadProblem();
+        } else {
+          ShowErrorTips(globalProperties, res.code);
+          console.error("problem tag get failed", res.code);
+          await router.push({ name: "problem" });
         }
-        await loadProblem();
-      } else {
-        ShowErrorTips(globalProperties, res.code);
-        console.error("problem tag get failed", res.code);
+      })
+      .catch(async (err) => {
+        console.error(err);
+        ShowErrorTips(globalProperties, "获取数据异常");
         await router.push({ name: "problem" });
-      }
-    })
-    .catch(async (err) => {
-      console.error(err);
-      ShowErrorTips(globalProperties, "获取数据异常");
-      await router.push({ name: "problem" });
-    });
+      });
+  } else {
+
+    problemEditForm.value.timeLimit = 1000
+    problemEditForm.value.memoryLimit = 65536
+
+    loadDescriptionEditor("");
+  }
 });
 </script>
 
@@ -296,13 +346,16 @@ onMounted(async () => {
       <t-col :span="4">
         <div style="margin: 12px">
           <div class="dida-edit-container">
-            <t-space>
+            <t-space v-if="problemId">
               <t-button @click="handleClickSave" theme="danger" :loading="isEditing">保存</t-button>
               <t-button @click="handleClickJudge" theme="warning">判题数据</t-button>
               <t-button @click="handleClickView">查看</t-button>
             </t-space>
+            <space v-else>
+              <t-button @click="handleClickCreate" theme="danger" :loading="isEditing">创建</t-button>
+            </space>
           </div>
-          <t-descriptions layout="vertical" :bordered="true">
+          <t-descriptions layout="vertical" :bordered="true"  v-if="problemId">
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
             <t-descriptions-item label="判题方式">{{ problemData?.judgeType }}</t-descriptions-item>
@@ -311,7 +364,7 @@ onMounted(async () => {
         </div>
       </t-col>
     </t-row>
-    <div id="codeEditRef" class="dida-description-editor"></div>
+    <div id="problemEditDiv" class="dida-description-editor"></div>
   </t-loading>
 </template>
 

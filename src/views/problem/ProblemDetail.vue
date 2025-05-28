@@ -38,6 +38,7 @@ const problemData = ref<ProblemView | null>(null);
 let codeEditor = null as IStandaloneCodeEditor | null;
 const codeEditRef = ref<HTMLElement | null>(null);
 const problemCrawlLoading = ref(false);
+const problemSubmitting = ref(false);
 
 const tagsMap = {} as { [key: number]: ProblemTag };
 
@@ -141,7 +142,7 @@ const handleClickCrawl = async () => {
       ShowErrorTips(globalProperties, res.code);
     }
   } catch (error) {
-    ShowErrorTips(globalProperties, "更新失败，请稍后再试");
+    ShowTextTipsError(globalProperties, "更新失败，请稍后再试");
   } finally {
     problemCrawlLoading.value = false;
   }
@@ -163,16 +164,22 @@ const handleSubmitCode = async () => {
     return;
   }
 
-  const res = await PostJudgeJob(problemId, contestId, problemIndex, selectValue, code);
-  if (res.code !== 0) {
-    ShowErrorTips(globalProperties, res.code);
-    return;
+  problemSubmitting.value = true;
+
+  try {
+    const res = await PostJudgeJob(problemId, contestId, problemIndex, selectValue, code);
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+
+    ShowTextTipsInfo(globalProperties, "提交成功，正在跳转到详情页面");
+
+    const statusId = res.data.id;
+    await router.push({ path: "/judge/" + statusId });
+  } finally {
+    problemSubmitting.value = false;
   }
-
-  ShowTextTipsInfo(globalProperties, "提交成功，正在跳转到详情页面");
-
-  const statusId = res.data.id;
-  await router.push({ path: "/judge/" + statusId });
 };
 
 const onSelectLanguageChanged = (value: JudgeLanguage) => {
@@ -302,9 +309,7 @@ onMounted(async () => {
               </span>
             </t-descriptions-item>
             <t-descriptions-item v-if="problemData?.originUrl" label="原题链接">
-              <t-link :href="problemData?.originUrl" target="_blank">
-                {{ problemData?.originOj }} - {{ problemData?.originId }}
-              </t-link>
+              <t-link :href="problemData?.originUrl" target="_blank"> {{ problemData?.originOj }} - {{ problemData?.originId }} </t-link>
             </t-descriptions-item>
             <t-descriptions-item label="标签" v-if="problemId">
               <t-space>
@@ -334,7 +339,7 @@ onMounted(async () => {
               <t-select v-model="selectLanguage" label="语言：" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
                 <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
               </t-select>
-              <t-button @click="handleSubmitCode">提交</t-button>
+              <t-button @click="handleSubmitCode" :loading="problemSubmitting">提交</t-button>
             </t-space>
             <div ref="codeEditRef" class="dida-code-editor"></div>
           </div>
@@ -347,11 +352,6 @@ onMounted(async () => {
 <style scoped>
 .dida-main-content {
   min-height: 800px;
-}
-
-.dida-edit-container {
-  margin: 10px 0;
-  text-align: right;
 }
 
 .dida-operation-container {

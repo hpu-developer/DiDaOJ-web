@@ -81,7 +81,7 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
   return result;
 }
 
-export function GetProblem(problemId: string, contestId: number, problemIndex: number) {
+export function GetProblem(problemId: string, contestId: number | undefined, problemIndex: number | undefined) {
   const params = {} as any;
   if (problemId) {
     params.id = problemId;
@@ -151,6 +151,28 @@ export function PostProblemCrawl(oj: string, problemId: string) {
     data: {
       oj: oj,
       id: problemId,
+    },
+  });
+}
+
+export function PostProblemCreate(
+  title: string,
+  timeLimit: number,
+  memoryLimit: number,
+  source: string,
+  tags: string[],
+  description: string
+) {
+  return httpRequest({
+    url: "/problem/create",
+    method: "post",
+    data: {
+      title: title,
+      time_limit: timeLimit,
+      memory_limit: memoryLimit,
+      source: source,
+      tags: tags,
+      description: description,
     },
   });
 }

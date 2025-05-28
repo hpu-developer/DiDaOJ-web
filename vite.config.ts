@@ -47,6 +47,14 @@ export default defineConfig({
           label: "python",
           entry: "monaco-editor/esm/vs/basic-languages/python/python.js",
         },
+        {
+          label: "pascal",
+          entry: "monaco-editor/esm/vs/basic-languages/pascal/pascal.js",
+        },
+        {
+          label: "go",
+          entry: "monaco-editor/esm/vs/basic-languages/go/go.js",
+        },
       ],
     }),
   ],

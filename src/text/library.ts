@@ -68,6 +68,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100006": {
         zh: "验证码错误或已过期，请重新获取",
       },
+      "100007": {
+        zh: "已存在相同标题的题目",
+      },
     });
   });
 }

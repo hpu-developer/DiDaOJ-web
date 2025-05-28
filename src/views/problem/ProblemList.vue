@@ -1,14 +1,17 @@
 <script setup lang="tsx">
-import type { WatchStopHandle } from "vue";
+import { computed, WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { GetProblemList, GetProblemTagList, ParseProblem, ProblemAttemptStatus, PostProblemCrawl } from "@/apis/problem.ts";
 import { Problem, ProblemTag, ProblemView } from "@/types/problem.ts";
+import { AuthType } from "@/auth";
+import { useUserStore } from "@/stores/user.ts";
 
 const route = useRoute();
 const router = useRouter();
 const { globalProperties } = useCurrentInstance();
+const userStore = useUserStore();
 
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
@@ -18,6 +21,10 @@ const tagsMap = {} as { [key: number]: ProblemTag };
 let problemAttemptStatus = {} as { [key: string]: ProblemAttemptStatus };
 
 const isCrawling = ref(false);
+
+const hasEditAuth = computed(() => {
+  return userStore.hasAuth(AuthType.ManageProblem);
+});
 
 const listColumns = ref([
   {
@@ -186,6 +193,10 @@ const handleClickTag = (tag: ProblemTag) => {
   });
 };
 
+const handleClickCreate = () => {
+  router.push({ name: "manage-problem-create" });
+};
+
 const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
@@ -302,13 +313,18 @@ onBeforeUnmount(() => {
     </t-col>
     <t-col :span="3">
       <div style="margin: 10px">
+        <div v-if="hasEditAuth" class="dida-operation-container">
+          <t-space>
+            <t-button @click="handleClickCreate">新建</t-button>
+          </t-space>
+        </div>
         <t-card class="sh-card">
           <t-form :model="searchProblemForm" @submit="handleClickSearch">
             <t-form-item label="OJ">
               <t-select v-model="searchProblemForm.oj" :options="ojOptions" placeholder="请选择OJ" clearable></t-select>
             </t-form-item>
             <t-form-item label="标题">
-              <t-input v-model="searchProblemForm.title" placeholder="暂不支持模糊查询"></t-input>
+              <t-input v-model="searchProblemForm.title" placeholder="请输入关键词"></t-input>
             </t-form-item>
             <t-form-item label="标签">
               <t-input v-model="searchProblemForm.tag" placeholder="暂不支持模糊查询"></t-input>
@@ -369,5 +385,10 @@ onBeforeUnmount(() => {
 
 .sh-tag-button {
   margin: 2px;
+}
+
+.dida-operation-container {
+  margin: 10px 0 20px;
+  text-align: right;
 }
 </style>

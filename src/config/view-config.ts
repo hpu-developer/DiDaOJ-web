@@ -293,6 +293,17 @@ const viewsConfig = [
   },
 
   {
+    name: "manage-problem-create",
+    tab: "manage",
+    sidebar: "manage-problem-create",
+    disableSidebar: true,
+    path: "problem",
+    title: "新建问题",
+    icon: "list",
+    component: ProblemEdit,
+    auths: [AuthType.ManageProblem],
+  },
+  {
     name: "manage-problem",
     tab: "manage",
     sidebar: "manage-problem",
