@@ -7,6 +7,7 @@ import { GetDiscussList, ParseDiscuss, PostCreateDiscuss } from "@/apis/discuss.
 import { Discuss, DiscussCreateRequest, DiscussView } from "@/types/discuss.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
+import { handleGotoUsername } from "@/util/router.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -39,6 +40,13 @@ const listColumns2 = [
     title: "创建人",
     colKey: "authorNickname",
     width: "200",
+    cell: (_: any, data: any) => {
+      return (
+        <t-button variant="text" onClick={async () => await handleGotoUsername(router, data.row.authorUsername)}>
+          {data.row.authorNickname}
+        </t-button>
+      );
+    },
   },
   {
     title: "创建时间",

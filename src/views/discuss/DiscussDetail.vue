@@ -7,6 +7,7 @@ import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsError, useCurrentInstance } from "@/util";
 import { GetDiscuss, ParseDiscuss, GetDiscussCommentList, ParseDiscussComment } from "@/apis/discuss.ts";
 import { DiscussComment, DiscussCommentView, DiscussTag, DiscussView } from "@/types/discuss.ts";
+import { handleGotoUsername } from "@/util/router.ts";
 
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 
@@ -286,7 +287,9 @@ onBeforeUnmount(() => {
             <t-descriptions-item label="创建时间">{{ discussData?.insertTime }}</t-descriptions-item>
             <t-descriptions-item label="编辑时间">{{ discussData?.modifyTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ discussData?.updateTime }}</t-descriptions-item>
-            <t-descriptions-item label="创建用户">{{ discussData?.authorNickname }}</t-descriptions-item>
+            <t-descriptions-item label="创建用户"> <t-button variant="text" @click="async () => await handleGotoUsername(router, discussData?.authorUsername)">
+              {{ discussData?.authorNickname }}
+            </t-button></t-descriptions-item>
             <t-descriptions-item label="标签">
               <t-space>
                 <t-button v-for="tag in discussData?.tags" :key="tag.id" variant="dashed" @click="() => handleClickTag(tag)">
