@@ -54,7 +54,16 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
     result.creatorNickname = item.creator_nickname;
   }
   if (item.source != undefined) {
-    result.source = item.source;
+    // 判断item.source是否符合[]()格式，是否赋值result.sourceUrl
+    const urlRegex = /\[([^\]]+)\]\(([^)]+)\)/;
+    const match = item.source.match(urlRegex);
+    if (match) {
+      result.source = match[1];
+      result.sourceUrl = match[2];
+    } else {
+      result.source = item.source;
+      result.sourceUrl = "";
+    }
   }
   if (item.judge_md5 != undefined) {
     result.judgeMd5 = item.judge_md5;

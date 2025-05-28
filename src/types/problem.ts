@@ -39,6 +39,7 @@ export interface ProblemView {
   updateTime?: string;
   creatorNickname?: string;
   source?: string;
+  sourceUrl?: string;
   judgeMd5?: string;
   originOj?: string;
   originId?: string;

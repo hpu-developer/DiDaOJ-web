@@ -293,7 +293,14 @@ onMounted(async () => {
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
             <t-descriptions-item label="上传用户">{{ problemData?.creatorNickname }}</t-descriptions-item>
-            <t-descriptions-item label="题目来源">{{ problemData?.source }}</t-descriptions-item>
+            <t-descriptions-item label="题目来源">
+              <t-link v-if="problemData?.sourceUrl" :href="problemData?.sourceUrl" target="_blank">
+                {{ problemData?.source }}
+              </t-link>
+              <span v-else>
+                {{ problemData?.source }}
+              </span>
+            </t-descriptions-item>
             <t-descriptions-item v-if="problemData?.originUrl" label="原题链接">
               <t-link :href="problemData?.originUrl" target="_blank">
                 {{ problemData?.originOj }} - {{ problemData?.originId }}
