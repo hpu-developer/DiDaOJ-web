@@ -26,6 +26,7 @@ const problemEditForm = ref({
   timeLimit: 0,
   memoryLimit: 0,
   source: "",
+  private: true,
   tags: [] as string[],
 });
 
@@ -126,6 +127,7 @@ const handleClickCreate = async () => {
       problemEditForm.value.timeLimit,
       problemEditForm.value.memoryLimit,
       problemEditForm.value.source,
+      problemEditForm.value.private,
       problemEditForm.value.tags,
       descriptionEditor.getValue()
     );
@@ -172,6 +174,7 @@ const handleClickSave = async () => {
       problemEditForm.value.timeLimit,
       problemEditForm.value.memoryLimit,
       problemEditForm.value.source,
+      problemEditForm.value.private,
       problemEditForm.value.tags,
       descriptionEditor.getValue()
     );
@@ -220,6 +223,7 @@ const loadProblem = async () => {
   problemEditForm.value.timeLimit = problem.time_limit;
   problemEditForm.value.memoryLimit = problem.memory_limit;
   problemEditForm.value.source = problem.source;
+  problemEditForm.value.private = problem.private;
 
   problemEditForm.value.tags = [];
   problemTags.value = [] as { label: string; value: number }[];
@@ -304,6 +308,9 @@ onMounted(async () => {
               </t-form-item>
               <t-form-item label="来源">
                 <t-input v-model="problemEditForm.source" placeholder="请输入题目来源"></t-input>
+              </t-form-item>
+              <t-form-item label="私有">
+                <t-switch v-model="problemEditForm.private" />
               </t-form-item>
 
               <t-form-item label="标签">

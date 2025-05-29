@@ -8,6 +8,7 @@ export interface Problem {
   title: string;
   author: string;
   tags: number[];
+  private: boolean;
   accept: number;
   attempt: number;
   description?: string;
@@ -28,6 +29,7 @@ export interface ProblemView {
   id: string;
   title: string;
   author: string;
+  private: boolean;
   tags: ProblemTag[];
   accept: number;
   attempt: number;

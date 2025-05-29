@@ -124,7 +124,7 @@ const fetchData = async (needLoading: boolean) => {
     if (res.code === 0) {
       const responseList = res.data.list as Problem[];
       if (!responseList || responseList.length <= 0) {
-        ShowTextTipsInfo(globalProperties, "未找到记录");
+        ShowTextTipsInfo(globalProperties, "暂无推荐题目");
         return;
       }
       tagsMap = {} as { [key: number]: ProblemTag };

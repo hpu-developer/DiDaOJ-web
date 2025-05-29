@@ -59,6 +59,7 @@ declare module 'vue' {
     TSubmenu: typeof import('tdesign-vue-next')['Submenu']
     TSwiper: typeof import('tdesign-vue-next')['Swiper']
     TSwiperItem: typeof import('tdesign-vue-next')['SwiperItem']
+    TSwitch: typeof import('tdesign-vue-next')['Switch']
     TTable: typeof import('tdesign-vue-next')['Table']
     TTag: typeof import('tdesign-vue-next')['Tag']
   }

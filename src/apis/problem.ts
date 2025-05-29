@@ -25,6 +25,7 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
       }
     }
   }
+  result.private = item.private;
   result.accept = item.accept;
   result.attempt = item.attempt;
 
@@ -109,7 +110,9 @@ export function GetProblemJudge(problemId: string) {
   });
 }
 
-export function GetProblemList(oj: string, title: string, tag: string, page: number, pageSize: number) {
+export function GetProblemList(oj: string, title: string, tag: string,
+                               privateData: boolean,
+                               page: number, pageSize: number) {
   const params = {} as any;
   if (oj) {
     params.oj = oj;
@@ -119,6 +122,9 @@ export function GetProblemList(oj: string, title: string, tag: string, page: num
   }
   if (tag) {
     params.tag = tag;
+  }
+  if (privateData !== undefined) {
+    params.private = privateData ? "1" : "0";
   }
   if (page) {
     params.page = page;
@@ -160,6 +166,7 @@ export function PostProblemCreate(
   timeLimit: number,
   memoryLimit: number,
   source: string,
+  privateProblem: boolean,
   tags: string[],
   description: string
 ) {
@@ -171,6 +178,7 @@ export function PostProblemCreate(
       time_limit: timeLimit,
       memory_limit: memoryLimit,
       source: source,
+      private: privateProblem,
       tags: tags,
       description: description,
     },
@@ -183,6 +191,7 @@ export function PostProblemEdit(
   timeLimit: number,
   memoryLimit: number,
   source: string,
+  privateProblem: boolean,
   tags: string[],
   description: string
 ) {
@@ -195,6 +204,7 @@ export function PostProblemEdit(
       time_limit: timeLimit,
       memory_limit: memoryLimit,
       source: source,
+      private: privateProblem,
       tags: tags,
       description: description,
     },

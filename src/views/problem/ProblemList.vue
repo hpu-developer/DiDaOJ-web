@@ -108,6 +108,7 @@ const searchProblemForm = ref({
   oj: "",
   title: "",
   tag: "",
+  private: false,
 });
 
 const crawlProblemForm = ref({
@@ -151,6 +152,7 @@ const handleClickSearch = async () => {
       oj: searchProblemForm.value.oj,
       title: searchProblemForm.value.title,
       tag: searchProblemForm.value.tag,
+      private: searchProblemForm.value.private ? "1" : "0",
       page: 1,
       page_size: pagination.value.defaultPageSize,
     },
@@ -203,7 +205,9 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   }
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetProblemList(searchProblemForm.value.oj, searchProblemForm.value.title, searchProblemForm.value.tag, current, pageSize);
+    const res = await GetProblemList(searchProblemForm.value.oj, searchProblemForm.value.title, searchProblemForm.value.tag,
+      searchProblemForm.value.private,
+      current, pageSize);
     problemViews.value = [];
     if (res.code === 0) {
       const responseList = res.data.list as Problem[];
@@ -266,6 +270,7 @@ onMounted(async () => {
             searchProblemForm.value.oj = (newQuery.oj as string) || "";
             searchProblemForm.value.title = (newQuery.title as string) || "";
             searchProblemForm.value.tag = (newQuery.tag as string) || "";
+            searchProblemForm.value.private = (newQuery.private as string) === "1";
             const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
             const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
             currentPage = queryPage;
@@ -328,6 +333,9 @@ onBeforeUnmount(() => {
             </t-form-item>
             <t-form-item label="标签">
               <t-input v-model="searchProblemForm.tag" placeholder="暂不支持模糊查询"></t-input>
+            </t-form-item>
+            <t-form-item label="私有" v-if="hasEditAuth">
+              <t-switch v-model="searchProblemForm.private"></t-switch>
             </t-form-item>
             <t-form-item>
               <t-button theme="primary" type="submit">搜索</t-button>
