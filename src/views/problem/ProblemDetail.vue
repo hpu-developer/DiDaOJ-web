@@ -308,6 +308,7 @@ onMounted(async () => {
                 {{ problemData?.source }}
               </span>
             </t-descriptions-item>
+            <t-descriptions-item label="是否私有" v-if="hasEditAuth">{{ problemData?.private ? "私有" : "公开" }}</t-descriptions-item>
             <t-descriptions-item v-if="problemData?.originUrl" label="原题链接">
               <t-link :href="problemData?.originUrl" target="_blank"> {{ problemData?.originOj }} - {{ problemData?.originId }} </t-link>
             </t-descriptions-item>
