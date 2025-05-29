@@ -3,7 +3,7 @@ import { nextTick, WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetKeyByJudgeLanguage, GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
+import { GetHighlightKeyByJudgeLanguage, GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
 import {
   GetJudgeJobList,
   GetJudgeStatusStr,
@@ -164,7 +164,7 @@ const handleShowCode = async (jobView: JudgeJobView) => {
     const res = await GetJudgeJobCode(Number(showJudgeJob.value.id));
     if (res.code === 0) {
       const response = res.data;
-      const language = GetKeyByJudgeLanguage(response.language);
+      const language = GetHighlightKeyByJudgeLanguage(response.language);
 
       const codeMarkdown = `\`\`\`${language}\n${response.code}\n\`\`\``;
 

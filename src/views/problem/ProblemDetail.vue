@@ -4,7 +4,7 @@ import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetProblem, ParseProblem, PostProblemCrawl } from "@/apis/problem.ts";
-import { GetKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
+import { GetHighlightKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import { ProblemTag, ProblemView } from "@/types/problem.ts";
@@ -190,7 +190,7 @@ const onSelectLanguageChanged = (value: JudgeLanguage) => {
   if (!model) {
     return;
   }
-  monaco.editor.setModelLanguage(model, GetKeyByJudgeLanguage(value));
+  monaco.editor.setModelLanguage(model, GetHighlightKeyByJudgeLanguage(value));
 };
 
 const fetchProblemData = async () => {

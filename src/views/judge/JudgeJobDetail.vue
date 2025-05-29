@@ -11,7 +11,7 @@ import {
   ParseJudgeJob,
   PostRejudgeJob,
 } from "@/apis/judge.ts";
-import { GetKeyByJudgeLanguage } from "@/apis/language.ts";
+import { GetHighlightKeyByJudgeLanguage } from "@/apis/language.ts";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
@@ -240,7 +240,7 @@ const fetchData = async (needLoading: boolean) => {
 
       const options = {} as IPreviewOptions;
       if (response.code) {
-        const language = GetKeyByJudgeLanguage(response.language);
+        const language = GetHighlightKeyByJudgeLanguage(response.language);
         const codeMarkdown = `\`\`\`${language}\n${response.code}\n\`\`\``;
         judgeJobCode.value = await Vditor.md2html(codeMarkdown, options);
 

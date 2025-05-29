@@ -6,6 +6,8 @@ export enum JudgeLanguage {
   Python = 3,
   Pascal = 4,
   Golang = 5,
+  Lua = 6,
+  TypeScript = 7,
   Max,
 }
 
@@ -37,12 +39,16 @@ export function GetJudgeLanguageStr(language: JudgeLanguage) {
       return "Pascal";
     case JudgeLanguage.Golang:
       return "Golang";
+    case JudgeLanguage.Lua:
+      return "Lua";
+    case JudgeLanguage.TypeScript:
+      return "TypeScript";
     default:
       return "Unknown";
   }
 }
 
-export function GetKeyByJudgeLanguage(language: JudgeLanguage) {
+export function GetHighlightKeyByJudgeLanguage(language: JudgeLanguage) {
   switch (language) {
     case JudgeLanguage.C:
       return "c";
@@ -56,6 +62,10 @@ export function GetKeyByJudgeLanguage(language: JudgeLanguage) {
       return "pascal";
     case JudgeLanguage.Golang:
       return "go";
+    case JudgeLanguage.Lua:
+      return "lua";
+    case JudgeLanguage.TypeScript:
+      return "typescript";
     default:
       return "text";
   }

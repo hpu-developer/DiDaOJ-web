@@ -25,6 +25,8 @@ import 'monaco-editor/esm/vs/basic-languages/python/python.contribution'
 import 'monaco-editor/esm/vs/basic-languages/java/java.contribution'
 import 'monaco-editor/esm/vs/basic-languages/pascal/pascal.contribution'
 import 'monaco-editor/esm/vs/basic-languages/go/go.contribution'
+import 'monaco-editor/esm/vs/basic-languages/lua/lua.contribution'
+import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution'
 
 hljs.registerLanguage("verilog", verilog);
 

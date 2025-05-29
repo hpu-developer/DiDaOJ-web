@@ -55,6 +55,14 @@ export default defineConfig({
           label: "go",
           entry: "monaco-editor/esm/vs/basic-languages/go/go.js",
         },
+        {
+          label: "lua",
+          entry: "monaco-editor/esm/vs/basic-languages/lua/lua.js",
+        },
+        {
+          label: "typescript",
+          entry: "monaco-editor/esm/vs/basic-languages/typescript/typescript.js",
+        },
       ],
     }),
   ],
