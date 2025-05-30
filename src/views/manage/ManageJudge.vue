@@ -1,13 +1,7 @@
 <script setup lang="tsx">
 import { ref } from "vue";
 import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import {
-  PostRejudgeRecently,
-  PostRejudgeSearch,
-  PostRejudgeAll,
-  JudgeStatus,
-  GetJudgeStatusOptions, PostRejudgeStatus,
-} from "@/apis/judge.ts";
+import { PostRejudgeRecently, PostRejudgeSearch, PostRejudgeAll, JudgeStatus, GetJudgeStatusOptions, PostRejudgeStatus } from "@/apis/judge.ts";
 import router from "@/router";
 import { GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
 
@@ -99,37 +93,26 @@ const handleRejudgeAll = async () => {
     <t-button @click="handleRejudgeRecently" :loading="rejudgeRecentlyLoading">重判</t-button>
   </t-card>
   <t-card class="yj-manage-card" title="重判指定记录">
-    <t-space>
-      <t-form layout="inline" @submit="handleRejudgeSearch">
-        <t-form-item label="题号">
-          <t-input v-model="searchForm.problemId" placeholder="请输入完整题号" />
-        </t-form-item>
-        <t-form-item label="语言">
-          <t-select v-model="searchForm.language" placeholder="请选择提交语言" auto-width clearable>
-            <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
-          </t-select>
-        </t-form-item>
-        <t-form-item label="状态">
-          <t-select v-model="searchForm.status" placeholder="请选择评测状态" auto-width clearable>
-            <t-option v-for="item in judgeStatusOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
-          </t-select>
-        </t-form-item>
-        <t-form-item>
-          <t-space>
-            <t-button theme="primary" type="submit" :loading="rejudgeSearchLoading">重判</t-button>
-          </t-space>
-        </t-form-item>
-      </t-form>
-
-    </t-space>
-  </t-card>
-  <t-card class="yj-manage-card" title="重判状态">
-    <t-space>
-      <t-select v-model="rejudgeStatus" placeholder="请选择评测状态" auto-width clearable>
-        <t-option v-for="item in judgeStatusOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
-      </t-select>
-      <t-button @click="handleRejudgeStatus" :loading="rejudgeStatusLoading">重判</t-button>
-    </t-space>
+    <t-form layout="inline" @submit="handleRejudgeSearch">
+      <t-form-item label="题号">
+        <t-input v-model="searchForm.problemId" placeholder="请输入完整题号" />
+      </t-form-item>
+      <t-form-item label="语言">
+        <t-select v-model="searchForm.language" placeholder="请选择提交语言" auto-width clearable>
+          <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
+        </t-select>
+      </t-form-item>
+      <t-form-item label="状态">
+        <t-select v-model="searchForm.status" placeholder="请选择评测状态" auto-width clearable>
+          <t-option v-for="item in judgeStatusOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
+        </t-select>
+      </t-form-item>
+      <t-form-item>
+        <t-space>
+          <t-button theme="primary" type="submit" :loading="rejudgeSearchLoading">重判</t-button>
+        </t-space>
+      </t-form-item>
+    </t-form>
   </t-card>
   <t-card class="yj-manage-card" title="重判所有">
     <t-button @click="handleRejudgeAll" theme="danger" :loading="rejudgeAllLoading">重判</t-button>
