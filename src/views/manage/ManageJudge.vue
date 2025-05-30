@@ -98,9 +98,8 @@ const handleRejudgeAll = async () => {
   <t-card class="yj-manage-card" title="重判最近提交">
     <t-button @click="handleRejudgeRecently" :loading="rejudgeRecentlyLoading">重判</t-button>
   </t-card>
-  <t-card class="yj-manage-card" title="重判问题">
+  <t-card class="yj-manage-card" title="重判指定记录">
     <t-space>
-
       <t-form layout="inline" @submit="handleRejudgeSearch">
         <t-form-item label="题号">
           <t-input v-model="searchForm.problemId" placeholder="请输入完整题号" />
