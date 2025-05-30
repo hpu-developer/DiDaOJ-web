@@ -1,12 +1,12 @@
 <script setup lang="tsx">
-import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, GetEllipsisText, ShowErrorTips, useCurrentInstance } from "@/util";
 import { GetContestProblemIndexStr, GetContestRank } from "@/apis/contest.ts";
-import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { JudgeStatus } from "@/apis/judge.ts";
+import type { WatchStopHandle } from "vue";
+import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -15,6 +15,10 @@ const { globalProperties } = useCurrentInstance();
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
 let contestId = 0;
+
+const scrollWrapper = ref(null);
+const tableWrapper = ref(null);
+let resizeObserver = null;
 
 const getDurationText = (duration: number) => {
   if (duration === undefined || duration === null) {
@@ -35,6 +39,7 @@ const listColumns1 = [
     title: "Rank",
     colKey: "rank",
     align: "center",
+    fixed: "left",
     cell: (_: any, data: any) => {
       return (
         <t-button
@@ -54,32 +59,36 @@ const listColumns1 = [
   {
     title: "昵称",
     colKey: "nickname",
+    fixed: "left",
     cell: (_: any, data: any) => {
+      const text = GetEllipsisText(data.row.nickname, 18);
       return (
-        <t-button
-          variant="text"
-          onClick={() =>
-            router.push({
-              name: "user",
-              params: { username: data.row.username },
-            })
-          }
-        >
-          {data.row.nickname}
-        </t-button>
+        <t-tooltip content={data.row.nickname}>
+          <t-button
+            variant="text"
+            onClick={() =>
+              router.push({
+                name: "user",
+                params: { username: data.row.username },
+              })
+            }
+          >
+            {text}
+          </t-button>
+        </t-tooltip>
       );
-    }
+    },
   },
   {
     title: "Solved",
     colKey: "solved",
     align: "center",
+    fixed: "left",
     cell: (_: any, data: any) => {
       return (
         <t-button
           variant="text"
-          onClick=
-          {() =>
+          onClick={() =>
             router.push({
               name: "contest-judge",
               params: {
@@ -101,6 +110,7 @@ const listColumns1 = [
     title: "Penalty",
     colKey: "penalty",
     align: "center",
+    fixed: "left",
     cell: (_: any, data: any) => {
       return getDurationText(data.row.penalty);
     },
@@ -112,19 +122,6 @@ const listColumns = ref<BaseTableCol[]>([]);
 const dataLoading = ref(false);
 
 const contestRankViews = ref<ContestRankView[]>();
-
-const updateWidth = () => {
-  const width = document.body.clientWidth;
-  if (width < 1000) {
-    listColumns.value.forEach((col) => {
-      col.width = "auto";
-    });
-  } else {
-    listColumns.value.forEach((col) => {
-      col.width = "150px";
-    });
-  }
-};
 
 const fetchData = async (needLoading: boolean) => {
   if (needLoading) {
@@ -250,6 +247,14 @@ const fetchData = async (needLoading: boolean) => {
   }
 };
 
+function updateTableWidth() {
+  if (tableWrapper.value) {
+    const parentWidth = tableWrapper.value.parentElement.clientWidth;
+    console.log("Parent width:", parentWidth);
+    tableWrapper.value.style.width = parentWidth + "px";
+  }
+}
+
 // 初始化分页信息
 onMounted(async () => {
   viewActive = true;
@@ -268,8 +273,12 @@ onMounted(async () => {
       }
       await fetchData(true);
 
-      updateWidth();
-      window.addEventListener("resize", updateWidth);
+      updateTableWidth();
+      // 使用 ResizeObserver 更智能地响应父级大小变化
+      resizeObserver = new ResizeObserver(updateTableWidth);
+      if (scrollWrapper.value) {
+        resizeObserver.observe(scrollWrapper.value);
+      }
     },
     { immediate: true }
   );
@@ -277,18 +286,31 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   viewActive = false;
-  window.removeEventListener("resize", updateWidth);
   if (watchHandle) {
     watchHandle();
+  }
+
+  if (resizeObserver && scrollWrapper.value) {
+    resizeObserver.unobserve(scrollWrapper.value);
   }
 });
 </script>
 
 <template>
   <t-row>
-    <t-card style="margin: 10px">
-      <div>
-        <t-table :data="contestRankViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true" table-layout="auto" :loading="dataLoading" />
+    <t-card style="margin: 10px; width: 100%">
+      <div ref="scrollWrapper">
+        <div ref="tableWrapper" style="width: 0">
+          <t-table
+            :data="contestRankViews"
+            :columns="listColumns"
+            row-key="id"
+            vertical-align="top"
+            :hover="true"
+            table-layout="auto"
+            :loading="dataLoading"
+          />
+        </div>
       </div>
     </t-card>
   </t-row>
