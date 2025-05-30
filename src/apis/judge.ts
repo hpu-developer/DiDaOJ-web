@@ -29,6 +29,7 @@ export enum JudgeStatus {
   JudgeFail = 15,
   SubmitFail = 16,
   Unknown = 17,
+  Max,
 }
 
 export const GetJudgeTypeStr = (type: JudgeType) => {
@@ -104,7 +105,7 @@ export const GetJudgeStatusTheme = (status: JudgeStatus): ButtonProps["theme"] =
 };
 
 export function GetJudgeStatusOptions() {
-  const exclude = [JudgeStatus.Unknown]; // 不想包含的语言
+  const exclude = [JudgeStatus.Unknown, JudgeStatus.Max]; // 不想包含的状态
   return Object.values(JudgeStatus)
     .filter((v) => typeof v === "number" && !exclude.includes(v))
     .map((value) => ({
@@ -263,13 +264,25 @@ export function PostRejudgeRecently() {
   });
 }
 
-export function PostRejudgeProblem(problemId: string) {
+export function PostRejudgeSearch(problemId: string, language: JudgeLanguage | undefined, status: JudgeStatus | undefined) {
+  const data = {} as any;
+  if (problemId != undefined) {
+    data["problem_id"] = problemId;
+  }
+  if (language != undefined) {
+    data["language"] = language;
+  } else {
+    data["language"] = JudgeLanguage.Unknown;
+  }
+  if (status != undefined) {
+    data["status"] = status;
+  } else {
+    data["status"] = JudgeStatus.Max;
+  }
   return httpRequest({
-    url: "/judge/rejudge/problem",
+    url: "/judge/rejudge/search",
     method: "post",
-    data: {
-      id: problemId,
-    },
+    data: data,
   });
 }
 

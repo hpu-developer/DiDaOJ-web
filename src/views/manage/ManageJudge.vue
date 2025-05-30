@@ -1,15 +1,33 @@
 <script setup lang="tsx">
 import { ref } from "vue";
 import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { PostRejudgeRecently, PostRejudgeProblem, PostRejudgeAll } from "@/apis/judge.ts";
+import {
+  PostRejudgeRecently,
+  PostRejudgeSearch,
+  PostRejudgeAll,
+  JudgeStatus,
+  GetJudgeStatusOptions, PostRejudgeStatus,
+} from "@/apis/judge.ts";
 import router from "@/router";
+import { GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
 
 const { globalProperties } = useCurrentInstance();
 
-const rejudgeProblemId = ref("");
 const rejudgeRecentlyLoading = ref(false);
-const rejudgeProblemLoading = ref(false);
 const rejudgeAllLoading = ref(false);
+
+const searchForm = ref({
+  problemId: "",
+  language: undefined as JudgeLanguage | undefined,
+  status: undefined as JudgeStatus | undefined,
+});
+
+const rejudgeSearchLoading = ref(false);
+
+const languageOptions = ref([] as { label: string; value: JudgeLanguage }[]);
+languageOptions.value = GetSubmitLanguages();
+const judgeStatusOptions = ref([] as { label: string; value: JudgeStatus }[]);
+judgeStatusOptions.value = GetJudgeStatusOptions();
 
 const handleRejudgeRecently = async () => {
   rejudgeRecentlyLoading.value = true;
@@ -29,14 +47,14 @@ const handleRejudgeRecently = async () => {
   }
 };
 
-const handleRejudgeProblem = async () => {
-  if (rejudgeProblemId.value === "") {
+const handleRejudgeSearch = async () => {
+  if (!searchForm.value.problemId && !searchForm.value.language && !searchForm.value.status) {
     ShowErrorTips(globalProperties, "请输入问题Id");
     return;
   }
-  rejudgeProblemLoading.value = true;
+  rejudgeSearchLoading.value = true;
   try {
-    const res = await PostRejudgeProblem(rejudgeProblemId.value);
+    const res = await PostRejudgeSearch(searchForm.value.problemId, searchForm.value.language, searchForm.value.status);
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
@@ -45,14 +63,15 @@ const handleRejudgeProblem = async () => {
     await router.push({
       name: "judge-list",
       query: {
-        problem_id: rejudgeProblemId.value,
+        problem_id: searchForm.value.problemId,
+        language: searchForm.value.language,
       },
     });
   } catch (e) {
     console.error(e);
     ShowErrorTips(globalProperties, "重判失败");
   } finally {
-    rejudgeProblemLoading.value = false;
+    rejudgeSearchLoading.value = false;
   }
 };
 
@@ -81,8 +100,36 @@ const handleRejudgeAll = async () => {
   </t-card>
   <t-card class="yj-manage-card" title="重判问题">
     <t-space>
-      <t-input v-model="rejudgeProblemId" placeholder="输入问题Id"></t-input>
-      <t-button @click="handleRejudgeProblem" :loading="rejudgeProblemLoading">重判</t-button>
+
+      <t-form layout="inline" @submit="handleRejudgeSearch">
+        <t-form-item label="题号">
+          <t-input v-model="searchForm.problemId" placeholder="请输入完整题号" />
+        </t-form-item>
+        <t-form-item label="语言">
+          <t-select v-model="searchForm.language" placeholder="请选择提交语言" auto-width clearable>
+            <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
+          </t-select>
+        </t-form-item>
+        <t-form-item label="状态">
+          <t-select v-model="searchForm.status" placeholder="请选择评测状态" auto-width clearable>
+            <t-option v-for="item in judgeStatusOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
+          </t-select>
+        </t-form-item>
+        <t-form-item>
+          <t-space>
+            <t-button theme="primary" type="submit" :loading="rejudgeSearchLoading">重判</t-button>
+          </t-space>
+        </t-form-item>
+      </t-form>
+
+    </t-space>
+  </t-card>
+  <t-card class="yj-manage-card" title="重判状态">
+    <t-space>
+      <t-select v-model="rejudgeStatus" placeholder="请选择评测状态" auto-width clearable>
+        <t-option v-for="item in judgeStatusOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
+      </t-select>
+      <t-button @click="handleRejudgeStatus" :loading="rejudgeStatusLoading">重判</t-button>
     </t-space>
   </t-card>
   <t-card class="yj-manage-card" title="重判所有">
