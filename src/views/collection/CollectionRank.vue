@@ -4,7 +4,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
 import { GetCollectionRank } from "@/apis/collection.ts";
-import type { CollectionRank, CollectionRankProblem, CollectionRankView } from "@/types/collection.ts";
+import type { CollectionRank, CollectionRankView } from "@/types/collection.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { JudgeStatus } from "@/apis/judge.ts";
 
@@ -12,7 +12,6 @@ const route = useRoute();
 const router = useRouter();
 const { globalProperties } = useCurrentInstance();
 
-let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
 let collectionId = 0;
 
@@ -82,17 +81,6 @@ const listColumns = ref<BaseTableCol[]>([
     },
   },
   {
-    title: "Percent",
-    colKey: "percent",
-    cell: (_: any, data: any) => {
-      if (problemCount === 0) {
-        return "0%";
-      }
-      const percent = ((data.row.accept / problemCount) * 100).toFixed(2);
-      return `${percent}%`;
-    },
-  },
-  {
     title: "Count",
     colKey: "count",
     cell: (_: any, data: any) => {
@@ -106,9 +94,9 @@ const listColumns = ref<BaseTableCol[]>([
       let percent = 100;
       if (problemCount > 0) {
         // 保留两位数字
-        percent = ((data.row.accept / problemCount) * 100).toFixed(2);
+        percent = Number(((data.row.accept / problemCount) * 100).toFixed(2));
       }
-      return <t-progress percentage={percent} />;
+      return <t-progress percentage={String(percent)} />;
     },
   },
 ]);
@@ -167,11 +155,9 @@ const fetchData = async (needLoading: boolean) => {
 
 // 初始化分页信息
 onMounted(async () => {
-  viewActive = true;
-
   watchHandle = watch(
     () => route.query,
-    async (newQuery) => {
+    async () => {
       if (Array.isArray(route.params.collectionId)) {
         collectionId = Number(route.params.collectionId[0]);
       } else {
@@ -188,7 +174,6 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  viewActive = false;
   if (watchHandle) {
     watchHandle();
   }

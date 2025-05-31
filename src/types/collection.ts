@@ -1,5 +1,3 @@
-import { DateMultipleValue } from "tdesign-vue-next";
-import { CollectionRankProblem } from "@/types/contest.ts";
 
 export interface Collection {
   id: string;
@@ -29,6 +27,7 @@ export interface CollectionRank {
   author_id: number;
   author_username: string;
   author_nickname: string;
+  accept : number;
 }
 
 export interface CollectionRankView {

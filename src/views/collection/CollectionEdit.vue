@@ -111,6 +111,9 @@ const handleParseUser = async () => {
       return;
     }
     userViews.value = res.data.users;
+    userViews.value.sort((a, b) => {
+        return a.username.localeCompare(b.username);
+    });
     collectionEditForm.value.users = [];
     userViews.value.forEach((v) => {
       collectionEditForm.value.users.push(v.id);
