@@ -15,7 +15,7 @@ let watchHandle: WatchStopHandle | null = null;
 const modalShow = ref(false);
 const confirmLoading = ref(false);
 
-const ListColumns = ref([
+const listColumns = ref([
   {
     title: "ID",
     colKey: "id",
@@ -201,7 +201,7 @@ onBeforeUnmount(() => {
       <t-card style="margin: 10px">
         <t-table
           :data="collectionViews"
-          :columns="ListColumns"
+          :columns="listColumns"
           row-key="id"
           vertical-align="top"
           :hover="true"
