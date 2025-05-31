@@ -4,9 +4,9 @@ import { useRoute } from "vue-router";
 import router from "@/router";
 import Vditor from "vditor";
 import { GetCollectionEdit, ParseCollection, PostCollectionCreate, PostCollectionEdit } from "@/apis/collection.ts";
-import { formatDate, ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
-import type { CollectionView } from "@/types/collection.ts";
+import type { CollectionEditRequest, CollectionView } from "@/types/collection.ts";
 import type { ProblemView } from "@/types/problem.ts";
 import { UserInfoView } from "@/types/user.ts";
 import { PostUserParse } from "@/apis/user.ts";
@@ -28,10 +28,11 @@ const collectionData = ref<CollectionView | null>(null);
 
 const collectionEditForm = ref({
   title: "",
-  openTime: [],
+  openTime: [] as (Date | string)[],
   private: true,
   problems: [] as string[],
   users: [] as number[],
+  description: "",
 });
 
 const listColumns = ref([
@@ -62,7 +63,7 @@ const userViews = ref<UserInfoView[]>([]);
 
 const parseDialogTitle = ref<string>("");
 const textareaValue = ref("");
-let parseFunction = null;
+let parseFunction = null as (() => Promise<void>) | null;
 const isParsing = ref(false);
 
 const handleParseProblem = async () => {
@@ -81,6 +82,12 @@ const handleParseProblem = async () => {
       return;
     }
     problemViews.value = res.data.problems;
+    problemViews.value.sort((a, b) => {
+      if (a.id.length === b.id.length) {
+        return a.id.localeCompare(b.id);
+      }
+      return a.id.length - b.id.length;
+    });
     collectionEditForm.value.problems = [];
     problemViews.value.forEach((v) => {
       collectionEditForm.value.problems.push(v.id);
@@ -127,23 +134,18 @@ const handleClickCreate = async () => {
 
   isEditing.value = true;
 
-  collectionEditForm.value.tags = [];
-  for (let i = 0; i < collectionTags.value.length; i++) {
-    const tag = collectionTags.value[i];
-    if (tag && tag.label) {
-      collectionEditForm.value.tags.push(tag.label);
-    }
-  }
-
   try {
+    const postData = {
+      title: collectionEditForm.value.title,
+      description: descriptionEditor.getValue(),
+      problems: collectionEditForm.value.problems,
+      users: collectionEditForm.value.users,
+      start_time: collectionEditForm.value.openTime[0],
+      end_time: collectionEditForm.value.openTime[1],
+      private: collectionEditForm.value.private,
+    } as CollectionEditRequest
     const res = await PostCollectionCreate(
-      collectionEditForm.value.title,
-      collectionEditForm.value.timeLimit,
-      collectionEditForm.value.memoryLimit,
-      collectionEditForm.value.source,
-      collectionEditForm.value.private,
-      collectionEditForm.value.tags,
-      descriptionEditor.getValue()
+      postData
     );
 
     isEditing.value = true;
@@ -183,10 +185,10 @@ const handleClickSave = async () => {
       description: descriptionEditor.getValue(),
     };
     if (collectionEditForm.value.openTime[0]) {
-      postData.start_time = formatDate(collectionEditForm.value.openTime[0]);
+      postData.start_time = new Date(collectionEditForm.value.openTime[0]);
     }
     if (collectionEditForm.value.openTime[1]) {
-      postData.end_time = formatDate(collectionEditForm.value.openTime[1]);
+      postData.end_time = new Date(collectionEditForm.value.openTime[1]);
     }
     const res = await PostCollectionEdit(postData);
 
@@ -228,25 +230,32 @@ const loadCollection = async () => {
 
   const collection = res.data.collection;
 
-  collectionData.value = await ParseCollection(collection, {} as any);
+  collectionData.value = await ParseCollection(collection);
 
   problemViews.value = res.data.problems;
   userViews.value = res.data.users;
 
   collectionEditForm.value.title = collection.title;
-  collectionEditForm.value.openTime = [];
-  if (collectionData.value.startTime) {
-    collectionEditForm.value.openTime.push(new Date(collectionData.value.startTime));
+  collectionEditForm.value.openTime = [] as (Date | string)[];
+  if (collection.start_time) {
+    collectionEditForm.value.openTime.push(new Date(collection.start_time));
   } else {
-    collectionEditForm.value.openTime.push(undefined);
+    collectionEditForm.value.openTime.push(""); // 默认开始时间为当前时间
   }
   if (collectionData.value.endTime) {
-    collectionEditForm.value.openTime.push(new Date(collectionData.value.endTime));
+    collectionEditForm.value.openTime.push(new Date(collection.end_time));
   } else {
-    collectionEditForm.value.openTime.push(undefined);
+    collectionEditForm.value.openTime.push(""); // 默认结束时间为当前时间加一天
   }
   collectionEditForm.value.private = collection.private;
   collectionEditForm.value.description = collection.description;
+
+  problemViews.value.sort((a, b) => {
+    if (a.id.length === b.id.length) {
+      return a.id.localeCompare(b.id);
+    }
+    return a.id.length - b.id.length;
+  });
 
   collectionEditForm.value.problems = [];
   problemViews.value.forEach((v) => {
