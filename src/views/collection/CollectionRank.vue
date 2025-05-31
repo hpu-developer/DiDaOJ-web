@@ -39,6 +39,25 @@ const listColumns = ref<BaseTableCol[]>([
     },
   },
   {
+    title: "Username",
+    colKey: "username",
+    cell: (_: any, data: any) => {
+      return (
+        <t-button
+          variant="text"
+          onClick={() =>
+            router.push({
+              name: "user",
+              params: { username: data.row.username },
+            })
+          }
+        >
+          {data.row.username}
+        </t-button>
+      );
+    },
+  },
+  {
     title: "昵称",
     colKey: "nickname",
     cell: (_: any, data: any) => {
@@ -58,9 +77,8 @@ const listColumns = ref<BaseTableCol[]>([
     },
   },
   {
-    title: "Accept",
-    colKey: "accept",
-    align: "center",
+    title: "Count",
+    colKey: "count",
     cell: (_: any, data: any) => {
       return (
         <t-button
@@ -75,16 +93,9 @@ const listColumns = ref<BaseTableCol[]>([
             })
           }
         >
-          {data.row.accept}
+          {`${data.row.accept} / ${problemCount}`}
         </t-button>
       );
-    },
-  },
-  {
-    title: "Count",
-    colKey: "count",
-    cell: (_: any, data: any) => {
-      return `${data.row.accept} / ${problemCount}`;
     },
   },
   {
