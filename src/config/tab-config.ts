@@ -28,6 +28,14 @@ const tabsConfig: Tab[] = [
     redirect: "problem-list",
   },
   {
+    name: "collection-detail-tab",
+    title: "题集",
+    path: "/collection",
+    showSidebar: true,
+    disableGenerateTab: true,
+    redirect: "collection-list",
+  },
+  {
     name: "judge",
     path: "/judge",
     title: "评测",

@@ -32,6 +32,8 @@ let problemId = "";
 let contestId = 0;
 let problemIndex = 0;
 
+const isContestProblem = ref(false);
+
 const markdownRef = ref<HTMLElement | null>(null);
 const problemLoading = ref(false);
 const problemData = ref<ProblemView | null>(null);
@@ -273,6 +275,7 @@ onMounted(async () => {
       return;
     }
   }
+  isContestProblem.value = !!contestId;
 
   problemLoading.value = true;
 
@@ -300,7 +303,7 @@ onMounted(async () => {
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
             <t-descriptions-item label="上传用户">{{ problemData?.creatorNickname }}</t-descriptions-item>
-            <t-descriptions-item label="题目来源">
+            <t-descriptions-item label="题目来源" v-if="!isContestProblem">
               <t-link v-if="problemData?.sourceUrl" :href="problemData?.sourceUrl" target="_blank">
                 {{ problemData?.source }}
               </t-link>
@@ -308,9 +311,12 @@ onMounted(async () => {
                 {{ problemData?.source }}
               </span>
             </t-descriptions-item>
-            <t-descriptions-item label="是否私有" v-if="hasEditAuth">{{ problemData?.private ? "私有" : "公开" }}</t-descriptions-item>
+            <t-descriptions-item label="是否私有" v-if="hasEditAuth">{{ problemData?.private ? "私有" : "公开" }} </t-descriptions-item>
             <t-descriptions-item v-if="problemData?.originUrl" label="原题链接">
-              <t-link :href="problemData?.originUrl" target="_blank"> {{ problemData?.originOj }} - {{ problemData?.originId }} </t-link>
+              <t-link :href="problemData?.originUrl" target="_blank">
+                {{ problemData?.originOj }} -
+                {{ problemData?.originId }}
+              </t-link>
             </t-descriptions-item>
             <t-descriptions-item label="标签" v-if="problemId">
               <t-space>

@@ -26,6 +26,7 @@ export type View = {
   path: string;
   title: string;
   icon: string;
+  disableTabPath?: boolean;
   disableSidebar?: boolean;
   needLogin?: boolean;
   props: any;

@@ -10,6 +10,10 @@ import ProblemList from "@/views/problem/ProblemList.vue";
 import ProblemDetail from "@/views/problem/ProblemDetail.vue";
 import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 
+import CollectionList from "@/views/collection/CollectionList.vue";
+import CollectionDetail from "@/views/collection/CollectionDetail.vue";
+import CollectionRank from "@/views/collection/CollectionRank.vue";
+
 import JudgeJobList from "@/views/judge/JudgeJobList.vue";
 import JudgeJobDetail from "@/views/judge/JudgeJobDetail.vue";
 
@@ -60,6 +64,35 @@ const viewsConfig = [
   },
 
   {
+    name: "problem-collection",
+    tab: "problem",
+    sidebar: "problem-collection",
+    path: "collection",
+    title: "题目集合",
+    icon: "list",
+    disableTabPath: true,
+    component: CollectionList,
+  },
+  {
+    name: "collection-detail",
+    tab: "collection-detail-tab",
+    sidebar: "collection-detail",
+    path: ":collectionId+",
+    title: "题集详情",
+    icon: "cpu",
+    component: CollectionDetail,
+  },
+  {
+    name: "collection-rank",
+    tab: "collection-detail-tab",
+    sidebar: "collection-rank",
+    path: ":collectionId+/rank",
+    title: "题集排名",
+    icon: "list",
+    component: CollectionRank,
+  },
+
+  {
     name: "judge-list",
     tab: "judge",
     sidebar: "judge-list",
@@ -96,7 +129,6 @@ const viewsConfig = [
     icon: "list",
     component: ContestList,
   },
-
   {
     name: "contest-detail",
     tab: "contest-detail-tab",
@@ -403,7 +435,7 @@ export const parseViewRouter = (routers: RouteRecordRaw[], view: View) => {
     component: view.component,
   };
 
-  if (!tabConfig.disablePath) {
+  if (!tabConfig.disablePath && !view.disableTabPath) {
     router.path = tabConfig.path + router.path;
   }
 

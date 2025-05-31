@@ -3,10 +3,10 @@ import { ref, onMounted, nextTick } from "vue";
 import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetContest, ParseContest } from "@/apis/contest.ts";
+import { GetCollection, ParseCollection } from "@/apis/collection.ts";
 import { ShowErrorTips, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
-import type { ContestView } from "@/types/contest.ts";
+import type { CollectionView } from "@/types/collection.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ProblemView } from "@/types/problem.ts";
 
@@ -14,9 +14,9 @@ let route = useRoute();
 const { globalProperties } = useCurrentInstance();
 const webStyleStore = useWebStyleStore();
 
-let contestId = 0;
-const contestLoading = ref(false);
-const contestData = ref<ContestView | null>(null);
+let collectionId = 0;
+const collectionLoading = ref(false);
+const collectionData = ref<CollectionView | null>(null);
 
 const listColumns = ref([
   {
@@ -24,7 +24,7 @@ const listColumns = ref([
     colKey: "id",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.index)}>
+        <t-button variant="text" onClick={() => handleGotoCollectionProblem(data.row.id)}>
           {data.row.id}
         </t-button>
       );
@@ -35,7 +35,7 @@ const listColumns = ref([
     colKey: "title",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.index)}>
+        <t-button variant="text" onClick={() => handleGotoCollectionProblem(data.row.id)}>
           {data.row.title}
         </t-button>
       );
@@ -44,64 +44,73 @@ const listColumns = ref([
   {
     title: "正确",
     colKey: "accept",
+    cell: (_: any, data: any) => {
+      return data.row.accept ? data.row.accept : 0;
+    }
   },
   {
     title: "提交",
     colKey: "attempt",
+    cell: (_: any, data: any) => {
+      return data.row.attempt ? data.row.attempt : 0;
+    }
   },
 ]);
 
 const problemViews = ref<ProblemView[]>([]);
 
-const handleGotoContestProblem = (contestId: number, problemIndex: string) => {
-  router.push({ name: "contest-problem-detail", params: { contestId: contestId, problemIndex: problemIndex } });
+const handleGotoCollectionProblem = (problemId: string) => {
+  router.push({
+    name: "problem-detail",
+    params: { problemId: problemId },
+  });
 };
 
 onMounted(async () => {
-  if (Array.isArray(route.params.contestId)) {
-    contestId = Number(route.params.contestId[0]);
+  if (Array.isArray(route.params.collectionId)) {
+    collectionId = Number(route.params.collectionId[0]);
   } else {
-    contestId = Number(route.params.contestId);
+    collectionId = Number(route.params.collectionId);
   }
-  if (!contestId) {
-    await router.push({ name: "contest" });
+  if (!collectionId) {
+    await router.push({ name: "collection" });
     return;
   }
 
-  contestLoading.value = true;
+  collectionLoading.value = true;
 
-  const res = await GetContest(contestId);
+  const res = await GetCollection(collectionId);
   if (res.code !== 0) {
-    contestLoading.value = false;
+    collectionLoading.value = false;
     ShowErrorTips(globalProperties, res.code);
-    await router.push({ name: "contest" });
+    await router.push({ name: "collection" });
     return;
   }
 
-  contestData.value = await ParseContest(res.data);
-  problemViews.value = contestData.value.problems;
+  collectionData.value = await ParseCollection(res.data.collection);
+  problemViews.value = res.data.problems;
 
-  webStyleStore.setTitle(contestData.value.title + " - " + webStyleStore.getTitle);
+  webStyleStore.setTitle(collectionData.value.title + " - " + webStyleStore.getTitle);
 
   await nextTick(() => {
-    const contestDescriptions = document.querySelectorAll(".dida-content-description");
-    if (contestDescriptions && contestDescriptions.length > 0) {
-      contestDescriptions.forEach((description: any) => {
+    const collectionDescriptions = document.querySelectorAll(".dida-content-description");
+    if (collectionDescriptions && collectionDescriptions.length > 0) {
+      collectionDescriptions.forEach((description: any) => {
         Vditor.mathRender(description);
         Vditor.highlightRender({ lineNumber: true, enable: true }, description);
         enhanceCodeCopy(description);
       });
     }
-    contestLoading.value = false;
+    collectionLoading.value = false;
   });
 });
 </script>
 
 <template>
-  <t-loading :loading="contestLoading">
+  <t-loading :loading="collectionLoading">
     <div style="margin: 20px">
-      <h1>{{ contestData?.title }}</h1>
-      <t-alert v-if="contestData?.notification" theme="info" :message="contestData?.notification" />
+      <h1>{{ collectionData?.title }}</h1>
+      <t-alert v-if="collectionData?.notification" theme="info" :message="collectionData?.notification" />
     </div>
     <t-row class="dida-main-content">
       <t-col :span="6">
@@ -112,14 +121,14 @@ onMounted(async () => {
       <t-col :span="6">
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="开始时间">{{ contestData?.startTime }}</t-descriptions-item>
+            <t-descriptions-item label="开始时间">{{ collectionData?.startTime }}</t-descriptions-item>
           </t-descriptions>
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="结束时间">{{ contestData?.endTime }}</t-descriptions-item>
+            <t-descriptions-item label="结束时间">{{ collectionData?.endTime }}</t-descriptions-item>
           </t-descriptions>
         </div>
         <t-collapse :default-value="[0]" :expand-icon="false" :borderless="true">
-          <t-collapse-panel v-for="(description, index) in contestData?.descriptions" :key="index" :header="description.title">
+          <t-collapse-panel v-for="(description, index) in collectionData?.descriptions" :key="index" :header="description.title">
             <template #headerRightContent v-if="index === 0">
               <t-space size="small">
                 <t-button size="small">收起全部</t-button>
