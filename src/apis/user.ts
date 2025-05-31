@@ -48,6 +48,16 @@ export function GetUserInfo(username: string) {
   });
 }
 
+export function PostUserParse(usernameText: string) {
+  return httpRequest({
+    url: "/user/parse",
+    method: "post",
+    data: {
+      users: usernameText,
+    },
+  });
+}
+
 export function PostUserRegisterEmailKey(token: string, email: string) {
   return httpRequest({
     url: "/user/register/email",

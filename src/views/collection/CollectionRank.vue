@@ -105,7 +105,8 @@ const listColumns = ref<BaseTableCol[]>([
     cell: (_: any, data: any) => {
       let percent = 100;
       if (problemCount > 0) {
-        percent = (data.row.accept / problemCount) * 100;
+        // 保留两位数字
+        percent = ((data.row.accept / problemCount) * 100).toFixed(2);
       }
       return <t-progress percentage={percent} />;
     },

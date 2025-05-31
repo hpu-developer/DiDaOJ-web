@@ -3,8 +3,8 @@ import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetCollectionList, ParseCollection, PostCreateCollection } from "@/apis/collection.ts";
-import { Collection, CollectionCreateRequest, CollectionView } from "@/types/collection.ts";
+import { GetCollectionList, ParseCollection } from "@/apis/collection.ts";
+import { Collection, CollectionEditRequest, CollectionView } from "@/types/collection.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -77,7 +77,7 @@ const collectionSearchForm = ref({
   username: "",
 });
 
-const collectionCreateForm = ref<CollectionCreateRequest>({
+const collectionCreateForm = ref<CollectionEditRequest>({
   title: "",
   description: "",
   open_time: [],
@@ -151,19 +151,6 @@ const handleConfirmCreate = async () => {
 
   console.log("collectionCreateForm", collectionCreateForm.value);
 
-  PostCreateCollection(collectionCreateForm.value)
-    .then((res) => {
-      if (res.code === 0) {
-        ShowTextTipsInfo(globalProperties, "创建比赛成功");
-        modalShow.value = false;
-        router.push({ path: "/collection/" + res.data.id });
-      } else {
-        ShowErrorTips(globalProperties, res.code);
-      }
-    })
-    .finally(() => {
-      confirmLoading.value = false;
-    });
 };
 
 // 初始化分页信息

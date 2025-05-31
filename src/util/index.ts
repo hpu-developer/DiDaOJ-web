@@ -53,3 +53,18 @@ export function GetEllipsisText(text: string, length: number) {
   }
   return text.slice(0, length) + "...";
 }
+
+export function formatDate(date) {
+  date = new Date(date);
+  const pad = (n) => n.toString().padStart(2, "0");
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1); // 月份从0开始
+  const day = pad(date.getDate());
+
+  const hour = pad(date.getHours());
+  const minute = pad(date.getMinutes());
+  const second = pad(date.getSeconds());
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}

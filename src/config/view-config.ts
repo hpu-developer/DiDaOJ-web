@@ -13,6 +13,7 @@ import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 import CollectionList from "@/views/collection/CollectionList.vue";
 import CollectionDetail from "@/views/collection/CollectionDetail.vue";
 import CollectionRank from "@/views/collection/CollectionRank.vue";
+import CollectionEdit from "@/views/collection/CollectionEdit.vue";
 
 import JudgeJobList from "@/views/judge/JudgeJobList.vue";
 import JudgeJobDetail from "@/views/judge/JudgeJobDetail.vue";
@@ -90,6 +91,16 @@ const viewsConfig = [
     title: "题集排名",
     icon: "list",
     component: CollectionRank,
+  },
+  {
+    name: "collection-edit",
+    tab: "collection-detail-tab",
+    sidebar: "collection-edit",
+    disableSidebar: true,
+    path: ":collectionId+/edit",
+    title: "题集编辑",
+    icon: "list",
+    component: CollectionEdit,
   },
 
   {

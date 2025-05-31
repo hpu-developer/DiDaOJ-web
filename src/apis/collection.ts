@@ -1,7 +1,7 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import type { Collection, CollectionView, CollectionCreateRequest, CollectionDescription, CollectionProblem } from "@/types/collection";
+import type { Collection, CollectionView, CollectionEditRequest, CollectionDescription, CollectionProblem } from "@/types/collection";
 import Vditor from "vditor";
 
 export function GetCollectionProblemIndexStr(index: number): string {
@@ -32,49 +32,42 @@ export async function ParseCollection(item: Collection): Promise<CollectionView>
   } else {
     result.endTime = "无限制";
   }
+  if (item.update_time) {
+    result.updateTime = new Date(item.update_time).toLocaleString();
+  } else {
+    result.updateTime = "";
+  }
+  if (item.create_time) {
+    result.createTime = new Date(item.create_time).toLocaleString();
+  } else {
+    result.createTime = "";
+  }
 
-  if (item.descriptions) {
-    result.descriptions = [];
+  if (item.description) {
     const options = {
       math: {
         inlineDigit: true,
         engine: "KaTeX",
       },
     } as IPreviewOptions;
-    for (let i = 0; i < item.descriptions.length; i++) {
-      const description = item.descriptions[i];
-      const contentDescription = {} as CollectionDescription;
-      contentDescription.title = description.title;
-      contentDescription.content = await Vditor.md2html(description.content, options);
-      contentDescription.sort = description.sort;
-      result.descriptions.push(contentDescription);
-    }
+    result.description = await Vditor.md2html(item.description, options);
+  } else {
+    result.description = "";
   }
-  result.notification = item.notification;
-  if (item.problems) {
-    // item.problems根据sort字段排序
-    result.problems = [];
-    item.problems.sort((a: CollectionProblem, b: CollectionProblem) => {
-      return a.index - b.index;
-    });
-    for (let i = 0; i < item.problems.length; i++) {
-      const problem = item.problems[i];
-      if (!problem.accept) {
-        problem.accept = 0;
-      }
-      if (!problem.attempt) {
-        problem.attempt = 0;
-      }
-      problem.id = GetCollectionProblemIndexStr(problem.index);
-      result.problems.push(problem);
-    }
-  }
+  result.problems = item.problems;
   return result;
 }
 
 export function GetCollection(collectionId: string) {
   return httpRequest({
     url: "/collection" + "?id=" + collectionId,
+    method: "get",
+  });
+}
+
+export function GetCollectionEdit(collectionId: string) {
+  return httpRequest({
+    url: "/collection/edit" + "?id=" + collectionId,
     method: "get",
   });
 }
@@ -93,9 +86,17 @@ export function GetCollectionRank(id: number) {
   });
 }
 
-export function PostCreateCollection(request: CollectionCreateRequest) {
+export function PostCollectionCreate(request: CollectionEditRequest) {
   return httpRequest({
     url: "/collection/create",
+    method: "post",
+    data: request,
+  });
+}
+
+export function PostCollectionEdit(request: CollectionEditRequest) {
+  return httpRequest({
+    url: "/collection/edit",
     method: "post",
     data: request,
   });

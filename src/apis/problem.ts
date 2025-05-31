@@ -232,3 +232,13 @@ export function PostJudgeData(id: string, zip: File) {
     timeout: 1000 * 60 * 5, // 设置超时时间为5分钟
   });
 }
+
+export function PostProblemParse(problemText: string) {
+  return httpRequest({
+    url: "/problem/parse",
+    method: "post",
+    data: {
+      problems: problemText,
+    },
+  });
+}

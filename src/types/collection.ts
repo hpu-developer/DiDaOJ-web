@@ -16,12 +16,12 @@ export interface Collection {
 export interface CollectionView {
   id: string;
   title: string;
-  ownerId: string;
+  ownerId: number;
   ownerUsername?: string;
   ownerNickname?: string;
   startTime: string;
   endTime: string;
-  descriptions: string;
+  description: string;
   problems: string[];
 }
 
@@ -39,8 +39,10 @@ export interface CollectionRankView {
   accept: number;
 }
 
-export interface CollectionCreateRequest {
+export interface CollectionEditRequest {
+  id: number;
   title: string;
   description: string;
-  open_time: DateMultipleValue;
+  problems: string[];
+  users: number[];
 }

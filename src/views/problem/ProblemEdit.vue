@@ -358,9 +358,9 @@ onMounted(async () => {
               <t-button @click="handleClickJudge" theme="warning">判题数据</t-button>
               <t-button @click="handleClickView">查看</t-button>
             </t-space>
-            <space v-else>
+            <t-space v-else>
               <t-button @click="handleClickCreate" theme="danger" :loading="isEditing">创建</t-button>
-            </space>
+            </t-space>
           </div>
           <t-descriptions layout="vertical" :bordered="true"  v-if="problemId">
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>

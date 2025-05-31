@@ -2,12 +2,13 @@
   Manage = "i-manage",
   ManageJudge = "i-manage-judge",
   ManageProblem = "i-manage-problem",
+  ManageContest = "i-manage-contest",
+  ManageCollection = "i-manage-collection",
 }
 
 const roleAuths: Record<string, string[]> = {
-  "r-admin": [AuthType.Manage, AuthType.ManageJudge, AuthType.ManageProblem],
+  "r-admin": [AuthType.Manage, AuthType.ManageJudge, AuthType.ManageProblem, AuthType.ManageContest, AuthType.ManageCollection],
 };
-
 export function getRolesAllAuths(roles: string[] | undefined): string[] {
   if (roles == null) {
     return [];

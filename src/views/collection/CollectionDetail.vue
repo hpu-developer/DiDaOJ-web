@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, onMounted, nextTick } from "vue";
+import { ref, onMounted, nextTick, computed } from "vue";
 import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
@@ -9,14 +9,21 @@ import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { CollectionView } from "@/types/collection.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ProblemView } from "@/types/problem.ts";
+import { AuthType } from "@/auth";
+import { useUserStore } from "@/stores/user.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
 const webStyleStore = useWebStyleStore();
+const userStore = useUserStore();
 
 let collectionId = 0;
 const collectionLoading = ref(false);
 const collectionData = ref<CollectionView | null>(null);
+
+const hasEditAuth = computed(() => {
+  return userStore.hasAuth(AuthType.ManageCollection) || (collectionData.value && userStore.getUserId == collectionData.value.ownerId);
+});
 
 const listColumns = ref([
   {
@@ -46,14 +53,14 @@ const listColumns = ref([
     colKey: "accept",
     cell: (_: any, data: any) => {
       return data.row.accept ? data.row.accept : 0;
-    }
+    },
   },
   {
     title: "提交",
     colKey: "attempt",
     cell: (_: any, data: any) => {
       return data.row.attempt ? data.row.attempt : 0;
-    }
+    },
   },
 ]);
 
@@ -63,6 +70,16 @@ const handleGotoCollectionProblem = (problemId: string) => {
   router.push({
     name: "problem-detail",
     params: { problemId: problemId },
+  });
+};
+
+const handleClickEdit = () => {
+  if (!collectionData.value) {
+    return;
+  }
+  router.push({
+    name: "collection-edit",
+    params: { collectionId: collectionData.value.id },
   });
 };
 
@@ -89,6 +106,12 @@ onMounted(async () => {
 
   collectionData.value = await ParseCollection(res.data.collection);
   problemViews.value = res.data.problems;
+  problemViews.value.sort((a, b) => {
+    if (a.id.length == b.id.length) {
+      return a.id.localeCompare(b.id);
+    }
+    return a.id.length - b.id.length;
+  });
 
   webStyleStore.setTitle(collectionData.value.title + " - " + webStyleStore.getTitle);
 
@@ -108,17 +131,23 @@ onMounted(async () => {
 
 <template>
   <t-loading :loading="collectionLoading">
-    <div style="margin: 20px">
-      <h1>{{ collectionData?.title }}</h1>
-      <t-alert v-if="collectionData?.notification" theme="info" :message="collectionData?.notification" />
-    </div>
     <t-row class="dida-main-content">
       <t-col :span="6">
+        <div style="margin: 20px">
+          <h1>{{ collectionData?.title }}</h1>
+          <t-alert v-if="collectionData?.notification" theme="info" :message="collectionData?.notification" />
+        </div>
         <t-card style="margin: 10px">
           <t-table :data="problemViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true" />
         </t-card>
       </t-col>
       <t-col :span="6">
+        <div class="dida-operation-container">
+          <t-space>
+            <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
+          </t-space>
+        </div>
+
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="开始时间">{{ collectionData?.startTime }}</t-descriptions-item>
@@ -127,24 +156,17 @@ onMounted(async () => {
             <t-descriptions-item label="结束时间">{{ collectionData?.endTime }}</t-descriptions-item>
           </t-descriptions>
         </div>
-        <t-collapse :default-value="[0]" :expand-icon="false" :borderless="true">
-          <t-collapse-panel v-for="(description, index) in collectionData?.descriptions" :key="index" :header="description.title">
-            <template #headerRightContent v-if="index === 0">
-              <t-space size="small">
-                <t-button size="small">收起全部</t-button>
-                <t-button size="small">展开全部</t-button>
-              </t-space>
-            </template>
-            <div v-html="description.content" class="dida-content-description"></div>
-          </t-collapse-panel>
-        </t-collapse>
+        <t-card style="margin: 10px">
+          <div v-html="collectionData?.description" class="dida-content-description"></div>
+        </t-card>
       </t-col>
     </t-row>
   </t-loading>
 </template>
 
 <style scoped>
-.sh-card {
-  margin: 10px;
+.dida-operation-container {
+  margin: 20px 12px 20px;
+  text-align: right;
 }
 </style>
