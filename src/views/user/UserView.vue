@@ -44,7 +44,23 @@ const loadUserInfo = async (username: string) => {
     if (userData.value.vjudgeId) {
       const vjudgeInfo = await GetVjudgeAcProblem(userData.value.vjudgeId);
       vjudgeAcProblems.value = vjudgeInfo.acRecords;
+      for (const oj in vjudgeAcProblems.value) {
+        vjudgeAcProblems.value[oj].sort((a: string, b: string) => {
+          if (a.length === b.length) {
+            return a.localeCompare(b);
+          }
+          return a.length - b.length;
+        });
+      }
       vjudgeFailProblems.value = vjudgeInfo.failRecords;
+      for (const oj in vjudgeFailProblems.value) {
+        vjudgeFailProblems.value[oj].sort((a: string, b: string) => {
+          if (a.length === b.length) {
+            return a.localeCompare(b);
+          }
+          return a.length - b.length;
+        });
+      }
     }
   } catch (e) {
     ShowTextTipsError(globalProperties, "获取用户信息失败");
@@ -98,7 +114,10 @@ onMounted(async () => {
             </t-button>
           </t-space>
         </t-card>
-        <t-card style="margin: 10px" title="vjudge.net">
+        <t-card style="margin: 10px" title="vjudge.net" v-if="userData?.vjudgeId">
+          <template #actions>
+            @{{ userData?.vjudgeId }}
+          </template>
           <div style="margin: 10px" v-if="vjudgeAcProblems && Object.keys(vjudgeAcProblems).length > 0">
             <div style="margin: 5px">
               <span>AC</span>
