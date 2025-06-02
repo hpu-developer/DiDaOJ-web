@@ -233,12 +233,12 @@ export function PostJudgeData(id: string, zip: File) {
   });
 }
 
-export function PostProblemParse(problemText: string) {
+export function PostProblemParse(problemIds: string[]) {
   return httpRequest({
     url: "/problem/parse",
     method: "post",
     data: {
-      problems: problemText,
+      problems: problemIds,
     },
   });
 }

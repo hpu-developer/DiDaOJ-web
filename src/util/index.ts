@@ -68,3 +68,15 @@ export function formatDate(date) {
 
   return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 }
+
+export function SplitIdStringsFromText(text: string): string[] {
+  const problemSplits = text.trim().split(/\s+/); // 相当于 strings.Fields
+  const problemList = problemSplits.flatMap((problem) => problem.split(","));
+  return problemList.filter((item) => item.trim() !== "");
+}
+
+export function SplitIdNumbersFromText(text: string): number[] {
+  return SplitIdStringsFromText(text)
+    .filter((item) => !isNaN(Number(item)))
+    .map((item) => Number(item));
+}

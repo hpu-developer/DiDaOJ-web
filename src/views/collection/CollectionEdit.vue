@@ -1,10 +1,10 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import Vditor from "vditor";
 import { GetCollectionEdit, ParseCollection, PostCollectionCreate, PostCollectionEdit } from "@/apis/collection.ts";
-import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsSuccess, SplitIdNumbersFromText, SplitIdsFromText, SplitIdStringsFromText, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { CollectionEditRequest, CollectionView } from "@/types/collection.ts";
 import type { ProblemView } from "@/types/problem.ts";
@@ -35,7 +35,29 @@ const collectionEditForm = ref({
   description: "",
 });
 
+enum ParseValidType {
+  Valid = 0,
+  Duplicate = 1,
+  Invalid = 2,
+}
+
 const listColumns = ref([
+  {
+    title: "有效性",
+    colKey: "validType",
+    cell: (_: any, data: any) => {
+      switch (data.row.valid) {
+        case ParseValidType.Valid:
+          return <t-tag theme="success">有效</t-tag>;
+        case ParseValidType.Duplicate:
+          return <t-tag theme="warning">重复</t-tag>;
+        case ParseValidType.Invalid:
+          return <t-tag theme="danger">无效</t-tag>;
+        default:
+          break;
+      }
+    },
+  },
   {
     title: "问题ID",
     colKey: "id",
@@ -47,6 +69,22 @@ const listColumns = ref([
 ]);
 
 const userColumns = ref([
+  {
+    title: "有效性",
+    colKey: "validType",
+    cell: (_: any, data: any) => {
+      switch (data.row.valid) {
+        case ParseValidType.Valid:
+          return <t-tag theme="success">有效</t-tag>;
+        case ParseValidType.Duplicate:
+          return <t-tag theme="warning">重复</t-tag>;
+        case ParseValidType.Invalid:
+          return <t-tag theme="danger">无效</t-tag>;
+        default:
+          break;
+      }
+    },
+  },
   {
     title: "Username",
     colKey: "username",
@@ -76,17 +114,40 @@ const handleParseProblem = async () => {
   });
 
   parseFunction = async () => {
-    const res = await PostProblemParse(textareaValue.value);
+    const problemIds = SplitIdStringsFromText(textareaValue.value);
+    const uniqueProblemIds = Array.from(new Set(problemIds));
+    const res = await PostProblemParse(uniqueProblemIds);
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
     }
-    problemViews.value = res.data.problems;
-    problemViews.value.sort((a, b) => {
-      if (a.id.length === b.id.length) {
-        return a.id.localeCompare(b.id);
+    problemViews.value = [];
+    const responseProblems = res.data.problems as Problem[];
+    problemIds.forEach((id) => {
+      let problem = null;
+      if (responseProblems) {
+        problem = responseProblems.find((p) => p.id === id);
       }
-      return a.id.length - b.id.length;
+      if (problem) {
+        // 判断是否重复
+        const existingProblem = problemViews.value.find((p) => p.id === id);
+        if (existingProblem) {
+          problem.valid = ParseValidType.Duplicate;
+        } else {
+          problem.valid = ParseValidType.Valid;
+        }
+        problemViews.value.push({
+          valid: problem.valid,
+          id: id,
+          title: problem.title,
+        });
+      } else {
+        problemViews.value.push({
+          valid: ParseValidType.Invalid,
+          id: id,
+          title: "-",
+        });
+      }
     });
     collectionEditForm.value.problems = [];
     problemViews.value.forEach((v) => {
@@ -105,15 +166,40 @@ const handleParseUser = async () => {
   });
 
   parseFunction = async () => {
-    const res = await PostUserParse(textareaValue.value);
+    const usernames = SplitIdStringsFromText(textareaValue.value);
+    const res = await PostUserParse(usernames);
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
     }
-    userViews.value = res.data.users;
-    userViews.value.sort((a, b) => {
-        return a.username.localeCompare(b.username);
+    userViews.value = [];
+    usernames.sort((a, b) => {
+      return a.username.localeCompare(b.username);
     });
+    usernames.forEach((username) => {
+      let user = null;
+      if (res.data.users) {
+        user = res.data.users.find((u: UserInfoView) => u.username === username);
+      }
+      if (user) {
+        // 判断是否重复
+        const existingUser = userViews.value.find((u) => u.id === user.id);
+        if (existingUser) {
+          user.valid = ParseValidType.Duplicate;
+        } else {
+          user.valid = ParseValidType.Valid;
+        }
+        userViews.value.push(user);
+      } else {
+        userViews.value.push({
+          id: -1,
+          username: username,
+          nickname: "-",
+          valid: ParseValidType.Invalid,
+        });
+      }
+    });
+
     collectionEditForm.value.users = [];
     userViews.value.forEach((v) => {
       collectionEditForm.value.users.push(v.id);
@@ -146,10 +232,8 @@ const handleClickCreate = async () => {
       start_time: collectionEditForm.value.openTime[0],
       end_time: collectionEditForm.value.openTime[1],
       private: collectionEditForm.value.private,
-    } as CollectionEditRequest
-    const res = await PostCollectionCreate(
-      postData
-    );
+    } as CollectionEditRequest;
+    const res = await PostCollectionCreate(postData);
 
     isEditing.value = true;
 
@@ -227,7 +311,7 @@ const loadCollection = async () => {
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
     console.error("collection get failed", res.code);
-    await router.push({ name: "collection" });
+    await router.push({ name: "problem-collection-list" });
     return;
   }
 
@@ -235,8 +319,20 @@ const loadCollection = async () => {
 
   collectionData.value = await ParseCollection(collection);
 
-  problemViews.value = res.data.problems;
-  userViews.value = res.data.users;
+  problemViews.value = [];
+  if (res.data.problems) {
+    res.data.problems.forEach((problem) => {
+      problem.valid = ParseValidType.Valid;
+      problemViews.value.push(problem);
+    });
+  }
+  userViews.value = [];
+  if (res.data.users && res.data.users.length > 0) {
+    res.data.users.forEach((user: UserInfoView) => {
+      user.valid = ParseValidType.Valid;
+      userViews.value.push(user);
+    });
+  }
 
   collectionEditForm.value.title = collection.title;
   collectionEditForm.value.openTime = [] as (Date | string)[];
@@ -245,7 +341,7 @@ const loadCollection = async () => {
   } else {
     collectionEditForm.value.openTime.push(""); // 默认开始时间为当前时间
   }
-  if (collectionData.value.endTime) {
+  if (collection.end_time) {
     collectionEditForm.value.openTime.push(new Date(collection.end_time));
   } else {
     collectionEditForm.value.openTime.push(""); // 默认结束时间为当前时间加一天
@@ -253,12 +349,12 @@ const loadCollection = async () => {
   collectionEditForm.value.private = collection.private;
   collectionEditForm.value.description = collection.description;
 
-  problemViews.value.sort((a, b) => {
-    if (a.id.length === b.id.length) {
-      return a.id.localeCompare(b.id);
-    }
-    return a.id.length - b.id.length;
-  });
+  // problemViews.value.sort((a, b) => {
+  //   if (a.id.length === b.id.length) {
+  //     return a.id.localeCompare(b.id);
+  //   }
+  //   return a.id.length - b.id.length;
+  // });
 
   collectionEditForm.value.problems = [];
   problemViews.value.forEach((v) => {

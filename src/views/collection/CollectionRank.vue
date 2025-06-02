@@ -127,24 +127,26 @@ const fetchData = async (needLoading: boolean) => {
       problemCount = res.data.problem;
       const responseList = res.data.ranks as CollectionRank[];
       const results = [];
-      for (let i = 0; i < responseList.length; i++) {
-        const item = responseList[i];
-        let result = {
-          userId: item.author_id,
-          username: item.author_username,
-          nickname: item.author_nickname,
-        } as CollectionRankView;
-        result.accept = item.accept;
-        results.push(result);
-      }
-      results.sort((a: CollectionRankView, b: CollectionRankView) => {
-        if (a.accept !== b.accept) {
-          return b.accept - a.accept; // 降序
+      if (responseList) {
+        for (let i = 0; i < responseList.length; i++) {
+          const item = responseList[i];
+          let result = {
+            userId: item.author_id,
+            username: item.author_username,
+            nickname: item.author_nickname,
+          } as CollectionRankView;
+          result.accept = item.accept;
+          results.push(result);
         }
-        return a.userId - b.userId; // 升序
-      });
-      for (let i = 0; i < results.length; i++) {
-        results[i].rank = i + 1;
+        results.sort((a: CollectionRankView, b: CollectionRankView) => {
+          if (a.accept !== b.accept) {
+            return b.accept - a.accept; // 降序
+          }
+          return a.userId - b.userId; // 升序
+        });
+        for (let i = 0; i < results.length; i++) {
+          results[i].rank = i + 1;
+        }
       }
       collectionRankViews.value = results;
     } else {
@@ -175,7 +177,7 @@ onMounted(async () => {
         collectionId = Number(route.params.collectionId);
       }
       if (!collectionId) {
-        await router.push({ name: "collection" });
+        await router.push({ name: "problem-collection-list" });
         return;
       }
       await fetchData(true);

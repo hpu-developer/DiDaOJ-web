@@ -33,7 +33,7 @@ const tabsConfig: Tab[] = [
     path: "/collection",
     showSidebar: true,
     disableGenerateTab: true,
-    redirect: "collection-list",
+    redirect: "problem-collection-list",
   },
   {
     name: "judge",

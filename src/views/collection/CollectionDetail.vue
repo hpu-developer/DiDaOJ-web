@@ -90,7 +90,7 @@ onMounted(async () => {
     collectionId = Number(route.params.collectionId);
   }
   if (!collectionId) {
-    await router.push({ name: "collection" });
+    await router.push({ name: "problem-collection-list" });
     return;
   }
 
@@ -100,18 +100,18 @@ onMounted(async () => {
   if (res.code !== 0) {
     collectionLoading.value = false;
     ShowErrorTips(globalProperties, res.code);
-    await router.push({ name: "collection" });
+    await router.push({ name: "problem-collection-list" });
     return;
   }
 
   collectionData.value = await ParseCollection(res.data.collection);
-  problemViews.value = res.data.problems;
-  problemViews.value.sort((a, b) => {
-    if (a.id.length == b.id.length) {
-      return a.id.localeCompare(b.id);
-    }
-    return a.id.length - b.id.length;
-  });
+  problemViews.value = [];
+  if (res.data.collection.problems) {
+    res.data.collection.problems.forEach((problemId) => {
+      const problem = res.data.problems.find((p) => p.id === problemId);
+      problemViews.value.push(problem);
+    });
+  }
 
   webStyleStore.setTitle(collectionData.value.title + " - " + webStyleStore.getTitle);
 
@@ -134,11 +134,13 @@ onMounted(async () => {
     <t-row class="dida-main-content">
       <t-col :span="6">
         <div style="margin: 20px">
-          <h1>{{ collectionData?.title }}</h1>
-          <t-alert v-if="collectionData?.notification" theme="info" :message="collectionData?.notification" />
+          <t-breadcrumb max-item-width="300">
+            <t-breadcrumb-item :to="{ name: 'problem-collection-list' }">题目集合</t-breadcrumb-item>
+            <t-breadcrumb-item>{{ collectionData?.title }}</t-breadcrumb-item>
+          </t-breadcrumb>
         </div>
         <t-card style="margin: 10px">
-          <t-table :data="problemViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true" />
+          <t-table :data="problemViews" :columns="listColumns" row-key="id" vertical-align="top" table-layout="auto" :hover="true" />
         </t-card>
       </t-col>
       <t-col :span="6">
@@ -150,13 +152,16 @@ onMounted(async () => {
 
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
+            <t-descriptions-item label="创建者">{{ collectionData?.ownerNickname }}</t-descriptions-item>
+          </t-descriptions>
+          <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="开始时间">{{ collectionData?.startTime }}</t-descriptions-item>
           </t-descriptions>
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="结束时间">{{ collectionData?.endTime }}</t-descriptions-item>
           </t-descriptions>
         </div>
-        <t-card style="margin: 10px">
+        <t-card style="margin: 10px" v-if="collectionData?.description">
           <div v-html="collectionData?.description" class="dida-content-description"></div>
         </t-card>
       </t-col>

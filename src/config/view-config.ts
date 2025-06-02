@@ -65,9 +65,9 @@ const viewsConfig = [
   },
 
   {
-    name: "problem-collection",
+    name: "problem-collection-list",
     tab: "problem",
-    sidebar: "problem-collection",
+    sidebar: "problem-collection-list",
     path: "collection",
     title: "题目集合",
     icon: "list",
@@ -101,6 +101,17 @@ const viewsConfig = [
     title: "题集编辑",
     icon: "list",
     component: CollectionEdit,
+  },
+  {
+    name: "collection-create",
+    tab: "collection-detail-tab",
+    sidebar: "collection-create",
+    disableSidebar: true,
+    path: "create",
+    title: "新建题集",
+    icon: "list",
+    component: CollectionEdit,
+    auths: [AuthType.ManageCollection],
   },
 
   {

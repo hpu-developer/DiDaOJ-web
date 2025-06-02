@@ -142,15 +142,14 @@ const onPageChange = async (pageInfo: { current: number; pageSize: number }) => 
   });
 };
 
-const handleCreateCollection = () => {
-  modalShow.value = true;
+const handleCreateCollection = async () => {
+  await router.push({ name: "collection-create" });
 };
 
 const handleConfirmCreate = async () => {
   confirmLoading.value = true;
 
   console.log("collectionCreateForm", collectionCreateForm.value);
-
 };
 
 // 初始化分页信息
@@ -221,29 +220,10 @@ onBeforeUnmount(() => {
       </div>
     </t-col>
   </t-row>
-
-  <t-dialog v-model:visible="modalShow" header="创建比赛" @confirm="handleConfirmCreate" :confirm-loading="confirmLoading">
-    <t-form :label-width="80" :model="collectionCreateForm" @submit.prevent>
-      <t-form-item label="标题">
-        <t-input v-model="collectionCreateForm.title" placeholder="请输入标题"></t-input>
-      </t-form-item>
-      <t-form-item label="开启时间">
-        <t-date-range-picker enable-time-picker allow-input clearable v-model="collectionCreateForm.open_time" />
-      </t-form-item>
-    </t-form>
-  </t-dialog>
 </template>
 
 <style scoped>
 .sh-card {
   margin: 10px;
-}
-
-.sh-background-black {
-  background-color: #212121;
-}
-
-.sh-tag-button {
-  margin: 2px;
 }
 </style>
