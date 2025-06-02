@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, onBeforeRouteUpdate } from "vue-router";
 import router from "@/router";
-import { GetUserInfo, ParseUser } from "@/apis/user.ts";
+import { GetUserInfo, GetVjudgeAcProblem, ParseUser } from "@/apis/user.ts";
 import { ShowErrorTips, ShowTextTipsError, useCurrentInstance } from "@/util";
 import { UserInfoView } from "@/types/user.ts";
 
@@ -19,6 +19,9 @@ const userLoading = ref(false);
 const userData = ref<UserInfoView | null>(null);
 
 const problemsAc = ref([] as string[]);
+
+const vjudgeAcProblems = ref([]);
+const vjudgeFailProblems = ref([]);
 
 const loadUserInfo = async (username: string) => {
   userLoading.value = true;
@@ -37,6 +40,12 @@ const loadUserInfo = async (username: string) => {
     problemsAc.value = res.data.problems_ac;
 
     webStyleStore.setTitle(userData.value.nickname + " - " + webStyleStore.getTitle);
+
+    if (userData.value.vjudgeId) {
+      const vjudgeInfo = await GetVjudgeAcProblem(userData.value.vjudgeId);
+      vjudgeAcProblems.value = vjudgeInfo.acRecords;
+      vjudgeFailProblems.value = vjudgeInfo.failRecords;
+    }
   } catch (e) {
     ShowTextTipsError(globalProperties, "获取用户信息失败");
     await router.push({ name: "home" });
@@ -88,6 +97,46 @@ onMounted(async () => {
               {{ problem }}
             </t-button>
           </t-space>
+        </t-card>
+        <t-card style="margin: 10px" title="vjudge.net">
+          <div style="margin: 10px" v-if="vjudgeAcProblems && Object.keys(vjudgeAcProblems).length > 0">
+            <div style="margin: 5px">
+              <span>AC</span>
+            </div>
+            <t-descriptions layout="vertical" :bordered="true">
+              <t-descriptions-item v-for="(problems, oj) in vjudgeAcProblems" :key="oj" :label="oj">
+                <t-space style="flex-wrap: wrap">
+                  <t-button
+                    v-for="p in problems"
+                    :key="p"
+                    size="small"
+                    @click="() => router.push({ name: 'problem-detail', params: { problemId: oj + '-' + p } })"
+                  >
+                    {{ p }}
+                  </t-button>
+                </t-space>
+              </t-descriptions-item>
+            </t-descriptions>
+          </div>
+          <div style="margin: 10px" v-if="vjudgeFailProblems && Object.keys(vjudgeFailProblems).length > 0">
+            <div style="margin: 5px">
+              <span>Fail</span>
+            </div>
+            <t-descriptions layout="vertical" :bordered="true">
+              <t-descriptions-item v-for="(problems, oj) in vjudgeFailProblems" :key="oj" :label="oj">
+                <t-space style="flex-wrap: wrap">
+                  <t-button
+                    v-for="p in problems"
+                    :key="p"
+                    size="small"
+                    @click="() => router.push({ name: 'problem-detail', params: { problemId: oj + '-' + p } })"
+                  >
+                    {{ p }}
+                  </t-button>
+                </t-space>
+              </t-descriptions-item>
+            </t-descriptions>
+          </div>
         </t-card>
       </t-col>
       <t-col :span="4">

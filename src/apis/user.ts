@@ -1,4 +1,5 @@
 import httpRequest from "@/apis/axios-api";
+import httpCommonRequest from "@/apis/axios-common";
 
 import md5 from "md5";
 
@@ -14,6 +15,7 @@ export function ParseUser(item: UserInfo): UserInfoView {
   result.organization = item.organization;
   result.accept = item.accept;
   result.attempt = item.attempt;
+  result.vjudgeId = item.vjudge_id;
   if (item.email) {
     result.avatar = `https://www.gravatar.com/avatar/${md5(item.email.toLowerCase().trim())}?d=identicon&s=100`;
   }
@@ -44,6 +46,14 @@ export function GetUserInfo(username: string) {
   };
   return httpRequest({
     url: `/user/info?${new URLSearchParams(params).toString()}`,
+    method: "get",
+  });
+}
+
+export function GetVjudgeAcProblem(username: string) {
+  const url = `https://proxy.boiltask.com/?target=https://vjudge.net/user/solveDetail/BoilTask`
+  return httpCommonRequest({
+    url: url,
     method: "get",
   });
 }

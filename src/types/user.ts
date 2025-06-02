@@ -15,6 +15,7 @@ export interface UserInfo {
   organization: string;
   accept: number;
   attempt: number;
+  vjudge_id: string;
 }
 
 export interface UserInfoView {
@@ -27,4 +28,5 @@ export interface UserInfoView {
   accepted: number;
   attempt: number;
   avatar: string;
+  vjudgeId: string;
 }
