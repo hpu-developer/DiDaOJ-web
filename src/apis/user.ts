@@ -51,7 +51,7 @@ export function GetUserInfo(username: string) {
 }
 
 export function GetVjudgeAcProblem(username: string) {
-  const url = `https://proxy.boiltask.com/?target=https://vjudge.net/user/solveDetail/BoilTask`
+  const url = `https://vjudge.net/user/solveDetail/` + encodeURIComponent(username)
   return httpCommonRequest({
     url: url,
     method: "get",

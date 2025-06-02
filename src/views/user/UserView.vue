@@ -116,7 +116,7 @@ onMounted(async () => {
         </t-card>
         <t-card style="margin: 10px" title="vjudge.net" v-if="userData?.vjudgeId">
           <template #actions>
-            @{{ userData?.vjudgeId }}
+            <t-link :href="'https://vjudge.net/user/' + userData?.vjudgeId" target="_blank">@{{ userData?.vjudgeId }}</t-link>
           </template>
           <div style="margin: 10px" v-if="vjudgeAcProblems && Object.keys(vjudgeAcProblems).length > 0">
             <div style="margin: 5px">
