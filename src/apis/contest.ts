@@ -1,8 +1,9 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import type { Contest, ContestView, ContestCreateRequest, ContestDescription, ContestProblem } from "@/types/contest";
+import type { Contest, ContestView, ContestEditRequest, ContestDescription, ContestProblem } from "@/types/contest";
 import Vditor from "vditor";
+import type { CollectionEditRequest } from "@/types/collection.ts";
 
 export function GetContestProblemIndexStr(index: number): string {
   let result = "";
@@ -70,6 +71,13 @@ export function GetContest(contestId: string) {
   });
 }
 
+export function GetContestEdit(contestId: string) {
+  return httpRequest({
+    url: "/contest/edit" + "?id=" + contestId,
+    method: "get",
+  });
+}
+
 export function GetContestList(page: number, pageSize: number) {
   return httpRequest({
     url: "/contest/list" + "?page=" + page + "&page_size=" + pageSize,
@@ -84,9 +92,17 @@ export function GetContestRank(id: number) {
   });
 }
 
-export function PostCreateContest(request: ContestCreateRequest) {
+export function PostContestCreate(request: ContestEditRequest) {
   return httpRequest({
     url: "/contest/create",
+    method: "post",
+    data: request,
+  });
+}
+
+export function PostContestEdit(request: ContestEditRequest) {
+  return httpRequest({
+    url: "/contest/edit",
     method: "post",
     data: request,
   });

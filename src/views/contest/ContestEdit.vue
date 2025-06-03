@@ -3,10 +3,10 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import Vditor from "vditor";
-import { GetCollectionEdit, ParseCollection, PostCollectionCreate, PostCollectionEdit } from "@/apis/collection.ts";
+import { GetContestEdit, ParseContest, PostContestCreate, PostContestEdit } from "@/apis/contest.ts";
 import { ShowErrorTips, ShowTextTipsSuccess, SplitIdNumbersFromText, SplitIdsFromText, SplitIdStringsFromText, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
-import type { CollectionEditRequest, CollectionView } from "@/types/collection.ts";
+import type { ContestEditRequest, ContestView } from "@/types/contest.ts";
 import type { ProblemView } from "@/types/problem.ts";
 import { UserInfoView } from "@/types/user.ts";
 import { PostUserParse } from "@/apis/user.ts";
@@ -17,16 +17,16 @@ const { globalProperties } = useCurrentInstance();
 
 const webStyleStore = useWebStyleStore();
 
-const collectionId = ref("");
-const collectionLoading = ref(false);
+const contestId = ref("");
+const contestLoading = ref(false);
 let descriptionEditor = null as Vditor | null;
 const isEditing = ref(false);
 
 const showDialog = ref(false);
 
-const collectionData = ref<CollectionView | null>(null);
+const contestData = ref<ContestView | null>(null);
 
-const collectionEditForm = ref({
+const contestEditForm = ref({
   title: "",
   openTime: [] as (Date | string)[],
   private: true,
@@ -149,9 +149,9 @@ const handleParseProblem = async () => {
         });
       }
     });
-    collectionEditForm.value.problems = [];
+    contestEditForm.value.problems = [];
     problemViews.value.forEach((v) => {
-      collectionEditForm.value.problems.push(v.id);
+      contestEditForm.value.problems.push(v.id);
     });
   };
 };
@@ -200,9 +200,9 @@ const handleParseUser = async () => {
       }
     });
 
-    collectionEditForm.value.users = [];
+    contestEditForm.value.users = [];
     userViews.value.forEach((v) => {
-      collectionEditForm.value.users.push(v.id);
+      contestEditForm.value.users.push(v.id);
     });
   };
 };
@@ -225,15 +225,15 @@ const handleClickCreate = async () => {
 
   try {
     const postData = {
-      title: collectionEditForm.value.title,
+      title: contestEditForm.value.title,
       description: descriptionEditor.getValue(),
-      problems: collectionEditForm.value.problems,
-      users: collectionEditForm.value.users,
-      start_time: collectionEditForm.value.openTime[0],
-      end_time: collectionEditForm.value.openTime[1],
-      private: collectionEditForm.value.private,
-    } as CollectionEditRequest;
-    const res = await PostCollectionCreate(postData);
+      problems: contestEditForm.value.problems,
+      users: contestEditForm.value.users,
+      start_time: contestEditForm.value.openTime[0],
+      end_time: contestEditForm.value.openTime[1],
+      private: contestEditForm.value.private,
+    } as ContestEditRequest;
+    const res = await PostContestCreate(postData);
 
     isEditing.value = true;
 
@@ -244,8 +244,8 @@ const handleClickCreate = async () => {
 
     if (res.data != undefined) {
       await router.push({
-        name: "collection-detail",
-        params: { collectionId: res.data },
+        name: "contest-detail",
+        params: { contestId: res.data },
       });
     }
 
@@ -264,20 +264,20 @@ const handleClickSave = async () => {
 
   try {
     const postData = {
-      id: Number(collectionId.value),
-      title: collectionEditForm.value.title,
-      private: collectionEditForm.value.private,
-      problems: collectionEditForm.value.problems,
-      users: collectionEditForm.value.users,
+      id: Number(contestId.value),
+      title: contestEditForm.value.title,
+      private: contestEditForm.value.private,
+      problems: contestEditForm.value.problems,
+      users: contestEditForm.value.users,
       description: descriptionEditor.getValue(),
     };
-    if (collectionEditForm.value.openTime[0]) {
-      postData.start_time = new Date(collectionEditForm.value.openTime[0]);
+    if (contestEditForm.value.openTime[0]) {
+      postData.start_time = new Date(contestEditForm.value.openTime[0]);
     }
-    if (collectionEditForm.value.openTime[1]) {
-      postData.end_time = new Date(collectionEditForm.value.openTime[1]);
+    if (contestEditForm.value.openTime[1]) {
+      postData.end_time = new Date(contestEditForm.value.openTime[1]);
     }
-    const res = await PostCollectionEdit(postData);
+    const res = await PostContestEdit(postData);
 
     isEditing.value = true;
 
@@ -287,7 +287,7 @@ const handleClickSave = async () => {
     }
 
     if (res.data != undefined) {
-      collectionData.value.updateTime = new Date(res.data).toLocaleString();
+      contestData.value.updateTime = new Date(res.data).toLocaleString();
     }
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
@@ -300,24 +300,24 @@ const loadDescriptionEditor = (description: string) => {
   const codeEditOptions = {
     after: () => {
       descriptionEditor?.setValue(description);
-      collectionLoading.value = false;
+      contestLoading.value = false;
     },
   } as IOptions;
-  descriptionEditor = new Vditor("collectionEditDiv", codeEditOptions);
+  descriptionEditor = new Vditor("contestEditDiv", codeEditOptions);
 };
 
-const loadCollection = async () => {
-  const res = await GetCollectionEdit(collectionId.value, undefined, undefined);
+const loadContest = async () => {
+  const res = await GetContestEdit(contestId.value, undefined, undefined);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
-    console.error("collection get failed", res.code);
-    await router.push({ name: "problem-collection-list" });
+    console.error("contest get failed", res.code);
+    await router.push({ name: "problem-contest-list" });
     return;
   }
 
-  const collection = res.data.collection;
+  const contest = res.data.contest;
 
-  collectionData.value = await ParseCollection(collection);
+  contestData.value = await ParseContest(contest);
 
   problemViews.value = [];
   if (res.data.problems) {
@@ -334,20 +334,20 @@ const loadCollection = async () => {
     });
   }
 
-  collectionEditForm.value.title = collection.title;
-  collectionEditForm.value.openTime = [] as (Date | string)[];
-  if (collection.start_time) {
-    collectionEditForm.value.openTime.push(new Date(collection.start_time));
+  contestEditForm.value.title = contest.title;
+  contestEditForm.value.openTime = [] as (Date | string)[];
+  if (contest.start_time) {
+    contestEditForm.value.openTime.push(new Date(contest.start_time));
   } else {
-    collectionEditForm.value.openTime.push(""); // 默认开始时间为当前时间
+    contestEditForm.value.openTime.push(""); // 默认开始时间为当前时间
   }
-  if (collection.end_time) {
-    collectionEditForm.value.openTime.push(new Date(collection.end_time));
+  if (contest.end_time) {
+    contestEditForm.value.openTime.push(new Date(contest.end_time));
   } else {
-    collectionEditForm.value.openTime.push(""); // 默认结束时间为当前时间加一天
+    contestEditForm.value.openTime.push(""); // 默认结束时间为当前时间加一天
   }
-  collectionEditForm.value.private = collection.private;
-  collectionEditForm.value.description = collection.description;
+  contestEditForm.value.private = contest.private;
+  contestEditForm.value.description = contest.description;
 
   // problemViews.value.sort((a, b) => {
   //   if (a.id.length === b.id.length) {
@@ -356,36 +356,36 @@ const loadCollection = async () => {
   //   return a.id.length - b.id.length;
   // });
 
-  collectionEditForm.value.problems = [];
+  contestEditForm.value.problems = [];
   problemViews.value.forEach((v) => {
-    collectionEditForm.value.problems.push(v.id);
+    contestEditForm.value.problems.push(v.id);
   });
 
-  collectionEditForm.value.users = [];
+  contestEditForm.value.users = [];
   userViews.value.forEach((v) => {
-    collectionEditForm.value.users.push(v.id);
+    contestEditForm.value.users.push(v.id);
   });
 
-  webStyleStore.setTitle(collection.title + " - " + webStyleStore.getTitle);
+  webStyleStore.setTitle(contest.title + " - " + webStyleStore.getTitle);
 
-  let collectionDescription = "";
-  if (collection.description) {
-    collectionDescription = collection.description as string;
+  let contestDescription = "";
+  if (contest.description) {
+    contestDescription = contest.description as string;
   }
 
-  loadDescriptionEditor(collectionDescription);
+  loadDescriptionEditor(contestDescription);
 };
 
 onMounted(async () => {
-  if (Array.isArray(route.params.collectionId)) {
-    collectionId.value = route.params.collectionId[0];
+  if (Array.isArray(route.params.contestId)) {
+    contestId.value = route.params.contestId[0];
   } else {
-    collectionId.value = route.params.collectionId;
+    contestId.value = route.params.contestId;
   }
 
-  if (collectionId.value) {
-    collectionLoading.value = true;
-    await loadCollection();
+  if (contestId.value) {
+    contestLoading.value = true;
+    await loadContest();
   } else {
     loadDescriptionEditor("");
   }
@@ -393,18 +393,18 @@ onMounted(async () => {
 </script>
 
 <template>
-  <t-loading :loading="collectionLoading">
+  <t-loading :loading="contestLoading">
     <t-row>
       <t-col :span="8">
         <div style="margin: 10px">
           <t-card class="sh-card">
-            <t-form :model="collectionEditForm">
+            <t-form :model="contestEditForm">
               <t-form-item label="标题">
-                <t-input v-model="collectionEditForm.title" placeholder="题集标题"></t-input>
+                <t-input v-model="contestEditForm.title" placeholder="问题标题"></t-input>
               </t-form-item>
               <t-form-item label="开启时间">
                 <t-date-range-picker
-                  v-model="collectionEditForm.openTime"
+                  v-model="contestEditForm.openTime"
                   allow-input
                   clearable
                   format="YYYY-MM-DD HH:mm:ss"
@@ -434,22 +434,22 @@ onMounted(async () => {
       <t-col :span="4">
         <div style="margin: 12px">
           <div class="dida-edit-container">
-            <t-space v-if="collectionId">
+            <t-space v-if="contestId">
               <t-button @click="handleClickSave" theme="danger" :loading="isEditing">保存</t-button>
             </t-space>
             <t-space v-else>
               <t-button @click="handleClickCreate" theme="danger" :loading="isEditing">创建</t-button>
             </t-space>
           </div>
-          <t-descriptions layout="vertical" :bordered="true" v-if="collectionId">
-            <t-descriptions-item label="创建时间">{{ collectionData?.insertTime }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ collectionData?.updateTime }}</t-descriptions-item>
-            <t-descriptions-item label="创建用户">{{ collectionData?.authorNickname }}</t-descriptions-item>
+          <t-descriptions layout="vertical" :bordered="true" v-if="contestId">
+            <t-descriptions-item label="创建时间">{{ contestData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="更新时间">{{ contestData?.updateTime }}</t-descriptions-item>
+            <t-descriptions-item label="创建用户">{{ contestData?.authorNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>
     </t-row>
-    <div id="collectionEditDiv" class="dida-description-editor"></div>
+    <div id="contestEditDiv" class="dida-description-editor"></div>
   </t-loading>
   <t-dialog v-model:visible="showDialog" @confirm="handleParse" :header="parseDialogTitle" :confirm-loading="isParsing">
     <div style="margin-bottom: 10px">

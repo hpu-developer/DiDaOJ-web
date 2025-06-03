@@ -2,9 +2,9 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetContestList, ParseContest, PostCreateContest } from "@/apis/contest.ts";
-import { Contest, ContestCreateRequest, ContestView } from "@/types/contest.ts";
+import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
+import { GetContestList, ParseContest } from "@/apis/contest.ts";
+import { Contest, ContestView } from "@/types/contest.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -12,8 +12,6 @@ const { globalProperties } = useCurrentInstance();
 
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
-const modalShow = ref(false);
-const confirmLoading = ref(false);
 
 const ListColumns = ref([
   {
@@ -77,12 +75,6 @@ const contestSearchForm = ref({
   username: "",
 });
 
-const contestCreateForm = ref<ContestCreateRequest>({
-  title: "",
-  description: "",
-  open_time: [],
-});
-
 const handleGotoContest = (id: string) => {
   if (!id) {
     return;
@@ -143,27 +135,7 @@ const onPageChange = async (pageInfo: { current: number; pageSize: number }) => 
 };
 
 const handleCreateContest = () => {
-  modalShow.value = true;
-};
-
-const handleConfirmCreate = async () => {
-  confirmLoading.value = true;
-
-  console.log("contestCreateForm", contestCreateForm.value);
-
-  PostCreateContest(contestCreateForm.value)
-    .then((res) => {
-      if (res.code === 0) {
-        ShowTextTipsInfo(globalProperties, "创建比赛成功");
-        modalShow.value = false;
-        router.push({ path: "/contest/" + res.data.id });
-      } else {
-        ShowErrorTips(globalProperties, res.code);
-      }
-    })
-    .finally(() => {
-      confirmLoading.value = false;
-    });
+  router.push({ name: "contest-create" });
 };
 
 // 初始化分页信息
@@ -234,29 +206,10 @@ onBeforeUnmount(() => {
       </div>
     </t-col>
   </t-row>
-
-  <t-dialog v-model:visible="modalShow" header="创建比赛" @confirm="handleConfirmCreate" :confirm-loading="confirmLoading">
-    <t-form :label-width="80" :model="contestCreateForm" @submit.prevent>
-      <t-form-item label="标题">
-        <t-input v-model="contestCreateForm.title" placeholder="请输入标题"></t-input>
-      </t-form-item>
-      <t-form-item label="开启时间">
-        <t-date-range-picker enable-time-picker allow-input clearable v-model="contestCreateForm.open_time" />
-      </t-form-item>
-    </t-form>
-  </t-dialog>
 </template>
 
 <style scoped>
 .sh-card {
   margin: 10px;
-}
-
-.sh-background-black {
-  background-color: #212121;
-}
-
-.sh-tag-button {
-  margin: 2px;
 }
 </style>

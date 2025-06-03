@@ -64,7 +64,8 @@ export interface ContestRankView {
   [key: string]: any; // 索引签名，允许添加任意名字的字段
 }
 
-export interface ContestCreateRequest {
+export interface ContestEditRequest {
+  id: number;
   title: string;
   description: string;
   open_time: DateMultipleValue;

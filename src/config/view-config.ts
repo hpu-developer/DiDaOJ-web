@@ -21,6 +21,7 @@ import JudgeJobDetail from "@/views/judge/JudgeJobDetail.vue";
 import ContestList from "@/views/contest/ContestList.vue";
 import ContestDetail from "@/views/contest/ContestDetail.vue";
 import ContestRank from "@/views/contest/ContestRank.vue";
+import ContestEdit from "@/views/contest/ContestEdit.vue";
 
 import DiscussList from "@/views/discuss/DiscussList.vue";
 import DiscussDetail from "@/views/discuss/DiscussDetail.vue";
@@ -150,6 +151,27 @@ const viewsConfig = [
     title: "近期比赛",
     icon: "list",
     component: ContestList,
+  },
+  {
+    name: "contest-edit",
+    tab: "contest",
+    sidebar: "contest-edit",
+    disableSidebar: true,
+    path: ":collectionId+/edit",
+    title: "比赛编辑",
+    icon: "list",
+    component: ContestEdit,
+  },
+  {
+    name: "contest-create",
+    tab: "contest",
+    sidebar: "contest-create",
+    disableSidebar: true,
+    path: "create",
+    title: "新建比赛",
+    icon: "list",
+    component: ContestEdit,
+    auths: [AuthType.ManageContest],
   },
   {
     name: "contest-detail",
