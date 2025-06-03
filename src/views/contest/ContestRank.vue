@@ -16,10 +16,6 @@ let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
 let contestId = 0;
 
-const scrollWrapper = ref(null);
-const tableWrapper = ref<HTMLElement | null>(null);
-let resizeObserver = null as ResizeObserver | null;
-
 const getDurationText = (duration: number) => {
   if (duration === undefined || duration === null) {
     return "-";
@@ -190,12 +186,14 @@ const fetchData = async (needLoading: boolean) => {
           },
         });
       });
-      const startTime = new Date(res.data.start_time);
+      const contest = res.data.contest;
+      const startTime = new Date(contest.start_time);
       const responseList = res.data.ranks as ContestRank[];
       const results = [];
       for (let i = 0; i < responseList.length; i++) {
         const item = responseList[i];
         let result = {
+          userId: item.author_id,
           username: item.author_username,
           nickname: item.author_nickname,
         } as ContestRankView;
@@ -226,17 +224,24 @@ const fetchData = async (needLoading: boolean) => {
         }
         return a.penalty - b.penalty; // 升序
       });
+      const vMembers = contest.v_members;
       let rank = 0;
+      let rankIncrement = 0;
       let lastAccept = -1;
       let lastPenalty = -1;
       for (let i = 0; i < results.length; i++) {
-        if (results[i].solved !== lastAccept || results[i].penalty !== lastPenalty) {
-          rank = i + 1; // 更新排名
-          lastAccept = results[i].solved;
-          lastPenalty = results[i].penalty;
-        }
         results[i].index = i + 1;
-        results[i].rank = rank;
+        if (vMembers && vMembers.includes(results[i].userId)) {
+          results[i].rank = "*";
+        } else {
+          rankIncrement++;
+          if (results[i].solved !== lastAccept || results[i].penalty !== lastPenalty) {
+            rank = rankIncrement; // 更新排名
+            lastAccept = results[i].solved;
+            lastPenalty = results[i].penalty;
+          }
+          results[i].rank = String(rank);
+        }
       }
       contestRankViews.value = results;
     } else {
@@ -256,13 +261,6 @@ const fetchData = async (needLoading: boolean) => {
   }
 };
 
-function updateTableWidth() {
-  if (tableWrapper.value) {
-    const parentWidth = tableWrapper.value?.parentElement?.clientWidth;
-    tableWrapper.value.style.width = parentWidth + "px";
-  }
-}
-
 // 初始化分页信息
 onMounted(async () => {
   viewActive = true;
@@ -280,13 +278,6 @@ onMounted(async () => {
         return;
       }
       await fetchData(true);
-
-      updateTableWidth();
-      // 使用 ResizeObserver 更智能地响应父级大小变化
-      resizeObserver = new ResizeObserver(updateTableWidth);
-      if (scrollWrapper.value) {
-        resizeObserver.observe(scrollWrapper.value);
-      }
     },
     { immediate: true }
   );
@@ -297,33 +288,32 @@ onBeforeUnmount(() => {
   if (watchHandle) {
     watchHandle();
   }
-
-  if (resizeObserver && scrollWrapper.value) {
-    resizeObserver.unobserve(scrollWrapper.value);
-  }
 });
 </script>
 
 <template>
   <t-row>
     <t-card style="margin: 10px; width: 100%">
-      <div ref="scrollWrapper">
-        <div ref="tableWrapper" style="width: 0">
-          <t-table
-            :data="contestRankViews"
-            :columns="listColumns"
-            row-key="index"
-            vertical-align="middle"
-            :bordered="true"
-            :hover="true"
-            table-layout="auto"
-            :rowspan-and-colspan="rowspanAndColspan"
-            :loading="dataLoading"
-          />
-        </div>
+      <div class="table-scroll-wrapper">
+        <t-table
+          :data="contestRankViews"
+          :columns="listColumns"
+          row-key="index"
+          vertical-align="middle"
+          :bordered="true"
+          :hover="true"
+          table-layout="auto"
+          :rowspan-and-colspan="rowspanAndColspan"
+          :loading="dataLoading"
+          class="dida-contest-rank-table"
+        />
       </div>
     </t-card>
   </t-row>
 </template>
 
-<style scoped></style>
+<style scoped>
+.table-scroll-wrapper {
+  width: calc(100vw - 320px);
+}
+</style>

@@ -54,8 +54,9 @@ export interface ContestRank {
 }
 
 export interface ContestRankView {
-  rank: number;
-  username:string
+  rank: string;
+  userId: number;
+  username: string;
   nickname: string;
   solved: number;
   penalty: number;

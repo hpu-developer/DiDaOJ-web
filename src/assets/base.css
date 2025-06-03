@@ -26,10 +26,6 @@ body {
   background-color: rgba(0, 0, 0, 0.5) !important;
 }
 
-.t-head-menu .t-menu__item {
-  gap: var(--td-comp-margin-xxs)
-}
-
 .copy-wrapper {
   position: relative;
 }
