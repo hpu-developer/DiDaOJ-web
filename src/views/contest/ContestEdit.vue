@@ -206,7 +206,7 @@ onMounted(async () => {
           <t-card class="sh-card">
             <t-form :model="contestEditForm">
               <t-form-item label="标题">
-                <t-input v-model="contestEditForm.title" placeholder="题集标题"></t-input>
+                <t-input v-model="contestEditForm.title" placeholder="比赛标题"></t-input>
               </t-form-item>
               <t-form-item label="开启时间">
                 <t-date-range-picker
