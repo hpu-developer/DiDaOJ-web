@@ -3,7 +3,6 @@ import httpRequest from "@/apis/axios-api";
 
 import type { Contest, ContestView, ContestEditRequest, ContestDescription, ContestProblem } from "@/types/contest";
 import Vditor from "vditor";
-import type { CollectionEditRequest } from "@/types/collection.ts";
 
 export function GetContestProblemIndexStr(index: number): string {
   let result = "";
@@ -24,6 +23,8 @@ export async function ParseContest(item: Contest): Promise<ContestView> {
   result.title = item.title;
   result.startTime = new Date(item.start_time).toLocaleString();
   result.endTime = new Date(item.end_time).toLocaleString();
+  result.createTime = new Date(item.create_time).toLocaleString();
+  result.updateTime = new Date(item.update_time).toLocaleString();
 
   if (item.descriptions) {
     result.descriptions = [];

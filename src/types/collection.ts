@@ -4,6 +4,8 @@ export interface Collection {
   owner_id: string;
   owner_username?: string;
   owner_nickname?: string;
+  create_time: string;
+  update_time: string;
   start_time: string;
   end_time: string;
   description: string;
@@ -16,6 +18,8 @@ export interface CollectionView {
   ownerId: number;
   ownerUsername?: string;
   ownerNickname?: string;
+  createTime: string;
+  updateTime: string;
   startTime: string;
   endTime: string;
   description: string;

@@ -96,6 +96,7 @@ const handleParseUserResponse = (res: any, usernames: string[]) => {
     });
   }
   localViews.value = results;
+  filteredUserIds = finalUserIds;
   modelUserIds.value = finalUserIds;
 };
 

@@ -84,6 +84,7 @@ const loadProblemList = async (problemIds: string[]) => {
   });
 
   localViews.value = results;
+  filteredProblemIds = finalProblemIds;
   modelProblemIds.value = finalProblemIds;
 };
 

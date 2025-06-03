@@ -114,7 +114,6 @@ const viewsConfig = [
     title: "新建题集",
     icon: "list",
     component: CollectionEdit,
-    auths: [AuthType.ManageCollection],
   },
 
   {
@@ -155,17 +154,6 @@ const viewsConfig = [
     component: ContestList,
   },
   {
-    name: "contest-edit",
-    tab: "contest",
-    sidebar: "contest-edit",
-    disableSidebar: true,
-    needLogin: true,
-    path: ":collectionId+/edit",
-    title: "比赛编辑",
-    icon: "list",
-    component: ContestEdit,
-  },
-  {
     name: "contest-create",
     tab: "contest",
     sidebar: "contest-create",
@@ -175,7 +163,17 @@ const viewsConfig = [
     title: "新建比赛",
     icon: "list",
     component: ContestEdit,
-    auths: [AuthType.ManageContest],
+  },
+  {
+    name: "contest-edit",
+    tab: "contest-detail-tab",
+    sidebar: "contest-edit",
+    disableSidebar: true,
+    needLogin: true,
+    path: ":contestId+/edit",
+    title: "比赛编辑",
+    icon: "list",
+    component: ContestEdit,
   },
   {
     name: "contest-detail",

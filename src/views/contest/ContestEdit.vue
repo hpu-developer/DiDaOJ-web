@@ -31,6 +31,7 @@ const contestEditForm = ref({
   problems: [] as string[],
   members: [] as number[],
   description: "",
+  notification: "",
 });
 
 const parseDialogTitle = ref<string>("");
@@ -58,6 +59,7 @@ const handleClickCreate = async () => {
     const postData = {
       title: contestEditForm.value.title,
       description: descriptionEditor.getValue(),
+      notification: contestEditForm.value.notification,
       problems: contestEditForm.value.problems,
       members: contestEditForm.value.members,
       start_time: contestEditForm.value.openTime[0],
@@ -101,6 +103,7 @@ const handleClickSave = async () => {
       problems: contestEditForm.value.problems,
       members: contestEditForm.value.members,
       description: descriptionEditor.getValue(),
+      notification: contestEditForm.value.notification,
     };
     if (contestEditForm.value.openTime[0]) {
       postData.start_time = new Date(contestEditForm.value.openTime[0]);
@@ -142,7 +145,7 @@ const loadContest = async () => {
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
     console.error("contest get failed", res.code);
-    await router.push({ name: "problem-contest-list" });
+    await router.push({ name: "contest-list" });
     return;
   }
 
@@ -163,10 +166,11 @@ const loadContest = async () => {
     contestEditForm.value.openTime.push(""); // 默认结束时间为当前时间加一天
   }
   contestEditForm.value.private = contest.private;
-  contestEditForm.value.description = contest.description;
+  contestEditForm.value.description = contest.description || "";
+  contestEditForm.value.notification = contest.notification || "";
 
-  contestEditForm.value.problems = contest.problems;
-  contestEditForm.value.members = contest.members;
+  contestEditForm.value.problems = res.data.problems;
+  contestEditForm.value.members = res.data.members;
 
   webStyleStore.setTitle(contest.title + " - " + webStyleStore.getTitle);
 
@@ -213,11 +217,17 @@ onMounted(async () => {
                   :default-time="['00:00:00', '23:59:59']"
                 />
               </t-form-item>
-              <t-form-item label="问题测试">
-                <ParseProblemList v-model="contestEditForm.problems" />
+              <t-form-item label="通知">
+                <t-input v-model="contestEditForm.notification" placeholder="会更为醒目地提醒"></t-input>
+              </t-form-item>
+              <t-form-item label="私有">
+                <t-switch v-model="contestEditForm.private" />
               </t-form-item>
               <t-form-item label="成员">
                 <ParseUserList v-model="contestEditForm.members" />
+              </t-form-item>
+              <t-form-item label="问题">
+                <ParseProblemList v-model="contestEditForm.problems" />
               </t-form-item>
             </t-form>
           </t-card>
@@ -234,9 +244,9 @@ onMounted(async () => {
             </t-space>
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="contestId">
-            <t-descriptions-item label="创建时间">{{ contestData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="创建时间">{{ contestData?.createTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ contestData?.updateTime }}</t-descriptions-item>
-            <t-descriptions-item label="创建用户">{{ contestData?.authorNickname }}</t-descriptions-item>
+            <t-descriptions-item label="创建用户">{{ contestData?.ownerNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>

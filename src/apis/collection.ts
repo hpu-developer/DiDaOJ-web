@@ -1,18 +1,8 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import type { Collection, CollectionView, CollectionEditRequest, CollectionDescription, CollectionProblem } from "@/types/collection";
+import type { Collection, CollectionView, CollectionEditRequest } from "@/types/collection";
 import Vditor from "vditor";
-
-export function GetCollectionProblemIndexStr(index: number): string {
-  let result = "";
-  while (index > 0) {
-    index--;
-    result = String.fromCharCode(65 + (index % 26)) + result;
-    index = Math.floor(index / 26);
-  }
-  return result;
-}
 
 export async function ParseCollection(item: Collection): Promise<CollectionView> {
   const result: CollectionView = {} as CollectionView;

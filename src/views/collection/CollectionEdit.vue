@@ -213,11 +213,14 @@ onMounted(async () => {
                   :default-time="['00:00:00', '23:59:59']"
                 />
               </t-form-item>
-              <t-form-item label="问题测试">
-                <ParseProblemList v-model="collectionEditForm.problems" />
+              <t-form-item label="私有">
+                <t-switch v-model="collectionEditForm.private" />
               </t-form-item>
               <t-form-item label="成员">
                 <ParseUserList v-model="collectionEditForm.members" />
+              </t-form-item>
+              <t-form-item label="问题测试">
+                <ParseProblemList v-model="collectionEditForm.problems" />
               </t-form-item>
             </t-form>
           </t-card>
@@ -234,9 +237,9 @@ onMounted(async () => {
             </t-space>
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="collectionId">
-            <t-descriptions-item label="创建时间">{{ collectionData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="创建时间">{{ collectionData?.createTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ collectionData?.updateTime }}</t-descriptions-item>
-            <t-descriptions-item label="创建用户">{{ collectionData?.authorNickname }}</t-descriptions-item>
+            <t-descriptions-item label="创建用户">{{ collectionData?.ownerNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>

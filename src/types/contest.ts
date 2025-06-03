@@ -20,6 +20,8 @@ export interface Contest {
   owner_id: string;
   owner_username?: string;
   owner_nickname?: string;
+  create_time: string;
+  update_time: string;
   start_time: string;
   end_time: string;
   descriptions: ContestDescription[];
@@ -33,6 +35,8 @@ export interface ContestView {
   ownerId: string;
   ownerUsername?: string;
   ownerNickname?: string;
+  createTime: string;
+  updateTime: string;
   startTime: string;
   endTime: string;
   descriptions: ContestDescription[];
@@ -68,5 +72,6 @@ export interface ContestEditRequest {
   id: number;
   title: string;
   description: string;
+  notification: string;
   open_time: DateMultipleValue;
 }
