@@ -8,9 +8,7 @@ import { ShowErrorTips, ShowTextTipsSuccess, SplitIdStringsFromText, useCurrentI
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import { UserInfoView } from "@/types/user.ts";
 import { PostUserParse } from "@/apis/user.ts";
-import { PostProblemParse } from "@/apis/problem.ts";
 import type { CollectionEditRequest, CollectionView } from "@/types/collection.ts";
-import type { Problem, ProblemView } from "@/types/problem.ts";
 import ParseProblemList from "@/components/problem/ParseProblemList.vue";
 import { ParseValidType } from "@/util/parse.ts";
 
@@ -64,18 +62,12 @@ const userColumns = ref([
   },
 ]);
 
-const problemViews = ref<ProblemView[]>([]);
-
 const userViews = ref<UserInfoView[]>([]);
 
 const parseDialogTitle = ref<string>("");
 const textareaValue = ref("");
 let parseFunction = null as (() => Promise<void>) | null;
 const isParsing = ref(false);
-
-const onProblemChange = (e) => {
-  console.log("onProblemChange", e);
-};
 
 const handleParseUser = async () => {
   showDialog.value = true;
@@ -240,21 +232,6 @@ const loadCollection = async () => {
 
   collectionData.value = await ParseCollection(collection);
 
-  problemViews.value = [];
-  if (res.data.problems) {
-    res.data.problems.forEach((problem) => {
-      problem.valid = ParseValidType.Valid;
-      problemViews.value.push(problem);
-    });
-  }
-  userViews.value = [];
-  if (res.data.users && res.data.users.length > 0) {
-    res.data.users.forEach((user: UserInfoView) => {
-      user.valid = ParseValidType.Valid;
-      userViews.value.push(user);
-    });
-  }
-
   collectionEditForm.value.title = collection.title;
   collectionEditForm.value.openTime = [] as (Date | string)[];
   if (collection.start_time) {
@@ -270,17 +247,15 @@ const loadCollection = async () => {
   collectionEditForm.value.private = collection.private;
   collectionEditForm.value.description = collection.description;
 
-  // problemViews.value.sort((a, b) => {
-  //   if (a.id.length === b.id.length) {
-  //     return a.id.localeCompare(b.id);
-  //   }
-  //   return a.id.length - b.id.length;
-  // });
+  collectionEditForm.value.problems = collection.problems;
 
-  collectionEditForm.value.problems = [];
-  problemViews.value.forEach((v) => {
-    collectionEditForm.value.problems.push(v.id);
-  });
+  userViews.value = [];
+  if (res.data.users && res.data.users.length > 0) {
+    res.data.users.forEach((user: UserInfoView) => {
+      user.valid = ParseValidType.Valid;
+      userViews.value.push(user);
+    });
+  }
 
   collectionEditForm.value.users = [];
   userViews.value.forEach((v) => {
@@ -333,7 +308,7 @@ onMounted(async () => {
                 />
               </t-form-item>
               <t-form-item label="问题测试">
-                <ParseProblemList v-model="problemViews" @change="onProblemChange" />
+                <ParseProblemList v-model="collectionEditForm.problems" />
               </t-form-item>
               <t-form-item label="成员">
                 <div class="dida-form-border">

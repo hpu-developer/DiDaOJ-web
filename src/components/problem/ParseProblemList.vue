@@ -1,5 +1,5 @@
 ﻿<script lang="tsx" setup>
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { ShowErrorTips, SplitIdStringsFromText } from "@/util";
 import { PostProblemParse } from "@/apis/problem.ts";
 import { ParseValidType } from "@/util/parse.ts";
@@ -10,15 +10,22 @@ const showDialog = ref(false);
 const isParsing = ref(false);
 const textareaValue = ref("");
 
-const emit = defineEmits<{
-  (e: "change", value: number[]): void;
-}>();
+const modelProblemIds = defineModel<string[]>();
+let filteredProblemIds = [];
 
-const localViews = defineModel<Problem[]>();
+watch(
+  modelProblemIds,
+  async (newVal) => {
+    if (JSON.stringify(newVal) === JSON.stringify(filteredProblemIds)) {
+      return;
+    }
+    await loadProblemList(newVal);
+    filteredProblemIds = modelProblemIds.value;
+  },
+  { deep: true }
+);
 
-watch(localViews, (newVal) => {
-  emit("change", newVal.map((p) => p.id));
-}, { deep: true });
+const localViews = ref<Problem[]>();
 
 const listColumns = ref([
   {
@@ -47,11 +54,8 @@ const listColumns = ref([
   },
 ]);
 
-const handleParse = async () => {
-  isParsing.value = true;
-
-  const inputIds = SplitIdStringsFromText(textareaValue.value);
-  const uniqueIds = Array.from(new Set(inputIds));
+const loadProblemList = async (problemIds: string[]) => {
+  const uniqueIds = Array.from(new Set(problemIds));
   const res = await PostProblemParse(uniqueIds);
 
   if (res.code !== 0) {
@@ -63,18 +67,31 @@ const handleParse = async () => {
   const results: Problem[] = [];
   const fetched = res.data.problems as Problem[];
 
-  inputIds.forEach((id) => {
+  let finalProblemIds = [];
+  problemIds.forEach((id) => {
     const matched = fetched.find((p) => p.id === id);
     if (matched) {
       const alreadyExists = results.find((p) => p.id === id);
       matched.valid = alreadyExists ? ParseValidType.Duplicate : ParseValidType.Valid;
       results.push({ id, title: matched.title, valid: matched.valid });
+      if (!alreadyExists) {
+        finalProblemIds.push(id);
+      }
     } else {
       results.push({ id, title: "-", valid: ParseValidType.Invalid });
     }
   });
 
   localViews.value = results;
+  modelProblemIds.value = finalProblemIds;
+};
+
+const handleParse = async () => {
+  isParsing.value = true;
+
+  const inputIds = SplitIdStringsFromText(textareaValue.value);
+
+  await loadProblemList(inputIds);
 
   showDialog.value = false;
   isParsing.value = false;
