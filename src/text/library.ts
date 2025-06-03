@@ -24,7 +24,7 @@ export function GetText(key: string | number, lang = "zh"): [boolean, string] {
 }
 
 async function fetchRemoteText(): Promise<Record<string, Record<string, string>> | null> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     resolve({
       "404": {
         zh: "接口未找到",
@@ -70,6 +70,18 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       },
       "100007": {
         zh: "已存在相同标题的题目",
+      },
+      "100008": {
+        zh: "已存在相同标题的比赛",
+      },
+      "100009": {
+        zh: "已存在相同标题的题集",
+      },
+      "100010": {
+        zh: "未发现有效题目",
+      },
+      "100011": {
+        zh: "题目数量超过限制，无法添加",
       },
     });
   });

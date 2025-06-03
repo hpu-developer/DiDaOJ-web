@@ -3,6 +3,7 @@ import httpRequest from "@/apis/axios-api";
 
 import type { Contest, ContestView, ContestEditRequest, ContestDescription, ContestProblem } from "@/types/contest";
 import Vditor from "vditor";
+import { ProblemView } from "@/types/problem.ts";
 
 export function GetContestProblemIndexStr(index: number): string {
   let result = "";
@@ -26,23 +27,15 @@ export async function ParseContest(item: Contest): Promise<ContestView> {
   result.createTime = new Date(item.create_time).toLocaleString();
   result.updateTime = new Date(item.update_time).toLocaleString();
 
-  if (item.descriptions) {
-    result.descriptions = [];
-    const options = {
-      math: {
-        inlineDigit: true,
-        engine: "KaTeX",
-      },
-    } as IPreviewOptions;
-    for (let i = 0; i < item.descriptions.length; i++) {
-      const description = item.descriptions[i];
-      const contentDescription = {} as ContestDescription;
-      contentDescription.title = description.title;
-      contentDescription.content = await Vditor.md2html(description.content, options);
-      contentDescription.sort = description.sort;
-      result.descriptions.push(contentDescription);
-    }
-  }
+  const options = {
+    math: {
+      inlineDigit: true,
+      engine: "KaTeX",
+    },
+  } as IPreviewOptions;
+
+  result.description = await Vditor.md2html(item.description, options);
+
   result.notification = item.notification;
   if (item.problems) {
     // item.problems根据sort字段排序
@@ -52,14 +45,20 @@ export async function ParseContest(item: Contest): Promise<ContestView> {
     });
     for (let i = 0; i < item.problems.length; i++) {
       const problem = item.problems[i];
-      if (!problem.accept) {
-        problem.accept = 0;
+      let problemView: ProblemView = { accept: 0, attempt: 0, author: "", id: "", private: false, tags: [], title: "" };
+      problemView.id = GetContestProblemIndexStr(problem.index);
+      problemView.title = problem.title;
+      if (problem.accept) {
+        problemView.accept = problem.accept;
+      } else {
+        problemView.accept = 0;
       }
-      if (!problem.attempt) {
-        problem.attempt = 0;
+      if (problem.attempt) {
+        problemView.attempt = problem.attempt;
+      } else {
+        problemView.attempt = 0;
       }
-      problem.id = GetContestProblemIndexStr(problem.index);
-      result.problems.push(problem);
+      result.problems.push(problemView);
     }
   }
   return result;

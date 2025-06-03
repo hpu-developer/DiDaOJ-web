@@ -1,10 +1,5 @@
 import { DateMultipleValue } from "tdesign-vue-next";
-
-export interface ContestDescription {
-  title: string;
-  content: string;
-  sort: number;
-}
+import { ProblemView } from "@/types/problem.ts";
 
 export interface ContestProblem {
   index: number;
@@ -24,7 +19,7 @@ export interface Contest {
   update_time: string;
   start_time: string;
   end_time: string;
-  descriptions: ContestDescription[];
+  description: string;
   notification: string;
   problems: ContestProblem[];
 }
@@ -39,9 +34,9 @@ export interface ContestView {
   updateTime: string;
   startTime: string;
   endTime: string;
-  descriptions: ContestDescription[];
+  description: string;
   notification: string;
-  problems: ContestProblem[];
+  problems: ProblemView[];
 }
 
 export interface ContestRankProblem {

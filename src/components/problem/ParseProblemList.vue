@@ -3,6 +3,8 @@ import { ref, watch } from "vue";
 import { ShowErrorTips, SplitIdStringsFromText, useCurrentInstance } from "@/util";
 import { PostProblemParse } from "@/apis/problem.ts";
 import { ParseValidType } from "@/util/parse.ts";
+import type { ProblemView } from "@/types/problem.ts";
+
 const { globalProperties } = useCurrentInstance();
 
 defineOptions({ name: "ParseProblemList" });
@@ -12,7 +14,7 @@ const isParsing = ref(false);
 const textareaValue = ref("");
 
 const modelProblemIds = defineModel<string[]>();
-let filteredProblemIds = [];
+let filteredProblemIds = [] as string[];
 
 watch(
   modelProblemIds,
@@ -26,7 +28,7 @@ watch(
   { deep: true }
 );
 
-const localViews = ref<Problem[]>();
+const localViews = ref<ProblemView[]>([]);
 
 const listColumns = ref([
   {
@@ -100,7 +102,11 @@ const handleParse = async () => {
 };
 
 const handleParseProblem = () => {
-  textareaValue.value = localViews.value.map((v) => v.id).join("\n");
+  if (localViews.value) {
+    textareaValue.value = localViews.value.map((v) => v.id).join("\n");
+  } else {
+    textareaValue.value = "";
+  }
   showDialog.value = true;
 };
 </script>

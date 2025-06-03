@@ -134,17 +134,9 @@ onMounted(async () => {
             <t-descriptions-item label="结束时间">{{ contestData?.endTime }}</t-descriptions-item>
           </t-descriptions>
         </div>
-        <t-collapse :default-value="[0]" :expand-icon="false" :borderless="true">
-          <t-collapse-panel v-for="(description, index) in contestData?.descriptions" :key="index" :header="description.title">
-            <template #headerRightContent v-if="index === 0">
-              <t-space size="small">
-                <t-button size="small">收起全部</t-button>
-                <t-button size="small">展开全部</t-button>
-              </t-space>
-            </template>
-            <div v-html="description.content" class="dida-content-description"></div>
-          </t-collapse-panel>
-        </t-collapse>
+        <t-card style="margin: 12px" v-if="contestData?.description">
+          <div v-html="contestData?.description" class="dida-content-description"></div>
+        </t-card>
       </t-col>
     </t-row>
   </t-loading>
