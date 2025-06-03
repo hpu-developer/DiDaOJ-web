@@ -8,7 +8,7 @@ import { ShowErrorTips, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { CollectionView } from "@/types/collection.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
-import type { ProblemView } from "@/types/problem.ts";
+import type { Problem, ProblemView } from "@/types/problem.ts";
 import { AuthType } from "@/auth";
 import { useUserStore } from "@/stores/user.ts";
 
@@ -107,8 +107,8 @@ onMounted(async () => {
   collectionData.value = await ParseCollection(res.data.collection);
   problemViews.value = [];
   if (res.data.collection.problems) {
-    res.data.collection.problems.forEach((problemId) => {
-      const problem = res.data.problems.find((p) => p.id === problemId);
+    res.data.collection.problems.forEach((problemId: string) => {
+      const problem = res.data.problems.find((p: Problem) => p.id === problemId);
       problemViews.value.push(problem);
     });
   }

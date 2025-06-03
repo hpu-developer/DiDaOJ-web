@@ -17,8 +17,8 @@ let watchHandle: WatchStopHandle | null = null;
 let contestId = 0;
 
 const scrollWrapper = ref(null);
-const tableWrapper = ref(null);
-let resizeObserver = null;
+const tableWrapper = ref<HTMLElement | null>(null);
+let resizeObserver = null as ResizeObserver | null;
 
 const getDurationText = (duration: number) => {
   if (duration === undefined || duration === null) {
@@ -40,21 +40,6 @@ const listColumns1 = [
     colKey: "rank",
     align: "center",
     fixed: "left",
-    cell: (_: any, data: any) => {
-      return (
-        <t-button
-          variant="text"
-          onClick={() =>
-            router.push({
-              name: "contest-user-rank",
-              params: { contestId, userId: data.row.user_id },
-            })
-          }
-        >
-          {data.row.rank}
-        </t-button>
-      );
-    },
   },
   {
     title: "昵称",
@@ -121,7 +106,23 @@ const listColumns = ref<BaseTableCol[]>([]);
 
 const dataLoading = ref(false);
 
-const contestRankViews = ref<ContestRankView[]>();
+const contestRankViews = ref<ContestRankView[]>([]);
+
+const rowspanAndColspan = ({ col, rowIndex }: any) => {
+  let rowspan = 1;
+  for (let i = rowIndex + 1; i < contestRankViews.value.length; i++) {
+    if (contestRankViews.value[i].rank === contestRankViews.value[rowIndex].rank) {
+      rowspan++;
+    } else {
+      break;
+    }
+  }
+  if (col.colKey === "rank") {
+    return {
+      rowspan: rowspan,
+    };
+  }
+};
 
 const fetchData = async (needLoading: boolean) => {
   if (needLoading) {
@@ -135,10 +136,9 @@ const fetchData = async (needLoading: boolean) => {
       res.data.problems.sort((a: number, b: number) => a - b);
       res.data.problems.forEach((problemIndex: number, _: number) => {
         listColumns.value.push({
-          title: GetContestProblemIndexStr(problemIndex),
           colKey: `problem_${problemIndex}`,
           align: "center",
-          title: (h, { colIndex }) => {
+          title: () => {
             return (
               <t-button
                 variant="text"
@@ -201,7 +201,7 @@ const fetchData = async (needLoading: boolean) => {
         } as ContestRankView;
         let acCount = 0;
         let penalty = 0;
-        item.problems.forEach((problem: ContestRankProblem, index: number) => {
+        item.problems.forEach((problem: ContestRankProblem) => {
           let acDuration = -1;
           if (problem.ac) {
             acCount++;
@@ -226,8 +226,17 @@ const fetchData = async (needLoading: boolean) => {
         }
         return a.penalty - b.penalty; // 升序
       });
+      let rank = 0;
+      let lastAccept = -1;
+      let lastPenalty = -1;
       for (let i = 0; i < results.length; i++) {
-        results[i].rank = i + 1;
+        if (results[i].solved !== lastAccept || results[i].penalty !== lastPenalty) {
+          rank = i + 1; // 更新排名
+          lastAccept = results[i].solved;
+          lastPenalty = results[i].penalty;
+        }
+        results[i].index = i + 1;
+        results[i].rank = rank;
       }
       contestRankViews.value = results;
     } else {
@@ -249,8 +258,7 @@ const fetchData = async (needLoading: boolean) => {
 
 function updateTableWidth() {
   if (tableWrapper.value) {
-    const parentWidth = tableWrapper.value.parentElement.clientWidth;
-    console.log("Parent width:", parentWidth);
+    const parentWidth = tableWrapper.value?.parentElement?.clientWidth;
     tableWrapper.value.style.width = parentWidth + "px";
   }
 }
@@ -261,7 +269,7 @@ onMounted(async () => {
 
   watchHandle = watch(
     () => route.query,
-    async (newQuery) => {
+    async () => {
       if (Array.isArray(route.params.contestId)) {
         contestId = Number(route.params.contestId[0]);
       } else {
@@ -304,10 +312,12 @@ onBeforeUnmount(() => {
           <t-table
             :data="contestRankViews"
             :columns="listColumns"
-            row-key="id"
-            vertical-align="top"
+            row-key="index"
+            vertical-align="middle"
+            :bordered="true"
             :hover="true"
             table-layout="auto"
+            :rowspan-and-colspan="rowspanAndColspan"
             :loading="dataLoading"
           />
         </div>

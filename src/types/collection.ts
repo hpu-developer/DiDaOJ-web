@@ -1,4 +1,3 @@
-
 export interface Collection {
   id: string;
   title: string;
@@ -27,10 +26,11 @@ export interface CollectionRank {
   author_id: number;
   author_username: string;
   author_nickname: string;
-  accept : number;
+  accept: number;
 }
 
 export interface CollectionRankView {
+  index: number;
   rank: number;
   userId: number;
   username: string;

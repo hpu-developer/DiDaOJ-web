@@ -22,21 +22,11 @@ const listColumns = ref<BaseTableCol[]>([
     title: "Rank",
     colKey: "rank",
     align: "center",
-    cell: (h, { col, colIndex, row, rowIndex }) => {
-      return (
-        <t-button
-          variant="text"
-          onClick={() =>
-            router.push({
-              name: "collection-user-rank",
-              params: { collectionId, userId: row.user_id },
-            })
-          }
-        >
-          {row.rank}
-        </t-button>
-      );
-    },
+  },
+  {
+    title: "序号",
+    colKey: "index",
+    align: "center",
   },
   {
     title: "Username",
@@ -107,19 +97,26 @@ const listColumns = ref<BaseTableCol[]>([
         // 保留两位数字
         percent = Number(((data.row.accept / problemCount) * 100).toFixed(2));
       }
-      return <t-progress percentage={String(percent)} />;
+      return <t-progress percentage={percent} />;
     },
   },
 ]);
 
 const dataLoading = ref(false);
 
-const collectionRankViews = ref<CollectionRankView[]>();
-
-const rowspanAndColspan = ({ col, rowIndex, colIndex }) => {
-  if (colIndex === 0 && rowIndex % 2 === 0) {
+const collectionRankViews = ref<CollectionRankView[]>([]);
+const rowspanAndColspan = ({ col, rowIndex }: any) => {
+  let rowspan = 1;
+  for (let i = rowIndex + 1; i < collectionRankViews.value.length; i++) {
+    if (collectionRankViews.value[i].rank === collectionRankViews.value[rowIndex].rank) {
+      rowspan++;
+    } else {
+      break;
+    }
+  }
+  if (col.colKey === "rank") {
     return {
-      rowspan: 2,
+      rowspan: rowspan,
     };
   }
 };
@@ -159,6 +156,7 @@ const fetchData = async (needLoading: boolean) => {
             rank = i + 1; // 更新排名
             lastAccept = results[i].accept;
           }
+          results[i].index = i + 1;
           results[i].rank = rank;
         }
       }
@@ -211,12 +209,16 @@ onBeforeUnmount(() => {
   <t-row>
     <t-card style="margin: 10px">
       <div>
-        <t-table :data="collectionRankViews"
-                 :columns="listColumns"
-                 :rowspan-and-colspan="rowspanAndColspan"
-                 row-key="id" vertical-align="top"
-                 :bordered="true"
-                 :hover="true" :loading="dataLoading" />
+        <t-table
+          :data="collectionRankViews"
+          :columns="listColumns"
+          row-key="i"
+          :rowspan-and-colspan="rowspanAndColspan"
+          vertical-align="middle"
+          :bordered="true"
+          :hover="true"
+          :loading="dataLoading"
+        />
       </div>
     </t-card>
   </t-row>

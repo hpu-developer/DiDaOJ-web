@@ -58,7 +58,7 @@ export async function ParseCollection(item: Collection): Promise<CollectionView>
   return result;
 }
 
-export function GetCollection(collectionId: string) {
+export function GetCollection(collectionId: number) {
   return httpRequest({
     url: "/collection" + "?id=" + collectionId,
     method: "get",
