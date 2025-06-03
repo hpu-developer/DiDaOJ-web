@@ -14,18 +14,16 @@ const isParsing = ref(false);
 const textareaValue = ref("");
 
 const modelUserIds = defineModel<number[]>();
-let disableModelUserIdWatch = false;
+let filteredUserIds = [];
 
 watch(
   modelUserIds,
   async (newVal) => {
-    if (disableModelUserIdWatch) {
+    if (JSON.stringify(newVal) === JSON.stringify(filteredUserIds)) {
       return;
     }
-    console.log("modelUserIds changed:", newVal);
-    disableModelUserIdWatch = true;
+    filteredUserIds = newVal;
     await loadUserListByIds(newVal);
-    disableModelUserIdWatch = false;
   },
   { deep: true }
 );
@@ -72,16 +70,19 @@ const handleParseUserResponse = (res: any, usernames: string[]) => {
   let finalUserIds = [];
   if (usernames) {
     usernames.forEach((username) => {
-      const matched = fetched.find((p) => p.username === username);
+      let matched = null;
+      if (fetched) {
+        matched = fetched.find((p) => p.username.toLowerCase() === username.toLowerCase());
+      }
       if (matched) {
-        const alreadyExists = results.find((p) => p.username === username);
+        const alreadyExists = results.find((p) => p.username.toLowerCase() === username.toLowerCase());
         const valid = alreadyExists ? ParseValidType.Duplicate : ParseValidType.Valid;
-        results.push({ id: matched.id, username: matched.username, title: matched.title, valid: valid });
+        results.push({ id: matched.id, username: matched.username, nickname: matched.nickname, valid: valid });
         if (!alreadyExists) {
           finalUserIds.push(matched.id);
         }
       } else {
-        results.push({ id: -1, username: username, title: "-", valid: ParseValidType.Invalid });
+        results.push({ id: -1, username: username, nickname: "-", valid: ParseValidType.Invalid });
       }
     });
   } else if (fetched) {
@@ -95,13 +96,7 @@ const handleParseUserResponse = (res: any, usernames: string[]) => {
     });
   }
   localViews.value = results;
-
-  console.log("finalUserIds", finalUserIds);
-  modelUserIds.value = [];
-  finalUserIds.forEach((id) => {
-    modelUserIds.value.push(id);
-  });
-  console.log("modelUserIds.value", modelUserIds.value);
+  modelUserIds.value = finalUserIds;
 };
 
 const loadUserListByIds = async (userIds: number[]) => {
@@ -118,20 +113,21 @@ const loadUserListByUsernames = async (usernames: string[]) => {
 
 const handleParse = async () => {
   isParsing.value = true;
-  disableModelUserIdWatch = true;
 
   const inputIds = SplitIdStringsFromText(textareaValue.value);
 
   await loadUserListByUsernames(inputIds);
-
-  disableModelUserIdWatch = false;
 
   showDialog.value = false;
   isParsing.value = false;
 };
 
 const handleParseUser = () => {
-  textareaValue.value = localViews.value.map((v) => v.username).join("\n");
+  if (localViews.value) {
+    textareaValue.value = localViews.value.map((v) => v.username).join("\n");
+  } else {
+    textareaValue.value = "";
+  }
   showDialog.value = true;
 };
 </script>
@@ -144,7 +140,7 @@ const handleParseUser = () => {
     <t-table :data="localViews" :columns="listColumns" row-key="id" vertical-align="top" table-layout="auto" :hover="true" />
   </div>
 
-  <t-dialog v-model:visible="showDialog" @confirm="handleParse" header="请输入问题ID" :confirm-loading="isParsing">
+  <t-dialog v-model:visible="showDialog" @confirm="handleParse" header="请输入用户Username" :confirm-loading="isParsing">
     <div style="margin-bottom: 10px">
       <span>多条请以空格、换行、英文逗号隔开</span>
     </div>

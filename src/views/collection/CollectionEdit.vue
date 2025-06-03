@@ -34,8 +34,6 @@ const collectionEditForm = ref({
   description: "",
 });
 
-const userViews = ref<UserInfoView[]>([]);
-
 const parseDialogTitle = ref<string>("");
 const textareaValue = ref("");
 let parseFunction = null as (() => Promise<void>) | null;
@@ -102,7 +100,7 @@ const handleClickSave = async () => {
       title: collectionEditForm.value.title,
       private: collectionEditForm.value.private,
       problems: collectionEditForm.value.problems,
-      users: collectionEditForm.value.users,
+      members: collectionEditForm.value.members,
       description: descriptionEditor.getValue(),
     };
     if (collectionEditForm.value.openTime[0]) {

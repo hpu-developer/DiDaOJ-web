@@ -212,7 +212,7 @@ onBeforeUnmount(() => {
         <t-table
           :data="collectionRankViews"
           :columns="listColumns"
-          row-key="i"
+          row-key="index"
           :rowspan-and-colspan="rowspanAndColspan"
           vertical-align="middle"
           :bordered="true"
