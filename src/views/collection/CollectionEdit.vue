@@ -4,13 +4,12 @@ import { useRoute } from "vue-router";
 import router from "@/router";
 import Vditor from "vditor";
 import { GetCollectionEdit, ParseCollection, PostCollectionCreate, PostCollectionEdit } from "@/apis/collection.ts";
-import { ShowErrorTips, ShowTextTipsSuccess, SplitIdStringsFromText, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import { UserInfoView } from "@/types/user.ts";
-import { PostUserParse } from "@/apis/user.ts";
 import type { CollectionEditRequest, CollectionView } from "@/types/collection.ts";
 import ParseProblemList from "@/components/problem/ParseProblemList.vue";
-import { ParseValidType } from "@/util/parse.ts";
+import ParseUserList from "@/components/user/ParseUserList.vue";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -31,36 +30,9 @@ const collectionEditForm = ref({
   openTime: [] as (Date | string)[],
   private: true,
   problems: [] as string[],
-  users: [] as number[],
+  members: [] as number[],
   description: "",
 });
-
-const userColumns = ref([
-  {
-    title: "有效性",
-    colKey: "validType",
-    cell: (_: any, data: any) => {
-      switch (data.row.valid) {
-        case ParseValidType.Valid:
-          return <t-tag theme="success">有效</t-tag>;
-        case ParseValidType.Duplicate:
-          return <t-tag theme="warning">重复</t-tag>;
-        case ParseValidType.Invalid:
-          return <t-tag theme="danger">无效</t-tag>;
-        default:
-          break;
-      }
-    },
-  },
-  {
-    title: "Username",
-    colKey: "username",
-  },
-  {
-    title: "昵称",
-    colKey: "nickname",
-  },
-]);
 
 const userViews = ref<UserInfoView[]>([]);
 
@@ -68,57 +40,6 @@ const parseDialogTitle = ref<string>("");
 const textareaValue = ref("");
 let parseFunction = null as (() => Promise<void>) | null;
 const isParsing = ref(false);
-
-const handleParseUser = async () => {
-  showDialog.value = true;
-  parseDialogTitle.value = "请输入username";
-
-  textareaValue.value = "";
-  userViews.value.forEach((v) => {
-    textareaValue.value += `${v.username}\n`;
-  });
-
-  parseFunction = async () => {
-    const usernames = SplitIdStringsFromText(textareaValue.value);
-    const res = await PostUserParse(usernames);
-    if (res.code !== 0) {
-      ShowErrorTips(globalProperties, res.code);
-      return;
-    }
-    userViews.value = [];
-    usernames.sort((a, b) => {
-      return a.username.localeCompare(b.username);
-    });
-    usernames.forEach((username) => {
-      let user = null;
-      if (res.data.users) {
-        user = res.data.users.find((u: UserInfoView) => u.username === username);
-      }
-      if (user) {
-        // 判断是否重复
-        const existingUser = userViews.value.find((u) => u.id === user.id);
-        if (existingUser) {
-          user.valid = ParseValidType.Duplicate;
-        } else {
-          user.valid = ParseValidType.Valid;
-        }
-        userViews.value.push(user);
-      } else {
-        userViews.value.push({
-          id: -1,
-          username: username,
-          nickname: "-",
-          valid: ParseValidType.Invalid,
-        });
-      }
-    });
-
-    collectionEditForm.value.users = [];
-    userViews.value.forEach((v) => {
-      collectionEditForm.value.users.push(v.id);
-    });
-  };
-};
 
 const handleParse = async () => {
   isParsing.value = true;
@@ -141,7 +62,7 @@ const handleClickCreate = async () => {
       title: collectionEditForm.value.title,
       description: descriptionEditor.getValue(),
       problems: collectionEditForm.value.problems,
-      users: collectionEditForm.value.users,
+      members: collectionEditForm.value.members,
       start_time: collectionEditForm.value.openTime[0],
       end_time: collectionEditForm.value.openTime[1],
       private: collectionEditForm.value.private,
@@ -248,19 +169,7 @@ const loadCollection = async () => {
   collectionEditForm.value.description = collection.description;
 
   collectionEditForm.value.problems = collection.problems;
-
-  userViews.value = [];
-  if (res.data.users && res.data.users.length > 0) {
-    res.data.users.forEach((user: UserInfoView) => {
-      user.valid = ParseValidType.Valid;
-      userViews.value.push(user);
-    });
-  }
-
-  collectionEditForm.value.users = [];
-  userViews.value.forEach((v) => {
-    collectionEditForm.value.users.push(v.id);
-  });
+  collectionEditForm.value.members = collection.members;
 
   webStyleStore.setTitle(collection.title + " - " + webStyleStore.getTitle);
 
@@ -311,12 +220,7 @@ onMounted(async () => {
                 <ParseProblemList v-model="collectionEditForm.problems" />
               </t-form-item>
               <t-form-item label="成员">
-                <div class="dida-form-border">
-                  <div style="text-align: right">
-                    <t-button @click="handleParseUser">编辑</t-button>
-                  </div>
-                  <t-table :data="userViews" :columns="userColumns" row-key="id" vertical-align="top" :hover="true" />
-                </div>
+                <ParseUserList v-model="collectionEditForm.members" />
               </t-form-item>
             </t-form>
           </t-card>

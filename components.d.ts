@@ -13,6 +13,7 @@ declare module 'vue' {
     HeaderContent: typeof import('./src/components/HeaderContent.vue')['default']
     Hitokoto: typeof import('./src/components/Hitokoto.vue')['default']
     ParseProblemList: typeof import('./src/components/problem/ParseProblemList.vue')['default']
+    ParseUserList: typeof import('./src/components/user/ParseUserList.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SidebarContent: typeof import('./src/components/SidebarContent.vue')['default']

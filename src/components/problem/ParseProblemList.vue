@@ -1,8 +1,9 @@
 ﻿<script lang="tsx" setup>
-import { onMounted, ref, watch } from "vue";
-import { ShowErrorTips, SplitIdStringsFromText } from "@/util";
+import { ref, watch } from "vue";
+import { ShowErrorTips, SplitIdStringsFromText, useCurrentInstance } from "@/util";
 import { PostProblemParse } from "@/apis/problem.ts";
 import { ParseValidType } from "@/util/parse.ts";
+const { globalProperties } = useCurrentInstance();
 
 defineOptions({ name: "ParseProblemList" });
 

@@ -43,5 +43,5 @@ export interface CollectionEditRequest {
   title: string;
   description: string;
   problems: string[];
-  users: number[];
+  members: number[];
 }

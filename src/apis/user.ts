@@ -51,19 +51,29 @@ export function GetUserInfo(username: string) {
 }
 
 export function GetVjudgeAcProblem(username: string) {
-  const url = `https://vjudge.net/user/solveDetail/` + encodeURIComponent(username)
+  const url = `https://vjudge.net/user/solveDetail/` + encodeURIComponent(username);
   return httpCommonRequest({
     url: url,
     method: "get",
   });
 }
 
-export function PostUserParse(usernameText: string) {
+export function PostUserAccountInfoss(userIds: number[]) {
+  return httpRequest({
+    url: "/user/account/infos",
+    method: "post",
+    data: {
+      users: userIds,
+    },
+  });
+}
+
+export function PostUserParse(usernames: string[]) {
   return httpRequest({
     url: "/user/parse",
     method: "post",
     data: {
-      users: usernameText,
+      users: usernames,
     },
   });
 }
