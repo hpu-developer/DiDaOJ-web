@@ -4,13 +4,11 @@ import { useRoute } from "vue-router";
 import router from "@/router";
 import Vditor from "vditor";
 import { GetContestEdit, ParseContest, PostContestCreate, PostContestEdit } from "@/apis/contest.ts";
-import { ShowErrorTips, ShowTextTipsSuccess, SplitIdStringsFromText, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ContestEditRequest, ContestView } from "@/types/contest.ts";
-import type { ProblemView } from "@/types/problem.ts";
-import { UserInfoView } from "@/types/user.ts";
-import { PostUserParse } from "@/apis/user.ts";
-import { PostProblemParse } from "@/apis/problem.ts";
+import ParseProblemList from "@/components/problem/ParseProblemList.vue";
+import ParseUserList from "@/components/user/ParseUserList.vue";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -31,181 +29,14 @@ const contestEditForm = ref({
   openTime: [] as (Date | string)[],
   private: true,
   problems: [] as string[],
-  users: [] as number[],
+  members: [] as number[],
   description: "",
 });
-
-enum ParseValidType {
-  Valid = 0,
-  Duplicate = 1,
-  Invalid = 2,
-}
-
-const listColumns = ref([
-  {
-    title: "有效性",
-    colKey: "validType",
-    cell: (_: any, data: any) => {
-      switch (data.row.valid) {
-        case ParseValidType.Valid:
-          return <t-tag theme="success">有效</t-tag>;
-        case ParseValidType.Duplicate:
-          return <t-tag theme="warning">重复</t-tag>;
-        case ParseValidType.Invalid:
-          return <t-tag theme="danger">无效</t-tag>;
-        default:
-          break;
-      }
-    },
-  },
-  {
-    title: "问题ID",
-    colKey: "id",
-  },
-  {
-    title: "标题",
-    colKey: "title",
-  },
-]);
-
-const userColumns = ref([
-  {
-    title: "有效性",
-    colKey: "validType",
-    cell: (_: any, data: any) => {
-      switch (data.row.valid) {
-        case ParseValidType.Valid:
-          return <t-tag theme="success">有效</t-tag>;
-        case ParseValidType.Duplicate:
-          return <t-tag theme="warning">重复</t-tag>;
-        case ParseValidType.Invalid:
-          return <t-tag theme="danger">无效</t-tag>;
-        default:
-          break;
-      }
-    },
-  },
-  {
-    title: "Username",
-    colKey: "username",
-  },
-  {
-    title: "昵称",
-    colKey: "nickname",
-  },
-]);
-
-const problemViews = ref<ProblemView[]>([]);
-
-const userViews = ref<UserInfoView[]>([]);
 
 const parseDialogTitle = ref<string>("");
 const textareaValue = ref("");
 let parseFunction = null as (() => Promise<void>) | null;
 const isParsing = ref(false);
-
-const handleParseProblem = async () => {
-  showDialog.value = true;
-  parseDialogTitle.value = "请输入问题ID";
-
-  textareaValue.value = "";
-  problemViews.value.forEach((v) => {
-    textareaValue.value += `${v.id}\n`;
-  });
-
-  parseFunction = async () => {
-    const problemIds = SplitIdStringsFromText(textareaValue.value);
-    const uniqueProblemIds = Array.from(new Set(problemIds));
-    const res = await PostProblemParse(uniqueProblemIds);
-    if (res.code !== 0) {
-      ShowErrorTips(globalProperties, res.code);
-      return;
-    }
-    problemViews.value = [];
-    const responseProblems = res.data.problems as Problem[];
-    problemIds.forEach((id) => {
-      let problem = null;
-      if (responseProblems) {
-        problem = responseProblems.find((p) => p.id === id);
-      }
-      if (problem) {
-        // 判断是否重复
-        const existingProblem = problemViews.value.find((p) => p.id === id);
-        if (existingProblem) {
-          problem.valid = ParseValidType.Duplicate;
-        } else {
-          problem.valid = ParseValidType.Valid;
-        }
-        problemViews.value.push({
-          valid: problem.valid,
-          id: id,
-          title: problem.title,
-        });
-      } else {
-        problemViews.value.push({
-          valid: ParseValidType.Invalid,
-          id: id,
-          title: "-",
-        });
-      }
-    });
-    contestEditForm.value.problems = [];
-    problemViews.value.forEach((v) => {
-      contestEditForm.value.problems.push(v.id);
-    });
-  };
-};
-
-const handleParseUser = async () => {
-  showDialog.value = true;
-  parseDialogTitle.value = "请输入username";
-
-  textareaValue.value = "";
-  userViews.value.forEach((v) => {
-    textareaValue.value += `${v.username}\n`;
-  });
-
-  parseFunction = async () => {
-    const usernames = SplitIdStringsFromText(textareaValue.value);
-    const res = await PostUserParse(usernames);
-    if (res.code !== 0) {
-      ShowErrorTips(globalProperties, res.code);
-      return;
-    }
-    userViews.value = [];
-    usernames.sort((a, b) => {
-      return a.username.localeCompare(b.username);
-    });
-    usernames.forEach((username) => {
-      let user = null;
-      if (res.data.users) {
-        user = res.data.users.find((u: UserInfoView) => u.username === username);
-      }
-      if (user) {
-        // 判断是否重复
-        const existingUser = userViews.value.find((u) => u.id === user.id);
-        if (existingUser) {
-          user.valid = ParseValidType.Duplicate;
-        } else {
-          user.valid = ParseValidType.Valid;
-        }
-        userViews.value.push(user);
-      } else {
-        userViews.value.push({
-          id: -1,
-          username: username,
-          nickname: "-",
-          valid: ParseValidType.Invalid,
-        });
-      }
-    });
-
-    contestEditForm.value.users = [];
-    userViews.value.forEach((v) => {
-      contestEditForm.value.users.push(v.id);
-    });
-  };
-};
 
 const handleParse = async () => {
   isParsing.value = true;
@@ -228,7 +59,7 @@ const handleClickCreate = async () => {
       title: contestEditForm.value.title,
       description: descriptionEditor.getValue(),
       problems: contestEditForm.value.problems,
-      users: contestEditForm.value.users,
+      members: contestEditForm.value.members,
       start_time: contestEditForm.value.openTime[0],
       end_time: contestEditForm.value.openTime[1],
       private: contestEditForm.value.private,
@@ -268,7 +99,7 @@ const handleClickSave = async () => {
       title: contestEditForm.value.title,
       private: contestEditForm.value.private,
       problems: contestEditForm.value.problems,
-      users: contestEditForm.value.users,
+      members: contestEditForm.value.members,
       description: descriptionEditor.getValue(),
     };
     if (contestEditForm.value.openTime[0]) {
@@ -319,21 +150,6 @@ const loadContest = async () => {
 
   contestData.value = await ParseContest(contest);
 
-  problemViews.value = [];
-  if (res.data.problems) {
-    res.data.problems.forEach((problem) => {
-      problem.valid = ParseValidType.Valid;
-      problemViews.value.push(problem);
-    });
-  }
-  userViews.value = [];
-  if (res.data.users && res.data.users.length > 0) {
-    res.data.users.forEach((user: UserInfoView) => {
-      user.valid = ParseValidType.Valid;
-      userViews.value.push(user);
-    });
-  }
-
   contestEditForm.value.title = contest.title;
   contestEditForm.value.openTime = [] as (Date | string)[];
   if (contest.start_time) {
@@ -349,22 +165,8 @@ const loadContest = async () => {
   contestEditForm.value.private = contest.private;
   contestEditForm.value.description = contest.description;
 
-  // problemViews.value.sort((a, b) => {
-  //   if (a.id.length === b.id.length) {
-  //     return a.id.localeCompare(b.id);
-  //   }
-  //   return a.id.length - b.id.length;
-  // });
-
-  contestEditForm.value.problems = [];
-  problemViews.value.forEach((v) => {
-    contestEditForm.value.problems.push(v.id);
-  });
-
-  contestEditForm.value.users = [];
-  userViews.value.forEach((v) => {
-    contestEditForm.value.users.push(v.id);
-  });
+  contestEditForm.value.problems = contest.problems;
+  contestEditForm.value.members = contest.members;
 
   webStyleStore.setTitle(contest.title + " - " + webStyleStore.getTitle);
 
@@ -400,7 +202,7 @@ onMounted(async () => {
           <t-card class="sh-card">
             <t-form :model="contestEditForm">
               <t-form-item label="标题">
-                <t-input v-model="contestEditForm.title" placeholder="比赛标题"></t-input>
+                <t-input v-model="contestEditForm.title" placeholder="题集标题"></t-input>
               </t-form-item>
               <t-form-item label="开启时间">
                 <t-date-range-picker
@@ -411,21 +213,11 @@ onMounted(async () => {
                   :default-time="['00:00:00', '23:59:59']"
                 />
               </t-form-item>
-              <t-form-item label="问题">
-                <div class="dida-form-border">
-                  <div style="text-align: right">
-                    <t-button @click="handleParseProblem">编辑</t-button>
-                  </div>
-                  <t-table :data="problemViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true" />
-                </div>
+              <t-form-item label="问题测试">
+                <ParseProblemList v-model="contestEditForm.problems" />
               </t-form-item>
               <t-form-item label="成员">
-                <div class="dida-form-border">
-                  <div style="text-align: right">
-                    <t-button @click="handleParseUser">编辑</t-button>
-                  </div>
-                  <t-table :data="userViews" :columns="userColumns" row-key="id" vertical-align="top" :hover="true" />
-                </div>
+                <ParseUserList v-model="contestEditForm.members" />
               </t-form-item>
             </t-form>
           </t-card>
@@ -471,11 +263,5 @@ onMounted(async () => {
   max-width: calc(100vw - 300px);
   min-height: 500px;
   z-index: 9999 !important;
-}
-
-.dida-form-border {
-  border: rgba(75, 75, 75, 0.3) 1px solid;
-  padding: 10px;
-  border-radius: 5px;
 }
 </style>

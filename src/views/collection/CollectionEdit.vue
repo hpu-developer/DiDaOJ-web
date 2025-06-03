@@ -6,7 +6,6 @@ import Vditor from "vditor";
 import { GetCollectionEdit, ParseCollection, PostCollectionCreate, PostCollectionEdit } from "@/apis/collection.ts";
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
-import { UserInfoView } from "@/types/user.ts";
 import type { CollectionEditRequest, CollectionView } from "@/types/collection.ts";
 import ParseProblemList from "@/components/problem/ParseProblemList.vue";
 import ParseUserList from "@/components/user/ParseUserList.vue";
