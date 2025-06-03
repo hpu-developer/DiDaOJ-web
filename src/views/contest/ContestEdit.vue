@@ -4,7 +4,7 @@ import { useRoute } from "vue-router";
 import router from "@/router";
 import Vditor from "vditor";
 import { GetContestEdit, ParseContest, PostContestCreate, PostContestEdit } from "@/apis/contest.ts";
-import { ShowErrorTips, ShowTextTipsSuccess, SplitIdNumbersFromText, SplitIdsFromText, SplitIdStringsFromText, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsSuccess, SplitIdStringsFromText, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ContestEditRequest, ContestView } from "@/types/contest.ts";
 import type { ProblemView } from "@/types/problem.ts";
@@ -400,7 +400,7 @@ onMounted(async () => {
           <t-card class="sh-card">
             <t-form :model="contestEditForm">
               <t-form-item label="标题">
-                <t-input v-model="contestEditForm.title" placeholder="问题标题"></t-input>
+                <t-input v-model="contestEditForm.title" placeholder="比赛标题"></t-input>
               </t-form-item>
               <t-form-item label="开启时间">
                 <t-date-range-picker

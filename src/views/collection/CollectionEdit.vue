@@ -4,13 +4,15 @@ import { useRoute } from "vue-router";
 import router from "@/router";
 import Vditor from "vditor";
 import { GetCollectionEdit, ParseCollection, PostCollectionCreate, PostCollectionEdit } from "@/apis/collection.ts";
-import { ShowErrorTips, ShowTextTipsSuccess, SplitIdNumbersFromText, SplitIdsFromText, SplitIdStringsFromText, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsSuccess, SplitIdStringsFromText, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
-import type { CollectionEditRequest, CollectionView } from "@/types/collection.ts";
-import type { ProblemView } from "@/types/problem.ts";
 import { UserInfoView } from "@/types/user.ts";
 import { PostUserParse } from "@/apis/user.ts";
 import { PostProblemParse } from "@/apis/problem.ts";
+import type { CollectionEditRequest, CollectionView } from "@/types/collection.ts";
+import type { Problem, ProblemView } from "@/types/problem.ts";
+import ParseProblemList from "@/components/problem/ParseProblemList.vue";
+import { ParseValidType } from "@/util/parse.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -34,39 +36,6 @@ const collectionEditForm = ref({
   users: [] as number[],
   description: "",
 });
-
-enum ParseValidType {
-  Valid = 0,
-  Duplicate = 1,
-  Invalid = 2,
-}
-
-const listColumns = ref([
-  {
-    title: "有效性",
-    colKey: "validType",
-    cell: (_: any, data: any) => {
-      switch (data.row.valid) {
-        case ParseValidType.Valid:
-          return <t-tag theme="success">有效</t-tag>;
-        case ParseValidType.Duplicate:
-          return <t-tag theme="warning">重复</t-tag>;
-        case ParseValidType.Invalid:
-          return <t-tag theme="danger">无效</t-tag>;
-        default:
-          break;
-      }
-    },
-  },
-  {
-    title: "问题ID",
-    colKey: "id",
-  },
-  {
-    title: "标题",
-    colKey: "title",
-  },
-]);
 
 const userColumns = ref([
   {
@@ -104,56 +73,8 @@ const textareaValue = ref("");
 let parseFunction = null as (() => Promise<void>) | null;
 const isParsing = ref(false);
 
-const handleParseProblem = async () => {
-  showDialog.value = true;
-  parseDialogTitle.value = "请输入问题ID";
-
-  textareaValue.value = "";
-  problemViews.value.forEach((v) => {
-    textareaValue.value += `${v.id}\n`;
-  });
-
-  parseFunction = async () => {
-    const problemIds = SplitIdStringsFromText(textareaValue.value);
-    const uniqueProblemIds = Array.from(new Set(problemIds));
-    const res = await PostProblemParse(uniqueProblemIds);
-    if (res.code !== 0) {
-      ShowErrorTips(globalProperties, res.code);
-      return;
-    }
-    problemViews.value = [];
-    const responseProblems = res.data.problems as Problem[];
-    problemIds.forEach((id) => {
-      let problem = null;
-      if (responseProblems) {
-        problem = responseProblems.find((p) => p.id === id);
-      }
-      if (problem) {
-        // 判断是否重复
-        const existingProblem = problemViews.value.find((p) => p.id === id);
-        if (existingProblem) {
-          problem.valid = ParseValidType.Duplicate;
-        } else {
-          problem.valid = ParseValidType.Valid;
-        }
-        problemViews.value.push({
-          valid: problem.valid,
-          id: id,
-          title: problem.title,
-        });
-      } else {
-        problemViews.value.push({
-          valid: ParseValidType.Invalid,
-          id: id,
-          title: "-",
-        });
-      }
-    });
-    collectionEditForm.value.problems = [];
-    problemViews.value.forEach((v) => {
-      collectionEditForm.value.problems.push(v.id);
-    });
-  };
+const onProblemChange = (e) => {
+  console.log("onProblemChange", e);
 };
 
 const handleParseUser = async () => {
@@ -411,13 +332,8 @@ onMounted(async () => {
                   :default-time="['00:00:00', '23:59:59']"
                 />
               </t-form-item>
-              <t-form-item label="问题">
-                <div class="dida-form-border">
-                  <div style="text-align: right">
-                    <t-button @click="handleParseProblem">编辑</t-button>
-                  </div>
-                  <t-table :data="problemViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true" />
-                </div>
+              <t-form-item label="问题测试">
+                <ParseProblemList v-model="problemViews" @change="onProblemChange" />
               </t-form-item>
               <t-form-item label="成员">
                 <div class="dida-form-border">
@@ -471,11 +387,5 @@ onMounted(async () => {
   max-width: calc(100vw - 300px);
   min-height: 500px;
   z-index: 9999 !important;
-}
-
-.dida-form-border {
-  border: rgba(75, 75, 75, 0.3) 1px solid;
-  padding: 10px;
-  border-radius: 5px;
 }
 </style>
