@@ -22,18 +22,18 @@ const listColumns = ref<BaseTableCol[]>([
     title: "Rank",
     colKey: "rank",
     align: "center",
-    cell: (_: any, data: any) => {
+    cell: (h, { col, colIndex, row, rowIndex }) => {
       return (
         <t-button
           variant="text"
           onClick={() =>
             router.push({
               name: "collection-user-rank",
-              params: { collectionId, userId: data.row.user_id },
+              params: { collectionId, userId: row.user_id },
             })
           }
         >
-          {data.row.rank}
+          {row.rank}
         </t-button>
       );
     },
@@ -116,6 +116,14 @@ const dataLoading = ref(false);
 
 const collectionRankViews = ref<CollectionRankView[]>();
 
+const rowspanAndColspan = ({ col, rowIndex, colIndex }) => {
+  if (colIndex === 0 && rowIndex % 2 === 0) {
+    return {
+      rowspan: 2,
+    };
+  }
+};
+
 const fetchData = async (needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
@@ -144,8 +152,14 @@ const fetchData = async (needLoading: boolean) => {
           }
           return a.userId - b.userId; // 升序
         });
+        let rank = 0;
+        let lastAccept = -1;
         for (let i = 0; i < results.length; i++) {
-          results[i].rank = i + 1;
+          if (results[i].accept !== lastAccept) {
+            rank = i + 1; // 更新排名
+            lastAccept = results[i].accept;
+          }
+          results[i].rank = rank;
         }
       }
       collectionRankViews.value = results;
@@ -197,7 +211,12 @@ onBeforeUnmount(() => {
   <t-row>
     <t-card style="margin: 10px">
       <div>
-        <t-table :data="collectionRankViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true" :loading="dataLoading" />
+        <t-table :data="collectionRankViews"
+                 :columns="listColumns"
+                 :rowspan-and-colspan="rowspanAndColspan"
+                 row-key="id" vertical-align="top"
+                 :bordered="true"
+                 :hover="true" :loading="dataLoading" />
       </div>
     </t-card>
   </t-row>
