@@ -115,7 +115,7 @@ const dataLoading = ref(false);
 let fetchRankViews = [] as ContestRank[];
 let fetchVMembersViews = [] as ContestRank[];
 const contestRankViews = ref<ContestRankView[]>([]);
-let lastContestRankView = [];
+let lastContestRankView = [] as ContestRankView[];
 
 const rowspanAndColspan = ({ col, rowIndex }: any) => {
   let rowspan = 1;
@@ -246,12 +246,11 @@ const loadProgress = () => {
   const rows = document.querySelectorAll("tbody tr");
 
   // 第一步：构建 username => rect 映射
-  const oldRectsMap = {};
+  const oldRectsMap = {} as Record<string, DOMRect>;
   lastContestRankView.forEach((row, index) => {
     const tr = rows[index];
     if (!tr) return;
-    const rect = tr.getBoundingClientRect();
-    oldRectsMap[row.username] = rect;
+    oldRectsMap[row.username] = tr.getBoundingClientRect();
   });
 
   contestRankViews.value = results;
@@ -469,5 +468,4 @@ onBeforeUnmount(() => {
 .table-scroll-wrapper {
   width: calc(100vw - 320px);
 }
-
 </style>
