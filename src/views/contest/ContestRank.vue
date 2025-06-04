@@ -21,6 +21,7 @@ let contestEndTime = null;
 const progressValue = ref(0);
 const progressMax = ref(0);
 const autoRefresh = ref(true);
+const enableAnimation = ref(true);
 let fetchTimer: ReturnType<typeof setInterval> | null = null;
 let updateProgressTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -256,38 +257,40 @@ const loadProgress = () => {
   contestRankViews.value = results;
   lastContestRankView = [...contestRankViews.value];
 
-  const newRectsMap = {} as Record<string, DOMRect>;
+  if (enableAnimation.value) {
+    const newRectsMap = {} as Record<string, DOMRect>;
 
-  const newRows = document.querySelectorAll("table tbody tr");
-  contestRankViews.value.forEach((row, index) => {
-    const tr = newRows[index];
-    if (!tr) return;
-    newRectsMap[row.userId] = tr.getBoundingClientRect();
-  });
-
-  requestAnimationFrame(() => {
     const newRows = document.querySelectorAll("table tbody tr");
     contestRankViews.value.forEach((row, index) => {
-      const newRow = newRows[index];
-      const oldRect = oldRectsMap[row.userId];
-      const newRect = newRectsMap[row.userId];
-      if (oldRect && newRect) {
-        const dy = oldRect.top - newRect.top;
-        if (dy !== 0) {
-          newRow.style.transition = "none";
-          newRow.style.transform = `translateY(${dy}px)`;
-        }
-      }
+      const tr = newRows[index];
+      if (!tr) return;
+      newRectsMap[row.userId] = tr.getBoundingClientRect();
     });
 
     requestAnimationFrame(() => {
       const newRows = document.querySelectorAll("table tbody tr");
-      newRows.forEach((row) => {
-        row.style.transition = "transform 300ms ease";
-        row.style.transform = "";
+      contestRankViews.value.forEach((row, index) => {
+        const newRow = newRows[index];
+        const oldRect = oldRectsMap[row.userId];
+        const newRect = newRectsMap[row.userId];
+        if (oldRect && newRect) {
+          const dy = oldRect.top - newRect.top;
+          if (dy !== 0) {
+            newRow.style.transition = "none";
+            newRow.style.transform = `translateY(${dy}px)`;
+          }
+        }
+      });
+
+      requestAnimationFrame(() => {
+        const newRows = document.querySelectorAll("table tbody tr");
+        newRows.forEach((row) => {
+          row.style.transition = "transform 300ms ease";
+          row.style.transform = "";
+        });
       });
     });
-  });
+  }
 };
 
 const handleProgressChange = (value: number) => {
@@ -441,6 +444,9 @@ onBeforeUnmount(() => {
       <div style="margin: 10px 10px 40px">
         <div style="text-align: right; margin-bottom: 10px">
           <t-space>
+            <t-switch size="large" v-model="enableAnimation">
+              <template #label="slotProps">{{ slotProps.value ? "开启动画" : "关闭动画" }}</template>
+            </t-switch>
             <t-switch size="large" v-model="autoRefresh" @change="handleSwitchAutoRefresh">
               <template #label="slotProps">{{ slotProps.value ? "自动刷新" : "关闭刷新" }}</template>
             </t-switch>
