@@ -257,7 +257,7 @@ const loadProgress = () => {
   contestRankViews.value = results;
   lastContestRankView = [...contestRankViews.value];
 
-  if (enableAnimation) {
+  if (enableAnimation.value) {
     const newRectsMap = {} as Record<string, DOMRect>;
 
     const newRows = document.querySelectorAll("table tbody tr");
@@ -285,7 +285,7 @@ const loadProgress = () => {
       requestAnimationFrame(() => {
         const newRows = document.querySelectorAll("table tbody tr");
         newRows.forEach((row) => {
-          row.classList.add('row-animate'); // 通过CSS类控制动画
+          row.style.transition = "transform 300ms ease";
           row.style.transform = "";
         });
       });
