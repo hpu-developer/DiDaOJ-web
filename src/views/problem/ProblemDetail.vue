@@ -18,7 +18,7 @@ import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
-import { GetContestProblemIndexStr } from "@/apis/contest.ts";
+import { GetContestProblemIndexStr, GetContestProblemRealId } from "@/apis/contest.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -67,11 +67,27 @@ const handleClickTag = (tag: ProblemTag) => {
   });
 };
 
-const handleClickEdit = () => {
-  router.push({
+const handleClickEdit = async () => {
+  let realProblemId = problemId;
+
+  if (!realProblemId) {
+    try {
+      const res = await GetContestProblemRealId(contestId, problemIndex);
+      if (res.code === 0) {
+        realProblemId = res.data;
+      } else {
+        ShowErrorTips(globalProperties, res.code);
+      }
+    } catch (error) {
+      ShowTextTipsError(globalProperties, "获取题目ID失败，请稍后再试");
+      return;
+    }
+  }
+
+  await router.push({
     name: "manage-problem",
     params: {
-      problemId: problemId,
+      problemId: realProblemId,
     },
   });
 };
@@ -151,10 +167,6 @@ const handleClickCrawl = async () => {
 };
 
 const handleSubmitCode = async () => {
-  if (!problemId) {
-    ShowTextTipsError(globalProperties, "问题ID无效");
-    return;
-  }
   const selectValue = parseInt(selectLanguage.value);
   if (!IsJudgeLanguageValid(selectValue)) {
     ShowTextTipsError(globalProperties, "请选择所编写的语言");
@@ -163,6 +175,10 @@ const handleSubmitCode = async () => {
   const code = codeEditor?.getValue();
   if (!code) {
     ShowTextTipsError(globalProperties, "请输入所需提交的代码");
+    return;
+  }
+  if (!problemId && (!contestId || !problemIndex)) {
+    ShowTextTipsError(globalProperties, "问题ID无效");
     return;
   }
 
@@ -178,7 +194,22 @@ const handleSubmitCode = async () => {
     ShowTextTipsInfo(globalProperties, "提交成功，正在跳转到详情页面");
 
     const statusId = res.data.id;
-    await router.push({ path: "/judge/" + statusId });
+    if (contestId) {
+      await router.push({
+        name: "contest-judge-detail",
+        params: {
+          contestId: contestId,
+          judgeId: statusId,
+        },
+      });
+    } else {
+      await router.push({
+        name: "judge-detail",
+        params: {
+          judgeId: statusId,
+        },
+      });
+    }
   } finally {
     problemSubmitting.value = false;
   }

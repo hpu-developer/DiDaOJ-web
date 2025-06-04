@@ -1,7 +1,7 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import type { Contest, ContestView, ContestEditRequest, ContestDescription, ContestProblem } from "@/types/contest";
+import type { Contest, ContestView, ContestEditRequest, ContestProblem } from "@/types/contest";
 import Vditor from "vditor";
 import { ProblemView } from "@/types/problem.ts";
 
@@ -46,6 +46,7 @@ export async function ParseContest(item: Contest): Promise<ContestView> {
     for (let i = 0; i < item.problems.length; i++) {
       const problem = item.problems[i];
       let problemView: ProblemView = { accept: 0, attempt: 0, author: "", id: "", private: false, tags: [], title: "" };
+      problemView.index = problem.index;
       problemView.id = GetContestProblemIndexStr(problem.index);
       problemView.title = problem.title;
       if (problem.accept) {
@@ -74,6 +75,13 @@ export function GetContest(contestId: string) {
 export function GetContestEdit(contestId: string) {
   return httpRequest({
     url: "/contest/edit" + "?id=" + contestId,
+    method: "get",
+  });
+}
+
+export function GetContestProblemRealId(contestId: number, problemIndex: number) {
+  return httpRequest({
+    url: "/contest/problem" + "?id=" + contestId + "&problem_index=" + problemIndex,
     method: "get",
   });
 }

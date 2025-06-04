@@ -35,7 +35,7 @@ const getDurationText = (duration: number) => {
   const minutes = Math.floor((duration % 3600) / 60)
     .toString()
     .padStart(2, "0");
-  const seconds = (duration % 60).toString().padStart(2, "0");
+  const seconds = (duration % 60).toFixed(0).toString().padStart(2, "0");
   return `${hours}:${minutes}:${seconds}`;
 };
 
@@ -482,6 +482,6 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .table-scroll-wrapper {
-  width: calc(100vw - 320px);
+  width: max(1400px, calc(100vw - 320px));
 }
 </style>

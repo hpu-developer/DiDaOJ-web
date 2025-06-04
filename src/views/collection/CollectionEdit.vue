@@ -60,10 +60,14 @@ const handleClickCreate = async () => {
       description: descriptionEditor.getValue(),
       problems: collectionEditForm.value.problems,
       members: collectionEditForm.value.members,
-      start_time: collectionEditForm.value.openTime[0],
-      end_time: collectionEditForm.value.openTime[1],
       private: collectionEditForm.value.private,
     } as CollectionEditRequest;
+    if (collectionEditForm.value.openTime[0]) {
+      postData.start_time = new Date(collectionEditForm.value.openTime[0]);
+    }
+    if (collectionEditForm.value.openTime[1]) {
+      postData.end_time = new Date(collectionEditForm.value.openTime[1]);
+    }
     const res = await PostCollectionCreate(postData);
 
     isEditing.value = true;
@@ -101,7 +105,7 @@ const handleClickSave = async () => {
       problems: collectionEditForm.value.problems,
       members: collectionEditForm.value.members,
       description: descriptionEditor.getValue(),
-    };
+    } as CollectionEditRequest;
     if (collectionEditForm.value.openTime[0]) {
       postData.start_time = new Date(collectionEditForm.value.openTime[0]);
     }
@@ -118,7 +122,9 @@ const handleClickSave = async () => {
     }
 
     if (res.data != undefined) {
-      collectionData.value.updateTime = new Date(res.data).toLocaleString();
+      if (collectionData.value) {
+        collectionData.value.updateTime = new Date(res.data).toLocaleString();
+      }
     }
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
@@ -138,7 +144,7 @@ const loadDescriptionEditor = (description: string) => {
 };
 
 const loadCollection = async () => {
-  const res = await GetCollectionEdit(collectionId.value, undefined, undefined);
+  const res = await GetCollectionEdit(collectionId.value);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
     console.error("collection get failed", res.code);

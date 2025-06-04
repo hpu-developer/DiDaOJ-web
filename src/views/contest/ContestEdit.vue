@@ -62,8 +62,8 @@ const handleClickCreate = async () => {
       notification: contestEditForm.value.notification,
       problems: contestEditForm.value.problems,
       members: contestEditForm.value.members,
-      start_time: contestEditForm.value.openTime[0],
-      end_time: contestEditForm.value.openTime[1],
+      start_time: new Date(contestEditForm.value.openTime[0]),
+      end_time: new Date(contestEditForm.value.openTime[1]),
       private: contestEditForm.value.private,
     } as ContestEditRequest;
     const res = await PostContestCreate(postData);
@@ -104,7 +104,7 @@ const handleClickSave = async () => {
       members: contestEditForm.value.members,
       description: descriptionEditor.getValue(),
       notification: contestEditForm.value.notification,
-    };
+    } as ContestEditRequest;
     if (contestEditForm.value.openTime[0]) {
       postData.start_time = new Date(contestEditForm.value.openTime[0]);
     }
@@ -121,7 +121,9 @@ const handleClickSave = async () => {
     }
 
     if (res.data != undefined) {
-      contestData.value.updateTime = new Date(res.data).toLocaleString();
+      if (contestData.value) {
+        contestData.value.updateTime = new Date(res.data).toLocaleString();
+      }
     }
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
@@ -141,7 +143,7 @@ const loadDescriptionEditor = (description: string) => {
 };
 
 const loadContest = async () => {
-  const res = await GetContestEdit(contestId.value, undefined, undefined);
+  const res = await GetContestEdit(contestId.value);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
     console.error("contest get failed", res.code);

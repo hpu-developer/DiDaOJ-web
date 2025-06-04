@@ -1,7 +1,7 @@
 export interface Collection {
   id: string;
   title: string;
-  owner_id: string;
+  owner_id: number;
   owner_username?: string;
   owner_nickname?: string;
   create_time: string;
@@ -43,9 +43,12 @@ export interface CollectionRankView {
 }
 
 export interface CollectionEditRequest {
-  id: number;
+  id?: number;
   title: string;
   description: string;
   problems: string[];
   members: number[];
+  private: boolean;
+  start_time?: Date;
+  end_time?: Date;
 }

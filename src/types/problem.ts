@@ -26,6 +26,8 @@ export interface Problem {
 }
 
 export interface ProblemView {
+  index?: number; // 仅限Contest题目
+
   id: string;
   title: string;
   author: string;
