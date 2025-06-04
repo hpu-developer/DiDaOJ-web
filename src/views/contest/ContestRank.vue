@@ -250,32 +250,42 @@ const loadProgress = () => {
   lastContestRankView.forEach((row, index) => {
     const tr = rows[index];
     if (!tr) return;
-    oldRectsMap[row.username] = tr.getBoundingClientRect();
+    oldRectsMap[row.userId] = tr.getBoundingClientRect();
   });
 
   contestRankViews.value = results;
   lastContestRankView = [...contestRankViews.value];
 
-  // 第二步：数据更新后，在下一帧执行动画
+  const newRectsMap = {} as Record<string, DOMRect>;
+
+  const newRows = document.querySelectorAll("table tbody tr");
+  contestRankViews.value.forEach((row, index) => {
+    const tr = newRows[index];
+    if (!tr) return;
+    newRectsMap[row.userId] = tr.getBoundingClientRect();
+  });
+
   requestAnimationFrame(() => {
     const newRows = document.querySelectorAll("table tbody tr");
     contestRankViews.value.forEach((row, index) => {
       const newRow = newRows[index];
-      const oldRect = oldRectsMap[row.username];
-      const newRect = newRow?.getBoundingClientRect();
-
+      const oldRect = oldRectsMap[row.userId];
+      const newRect = newRectsMap[row.userId];
       if (oldRect && newRect) {
         const dy = oldRect.top - newRect.top;
         if (dy !== 0) {
           newRow.style.transition = "none";
           newRow.style.transform = `translateY(${dy}px)`;
-
-          requestAnimationFrame(() => {
-            newRow.style.transition = "transform 300ms ease";
-            newRow.style.transform = "";
-          });
         }
       }
+    });
+
+    requestAnimationFrame(() => {
+      const newRows = document.querySelectorAll("table tbody tr");
+      newRows.forEach((row) => {
+        row.style.transition = "transform 300ms ease";
+        row.style.transform = "";
+      });
     });
   });
 };
