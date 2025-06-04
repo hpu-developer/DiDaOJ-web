@@ -7,6 +7,7 @@ import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { JudgeStatus } from "@/apis/judge.ts";
 import type { WatchStopHandle } from "vue";
 import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
+import { GetTimeStringBySeconds } from "@/time/library.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -15,6 +16,8 @@ const { globalProperties } = useCurrentInstance();
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
 let contestId = 0;
+let contestStartTime = null;
+let contestEndTime = null;
 
 const getDurationText = (duration: number) => {
   if (duration === undefined || duration === null) {
@@ -29,6 +32,15 @@ const getDurationText = (duration: number) => {
   const seconds = (duration % 60).toString().padStart(2, "0");
   return `${hours}:${minutes}:${seconds}`;
 };
+
+const progressMarks = ref({
+  0: "0°C",
+  20: "20°C",
+  40: "40°C",
+  60: "60°C",
+  80: <span style="color: #0052d9">80°C</span>,
+  100: <span style="color: #0052d9">100°C</span>,
+});
 
 const listColumns1 = [
   {
@@ -120,6 +132,15 @@ const rowspanAndColspan = ({ col, rowIndex }: any) => {
   }
 };
 
+const progressLabelRender = (h, { value }) => {
+  // 转为时分秒
+  return GetTimeStringBySeconds(value);
+};
+
+const handleProgressChange = (value: number) => {
+  console.log(value);
+};
+
 const fetchData = async (needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
@@ -187,7 +208,8 @@ const fetchData = async (needLoading: boolean) => {
         });
       });
       const contest = res.data.contest;
-      const startTime = new Date(contest.start_time);
+      contestStartTime = new Date(contest.start_time);
+      contestEndTime = new Date(contest.end_time);
       const responseList = res.data.ranks as ContestRank[];
       const results = [];
       for (let i = 0; i < responseList.length; i++) {
@@ -203,7 +225,7 @@ const fetchData = async (needLoading: boolean) => {
           let acDuration = -1;
           if (problem.ac) {
             acCount++;
-            acDuration = (new Date(problem.ac).getTime() - startTime.getTime()) / 1000; // 转换为秒
+            acDuration = (new Date(problem.ac).getTime() - contestStartTime.getTime()) / 1000; // 转换为秒
             penalty += acDuration;
             // 每一次尝试罚时20分钟
             penalty += problem.attempt * 20 * 60;
@@ -294,6 +316,9 @@ onBeforeUnmount(() => {
 <template>
   <t-row>
     <t-card style="margin: 10px; width: 100%">
+      <div style="margin: 10px 10px 40px">
+        <t-slider :marks="progressMarks" :max="1000000" :label="progressLabelRender" @change="handleProgressChange" />
+      </div>
       <div class="table-scroll-wrapper">
         <t-table
           :data="contestRankViews"
