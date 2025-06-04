@@ -115,6 +115,7 @@ const dataLoading = ref(false);
 let fetchRankViews = [] as ContestRank[];
 let fetchVMembersViews = [] as ContestRank[];
 const contestRankViews = ref<ContestRankView[]>([]);
+let lastContestRankView = [];
 
 const rowspanAndColspan = ({ col, rowIndex }: any) => {
   let rowspan = 1;
@@ -183,7 +184,6 @@ const handleSwitchAutoRefresh = async (value: boolean) => {
 };
 
 const loadProgress = () => {
-  console.log("loadProgress", progressValue.value);
   contestRankViews.value = [];
   const results = [];
   for (let i = 0; i < fetchRankViews.length; i++) {
@@ -242,7 +242,43 @@ const loadProgress = () => {
       results[i].rank = String(rank);
     }
   }
+
+  const rows = document.querySelectorAll("tbody tr");
+
+  // 第一步：构建 username => rect 映射
+  const oldRectsMap = {};
+  lastContestRankView.forEach((row, index) => {
+    const tr = rows[index];
+    if (!tr) return;
+    const rect = tr.getBoundingClientRect();
+    oldRectsMap[row.username] = rect;
+  });
+
   contestRankViews.value = results;
+  lastContestRankView = [...contestRankViews.value];
+
+  // 第二步：数据更新后，在下一帧执行动画
+  requestAnimationFrame(() => {
+    const newRows = document.querySelectorAll("table tbody tr");
+    contestRankViews.value.forEach((row, index) => {
+      const newRow = newRows[index];
+      const oldRect = oldRectsMap[row.username];
+      const newRect = newRow?.getBoundingClientRect();
+
+      if (oldRect && newRect) {
+        const dy = oldRect.top - newRect.top;
+        if (dy !== 0) {
+          newRow.style.transition = "none";
+          newRow.style.transform = `translateY(${dy}px)`;
+
+          requestAnimationFrame(() => {
+            newRow.style.transition = "transform 300ms ease";
+            newRow.style.transform = "";
+          });
+        }
+      }
+    });
+  });
 };
 
 const handleProgressChange = (value: number) => {
@@ -433,4 +469,5 @@ onBeforeUnmount(() => {
 .table-scroll-wrapper {
   width: calc(100vw - 320px);
 }
+
 </style>
