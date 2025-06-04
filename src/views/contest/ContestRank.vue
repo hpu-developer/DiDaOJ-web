@@ -18,6 +18,7 @@ let watchHandle: WatchStopHandle | null = null;
 let contestId = 0;
 let contestStartTime = null;
 let contestEndTime = null;
+const progressValue = ref(0);
 
 const getDurationText = (duration: number) => {
   if (duration === undefined || duration === null) {
@@ -114,6 +115,8 @@ const listColumns = ref<BaseTableCol[]>([]);
 
 const dataLoading = ref(false);
 
+let fetchRankViews = [] as ContestRank[];
+let fetchVMembersViews = [] as ContestRank[];
 const contestRankViews = ref<ContestRankView[]>([]);
 
 const rowspanAndColspan = ({ col, rowIndex }: any) => {
@@ -138,6 +141,64 @@ const progressLabelRender = (h, { value }) => {
 };
 
 const handleProgressChange = (value: number) => {
+  if (progressValue.value > 5000) {
+    progressValue.value = 5000;
+  }
+  contestRankViews.value = [];
+  const results = [];
+  for (let i = 0; i < fetchRankViews.length; i++) {
+    const item = fetchRankViews[i];
+    let result = {
+      userId: item.author_id,
+      username: item.author_username,
+      nickname: item.author_nickname,
+    } as ContestRankView;
+    let acCount = 0;
+    let penalty = 0;
+    item.problems.forEach((problem: ContestRankProblem) => {
+      let acDuration = -1;
+      if (problem.ac) {
+        acCount++;
+        acDuration = (new Date(problem.ac).getTime() - contestStartTime.getTime()) / 1000; // 转换为秒
+        penalty += acDuration;
+        // 每一次尝试罚时20分钟
+        penalty += problem.attempt * 20 * 60;
+      }
+      const problemIndex = problem.index;
+      result[`problem_${problemIndex}`] = {
+        acDuration: acDuration,
+        attempt: problem.attempt,
+      };
+    });
+    result.solved = acCount;
+    result.penalty = penalty; // 转换为分钟
+    results.push(result);
+  }
+  results.sort((a: ContestRankView, b: ContestRankView) => {
+    if (a.solved !== b.solved) {
+      return b.solved - a.solved; // 降序
+    }
+    return a.penalty - b.penalty; // 升序
+  });
+  const vMembers = fetchVMembersViews;
+  let rank = 0;
+  let rankIncrement = 0;
+  let lastAccept = -1;
+  let lastPenalty = -1;
+  for (let i = 0; i < results.length; i++) {
+    results[i].index = i + 1;
+    if (vMembers && vMembers.includes(results[i].userId)) {
+      results[i].rank = "*";
+    } else {
+      rankIncrement++;
+      if (results[i].solved !== lastAccept || results[i].penalty !== lastPenalty) {
+        rank = rankIncrement; // 更新排名
+        lastAccept = results[i].solved;
+        lastPenalty = results[i].penalty;
+      }
+      results[i].rank = String(rank);
+    }
+  }
   console.log(value);
 };
 
@@ -148,6 +209,8 @@ const fetchData = async (needLoading: boolean) => {
   try {
     const res = await GetContestRank(contestId);
     listColumns.value = listColumns1;
+    fetchRankViews = [];
+    fetchVMembersViews = []
     contestRankViews.value = [];
     if (res.code === 0) {
       res.data.problems.sort((a: number, b: number) => a - b);
@@ -211,61 +274,10 @@ const fetchData = async (needLoading: boolean) => {
       contestStartTime = new Date(contest.start_time);
       contestEndTime = new Date(contest.end_time);
       const responseList = res.data.ranks as ContestRank[];
-      const results = [];
-      for (let i = 0; i < responseList.length; i++) {
-        const item = responseList[i];
-        let result = {
-          userId: item.author_id,
-          username: item.author_username,
-          nickname: item.author_nickname,
-        } as ContestRankView;
-        let acCount = 0;
-        let penalty = 0;
-        item.problems.forEach((problem: ContestRankProblem) => {
-          let acDuration = -1;
-          if (problem.ac) {
-            acCount++;
-            acDuration = (new Date(problem.ac).getTime() - contestStartTime.getTime()) / 1000; // 转换为秒
-            penalty += acDuration;
-            // 每一次尝试罚时20分钟
-            penalty += problem.attempt * 20 * 60;
-          }
-          const problemIndex = problem.index;
-          result[`problem_${problemIndex}`] = {
-            acDuration: acDuration,
-            attempt: problem.attempt,
-          };
-        });
-        result.solved = acCount;
-        result.penalty = penalty; // 转换为分钟
-        results.push(result);
-      }
-      results.sort((a: ContestRankView, b: ContestRankView) => {
-        if (a.solved !== b.solved) {
-          return b.solved - a.solved; // 降序
-        }
-        return a.penalty - b.penalty; // 升序
-      });
-      const vMembers = contest.v_members;
-      let rank = 0;
-      let rankIncrement = 0;
-      let lastAccept = -1;
-      let lastPenalty = -1;
-      for (let i = 0; i < results.length; i++) {
-        results[i].index = i + 1;
-        if (vMembers && vMembers.includes(results[i].userId)) {
-          results[i].rank = "*";
-        } else {
-          rankIncrement++;
-          if (results[i].solved !== lastAccept || results[i].penalty !== lastPenalty) {
-            rank = rankIncrement; // 更新排名
-            lastAccept = results[i].solved;
-            lastPenalty = results[i].penalty;
-          }
-          results[i].rank = String(rank);
-        }
-      }
-      contestRankViews.value = results;
+
+      fetchRankViews = responseList
+      fetchVMembersViews = res.data.v_members || [];
+      handleProgressChange(-1);
     } else {
       if (needLoading) {
         ShowErrorTips(globalProperties, res.code);
@@ -317,7 +329,7 @@ onBeforeUnmount(() => {
   <t-row>
     <t-card style="margin: 10px; width: 100%">
       <div style="margin: 10px 10px 40px">
-        <t-slider :marks="progressMarks" :max="1000000" :label="progressLabelRender" @change="handleProgressChange" />
+        <t-slider v-model="progressValue" :marks="progressMarks" :max="1000000" :label="progressLabelRender" @change="handleProgressChange" />
       </div>
       <div class="table-scroll-wrapper">
         <t-table
