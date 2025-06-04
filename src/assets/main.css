@@ -34,3 +34,9 @@ a {
     transform: rotate(360deg);
   }
 }
+
+.row-animate {
+  transition: transform 300ms ease;
+  will-change: transform;
+}
+
