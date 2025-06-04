@@ -1,11 +1,11 @@
 <script setup lang="tsx">
+import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, GetEllipsisText, ShowErrorTips, useCurrentInstance } from "@/util";
 import { GetContestProblemIndexStr, GetContestRank } from "@/apis/contest.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { JudgeStatus } from "@/apis/judge.ts";
-import type { WatchStopHandle } from "vue";
 import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
 import { GetTimeStringBySeconds } from "@/time/library.ts";
 
@@ -19,6 +19,10 @@ let contestId = 0;
 let contestStartTime = null;
 let contestEndTime = null;
 const progressValue = ref(0);
+const progressMax = ref(0);
+const autoRefresh = ref(true);
+let fetchTimer: ReturnType<typeof setInterval> | null = null;
+let updateProgressTimer: ReturnType<typeof setInterval> | null = null;
 
 const getDurationText = (duration: number) => {
   if (duration === undefined || duration === null) {
@@ -34,14 +38,7 @@ const getDurationText = (duration: number) => {
   return `${hours}:${minutes}:${seconds}`;
 };
 
-const progressMarks = ref({
-  0: "0°C",
-  20: "20°C",
-  40: "40°C",
-  60: "60°C",
-  80: <span style="color: #0052d9">80°C</span>,
-  100: <span style="color: #0052d9">100°C</span>,
-});
+const progressMarks = ref({});
 
 const listColumns1 = [
   {
@@ -140,10 +137,53 @@ const progressLabelRender = (h, { value }) => {
   return GetTimeStringBySeconds(value);
 };
 
-const handleProgressChange = (value: number) => {
-  if (progressValue.value > 5000) {
-    progressValue.value = 5000;
+const createProgressTimer = () => {
+  if (fetchTimer) {
+    clearInterval(fetchTimer);
   }
+  // 每30秒真正获取一次数据
+  fetchTimer = setInterval(() => {
+    if (!viewActive) {
+      return;
+    }
+    fetchData(false);
+  }, 30000);
+  // 每秒更新一次数值
+  if (updateProgressTimer) {
+    clearInterval(updateProgressTimer);
+  }
+  updateProgressTimer = setInterval(() => {
+    if (!viewActive) {
+      return;
+    }
+    progressValue.value = (new Date().getTime() - contestStartTime.getTime()) / 1000;
+    loadProgress();
+  }, 1000);
+};
+
+const clearProgressTimer = () => {
+  if (fetchTimer) {
+    clearInterval(fetchTimer);
+    fetchTimer = null;
+  }
+  if (updateProgressTimer) {
+    clearInterval(updateProgressTimer);
+    updateProgressTimer = null;
+  }
+};
+
+const handleSwitchAutoRefresh = async (value: boolean) => {
+  autoRefresh.value = value;
+  if (value) {
+    await fetchData(false);
+    createProgressTimer();
+  } else {
+    clearProgressTimer();
+  }
+};
+
+const loadProgress = () => {
+  console.log("loadProgress", progressValue.value);
   contestRankViews.value = [];
   const results = [];
   for (let i = 0; i < fetchRankViews.length; i++) {
@@ -158,8 +198,11 @@ const handleProgressChange = (value: number) => {
     item.problems.forEach((problem: ContestRankProblem) => {
       let acDuration = -1;
       if (problem.ac) {
-        acCount++;
         acDuration = (new Date(problem.ac).getTime() - contestStartTime.getTime()) / 1000; // 转换为秒
+        if (acDuration > progressValue.value) {
+          return;
+        }
+        acCount++;
         penalty += acDuration;
         // 每一次尝试罚时20分钟
         penalty += problem.attempt * 20 * 60;
@@ -199,7 +242,17 @@ const handleProgressChange = (value: number) => {
       results[i].rank = String(rank);
     }
   }
-  console.log(value);
+  contestRankViews.value = results;
+};
+
+const handleProgressChange = (value: number) => {
+  handleSwitchAutoRefresh(false);
+  progressValue.value = value;
+  const progressValueRealMax = (new Date().getTime() - contestStartTime.getTime()) / 1000;
+  if (progressValue.value > progressValueRealMax) {
+    progressValue.value = progressValueRealMax;
+  }
+  loadProgress();
 };
 
 const fetchData = async (needLoading: boolean) => {
@@ -208,9 +261,9 @@ const fetchData = async (needLoading: boolean) => {
   }
   try {
     const res = await GetContestRank(contestId);
-    listColumns.value = listColumns1;
+    listColumns.value = [...listColumns1];
     fetchRankViews = [];
-    fetchVMembersViews = []
+    fetchVMembersViews = [];
     contestRankViews.value = [];
     if (res.code === 0) {
       res.data.problems.sort((a: number, b: number) => a - b);
@@ -273,11 +326,22 @@ const fetchData = async (needLoading: boolean) => {
       const contest = res.data.contest;
       contestStartTime = new Date(contest.start_time);
       contestEndTime = new Date(contest.end_time);
-      const responseList = res.data.ranks as ContestRank[];
-
-      fetchRankViews = responseList
+      fetchRankViews = res.data.ranks as ContestRank[];
       fetchVMembersViews = res.data.v_members || [];
-      handleProgressChange(-1);
+
+      progressMax.value = Math.floor((contestEndTime.getTime() - contestStartTime.getTime()) / 1000);
+      progressMarks.value = {
+        0: "0",
+        [Math.floor(progressMax.value / 2)]: GetTimeStringBySeconds(Math.floor(progressMax.value / 2)),
+        [progressMax.value]: GetTimeStringBySeconds(progressMax.value),
+      };
+
+      progressValue.value = Math.floor((new Date().getTime() - contestStartTime.getTime()) / 1000);
+
+      autoRefresh.value = true;
+      createProgressTimer();
+
+      loadProgress();
     } else {
       if (needLoading) {
         ShowErrorTips(globalProperties, res.code);
@@ -322,6 +386,7 @@ onBeforeUnmount(() => {
   if (watchHandle) {
     watchHandle();
   }
+  clearProgressTimer();
 });
 </script>
 
@@ -329,7 +394,22 @@ onBeforeUnmount(() => {
   <t-row>
     <t-card style="margin: 10px; width: 100%">
       <div style="margin: 10px 10px 40px">
-        <t-slider v-model="progressValue" :marks="progressMarks" :max="1000000" :label="progressLabelRender" @change="handleProgressChange" />
+        <div style="text-align: right; margin-bottom: 10px">
+          <t-space>
+            <t-switch size="large" v-model="autoRefresh" @change="handleSwitchAutoRefresh">
+              <template #label="slotProps">{{ slotProps.value ? "自动刷新" : "关闭刷新" }}</template>
+            </t-switch>
+          </t-space>
+        </div>
+        <t-slider
+          v-model="progressValue"
+          :marks="progressMarks"
+          :max="progressMax"
+          :label="progressLabelRender"
+          :tooltip-props="{ placement: 'top' }"
+          :input-number-props="{ theme: 'column', autoWidth: true, format: GetTimeStringBySeconds }"
+          @change-end="handleProgressChange"
+        />
       </div>
       <div class="table-scroll-wrapper">
         <t-table

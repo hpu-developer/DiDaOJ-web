@@ -23,7 +23,7 @@
     if ((hours > 0 || minutes > 0) && seconds < 10) {
       timeString += "0";
     }
-    timeString += `${seconds}秒`;
+    timeString += `${seconds.toFixed(0)}秒`;
   }
 
   return timeString;
