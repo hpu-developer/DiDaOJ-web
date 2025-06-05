@@ -35,6 +35,7 @@ const contestEditForm = ref({
   notification: "",
   lockRankDuration: 0,
   alwaysLock: true,
+  submitAnytime: false,
 });
 
 const parseDialogTitle = ref<string>("");
@@ -68,6 +69,7 @@ const handleClickCreate = async () => {
       problems: contestEditForm.value.problems,
       members: contestEditForm.value.members,
       private: contestEditForm.value.private,
+      submit_anytime: contestEditForm.value.submitAnytime,
     } as ContestEditRequest;
     if (contestEditForm.value.openTime[0]) {
       postData.start_time = new Date(contestEditForm.value.openTime[0]);
@@ -115,6 +117,7 @@ const handleClickSave = async () => {
       problems: contestEditForm.value.problems,
       members: contestEditForm.value.members,
       private: contestEditForm.value.private,
+      submit_anytime: contestEditForm.value.submitAnytime,
     } as ContestEditRequest;
     if (contestEditForm.value.openTime[0]) {
       postData.start_time = new Date(contestEditForm.value.openTime[0]);
@@ -192,6 +195,8 @@ const loadContest = async () => {
   }
   contestEditForm.value.alwaysLock = contest.always_lock;
 
+  contestEditForm.value.submitAnytime = contest.submit_anytime;
+
   webStyleStore.setTitle(contest.title + " - " + webStyleStore.getTitle);
 
   let contestDescription = "";
@@ -228,6 +233,9 @@ onMounted(async () => {
               <t-form-item label="标题">
                 <t-input v-model="contestEditForm.title" placeholder="比赛标题"></t-input>
               </t-form-item>
+              <t-form-item label="通知">
+                <t-input v-model="contestEditForm.notification" placeholder="会更为醒目地提醒"></t-input>
+              </t-form-item>
               <t-form-item label="开启时间">
                 <t-date-range-picker
                   v-model="contestEditForm.openTime"
@@ -237,8 +245,10 @@ onMounted(async () => {
                   :default-time="['00:00:00', '23:59:59']"
                 />
               </t-form-item>
-              <t-form-item label="通知">
-                <t-input v-model="contestEditForm.notification" placeholder="会更为醒目地提醒"></t-input>
+              <t-form-item label="提交限制">
+                <t-switch v-model="contestEditForm.submitAnytime">
+                  <template #label="slotProps">{{ slotProps.value ? "结束仍能提交" : "仅比赛期间提交" }}</template>
+                </t-switch>
               </t-form-item>
 
               <t-form-item label="锁榜时长">

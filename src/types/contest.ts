@@ -21,6 +21,7 @@ export interface Contest {
   description: string;
   notification: string;
   problems: ContestProblem[];
+  submit_anytime : boolean;
 }
 
 export interface ContestView {
@@ -36,6 +37,7 @@ export interface ContestView {
   description: string;
   notification: string;
   problems: ProblemView[];
+  submitAnytime: boolean;
 }
 
 export interface ContestRankProblem {
