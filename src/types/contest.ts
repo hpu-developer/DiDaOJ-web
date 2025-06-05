@@ -18,10 +18,11 @@ export interface Contest {
   update_time: string;
   start_time: string;
   end_time: string;
+  private: boolean;
   description: string;
   notification: string;
   problems: ContestProblem[];
-  submit_anytime : boolean;
+  submit_anytime: boolean;
 }
 
 export interface ContestView {
@@ -34,6 +35,7 @@ export interface ContestView {
   updateTime: string;
   startTime: string;
   endTime: string;
+  private: boolean;
   description: string;
   notification: string;
   problems: ProblemView[];
@@ -73,4 +75,7 @@ export interface ContestEditRequest {
   end_time?: Date;
   lock_rank_duration: number;
   always_lock: boolean;
+  private: boolean;
+  submit_anytime: boolean;
+  password: string;
 }

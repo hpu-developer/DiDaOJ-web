@@ -138,6 +138,15 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
     );
     discussViews.value = [];
     if (res.code === 0) {
+      if (!res.data.has_auth) {
+        ShowTextTipsInfo(globalProperties, "您目前没有权限查看讨论列表");
+        if (contestId) {
+          await router.push({ name: "contest-detail", params: { contestId: contestId } });
+        } else {
+          await router.push({ name: "discuss-list" });
+        }
+        return;
+      }
       if (res.data.list) {
         const responseList = res.data.list as Discuss[];
         for (let i = 0; i < responseList.length; i++) {

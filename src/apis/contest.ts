@@ -26,6 +26,7 @@ export async function ParseContest(item: Contest): Promise<ContestView> {
   result.endTime = new Date(item.end_time).toLocaleString();
   result.createTime = new Date(item.create_time).toLocaleString();
   result.updateTime = new Date(item.update_time).toLocaleString();
+  result.private = item.private;
 
   const options = {
     math: {
@@ -65,14 +66,14 @@ export async function ParseContest(item: Contest): Promise<ContestView> {
   return result;
 }
 
-export function GetContest(contestId: string) {
+export function GetContest(contestId: number) {
   return httpRequest({
     url: "/contest" + "?id=" + contestId,
     method: "get",
   });
 }
 
-export function GetContestEdit(contestId: string) {
+export function GetContestEdit(contestId: number) {
   return httpRequest({
     url: "/contest/edit" + "?id=" + contestId,
     method: "get",
@@ -120,5 +121,16 @@ export function PostContestEdit(request: ContestEditRequest) {
     url: "/contest/edit",
     method: "post",
     data: request,
+  });
+}
+
+export function PostContestPassword(contestId: number, password: string) {
+  return httpRequest({
+    url: "/contest/password",
+    method: "post",
+    data: {
+      id: contestId,
+      password: password,
+    },
   });
 }

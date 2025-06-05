@@ -247,17 +247,19 @@ export function GetJudgeJobList(
   page: number,
   pageSize: number
 ) {
-  const params = new URLSearchParams({
-    contest_id: String(contestId),
+  let params = {
     problem_id: problemId,
     username: username,
     language: String(language),
     status: String(status),
     page: String(page),
     page_size: String(pageSize),
-  });
+  } as any;
+  if (contestId) {
+    params["contest_id"] = String(contestId);
+  }
   return httpRequest({
-    url: `/judge/list?${params.toString()}`,
+    url: `/judge/list?${new URLSearchParams(params).toString()}`,
     method: "get",
   });
 }

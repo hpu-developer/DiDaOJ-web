@@ -291,6 +291,15 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
     );
     judgeJobViews.value = [];
     if (res.code === 0) {
+      if (!res.data.has_auth) {
+        ShowTextTipsInfo(globalProperties, "您目前没有权限查看评测记录");
+        if (contestId) {
+          await router.push({ name: "contest-detail", params: { contestId: contestId } });
+        } else {
+          await router.push({ name: "judge-list" });
+        }
+        return;
+      }
       if (res.data.list && res.data.list.length > 0) {
         const responseList = res.data.list as JudgeJob[];
         responseList.forEach((item) => {

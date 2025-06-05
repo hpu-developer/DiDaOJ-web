@@ -29,6 +29,7 @@ const contestEditForm = ref({
   title: "",
   openTime: [] as (Date | string)[],
   private: true,
+  password: "",
   problems: [] as string[],
   members: [] as number[],
   description: "",
@@ -69,6 +70,7 @@ const handleClickCreate = async () => {
       problems: contestEditForm.value.problems,
       members: contestEditForm.value.members,
       private: contestEditForm.value.private,
+      password: contestEditForm.value.password,
       submit_anytime: contestEditForm.value.submitAnytime,
     } as ContestEditRequest;
     if (contestEditForm.value.openTime[0]) {
@@ -117,6 +119,7 @@ const handleClickSave = async () => {
       problems: contestEditForm.value.problems,
       members: contestEditForm.value.members,
       private: contestEditForm.value.private,
+      password: contestEditForm.value.password,
       submit_anytime: contestEditForm.value.submitAnytime,
     } as ContestEditRequest;
     if (contestEditForm.value.openTime[0]) {
@@ -182,6 +185,7 @@ const loadContest = async () => {
     contestEditForm.value.openTime.push(""); // 默认结束时间为当前时间加一天
   }
   contestEditForm.value.private = contest.private;
+  contestEditForm.value.password = contest.password || "";
   contestEditForm.value.description = contest.description || "";
   contestEditForm.value.notification = contest.notification || "";
 
@@ -263,6 +267,10 @@ onMounted(async () => {
               <t-form-item label="私有">
                 <t-switch v-model="contestEditForm.private" />
               </t-form-item>
+              <t-form-item label="密码" v-if="contestEditForm.private">
+                <t-input v-model="contestEditForm.password" type="password" placeholder="请输入访问密码，留空代表关闭密码访问"></t-input>
+              </t-form-item>
+
               <t-form-item label="成员" v-if="contestEditForm.private">
                 <ParseUserList v-model="contestEditForm.members" />
               </t-form-item>

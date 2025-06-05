@@ -50,6 +50,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "10003": {
         zh: "未找到目标数据",
       },
+      "10004": {
+        zh: "操作需要登录，请登录后重试",
+      },
       "100001": {
         zh: "用户名不存在或密码不匹配",
       },
@@ -88,6 +91,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       },
       "100013": {
         zh: "当前无法提交题目",
+      },
+      "100014": {
+        zh: "申请访问失败，密码错误",
       },
     });
   });

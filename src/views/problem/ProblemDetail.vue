@@ -352,7 +352,7 @@ onBeforeUnmount(() => {
       </t-col>
       <t-col :span="4">
         <div class="dida-problems-container" v-if="contestId">
-          <t-space>
+          <t-space style="flex-wrap: wrap">
             <t-button
               v-for="(item, index) in contestProblems"
               :key="index"

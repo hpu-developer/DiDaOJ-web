@@ -60,7 +60,7 @@ onMounted(() => {
   <t-card class="yj-login-card" title="欢迎使用DidaOJ~">
     <t-form ref="form" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit" class="yj-login-form" :label-width="0">
       <t-form-item name="username">
-        <t-input v-model="formData.username" clearable placeholder="请输入用户名">
+        <t-input v-model="formData.username" clearable autocomplete="username" placeholder="请输入用户名">
           <template #prefix-icon>
             <DesktopIcon />
           </template>
@@ -68,7 +68,7 @@ onMounted(() => {
       </t-form-item>
 
       <t-form-item name="password">
-        <t-input v-model="formData.password" type="password" clearable placeholder="请输入密码">
+        <t-input v-model="formData.password" type="password" autocomplete="current-password" clearable placeholder="请输入密码">
           <template #prefix-icon>
             <LockOnIcon />
           </template>
@@ -85,16 +85,16 @@ onMounted(() => {
             globalProperties.$router.push({ name: 'login-forget' });
           }
         "
-        >忘记密码</t-link
-      >
+        >忘记密码
+      </t-link>
       <t-link
         @click="
           () => {
             globalProperties.$router.push({ name: 'register' });
           }
         "
-        >注册账户</t-link
-      >
+        >注册账户
+      </t-link>
     </div>
   </t-card>
 </template>

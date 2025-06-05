@@ -2,7 +2,7 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, GetEllipsisText, ShowErrorTips, useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, GetEllipsisText, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { GetContestProblemIndexStr, GetContestRank } from "@/apis/contest.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { JudgeStatus } from "@/apis/judge.ts";
@@ -314,6 +314,11 @@ const fetchData = async (needLoading: boolean) => {
     fetchVMembersViews = [];
     contestRankViews.value = [];
     if (res.code === 0) {
+      if (!res.data.has_auth) {
+        ShowTextTipsInfo(globalProperties, "您目前没有权限查看比赛排名");
+        await router.push({ name: "contest-detail", params: { contestId: contestId } });
+        return;
+      }
       res.data.problems.sort((a: number, b: number) => a - b);
       res.data.problems.forEach((problemIndex: number, _: number) => {
         listColumns.value.push({
