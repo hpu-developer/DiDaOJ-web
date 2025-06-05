@@ -57,7 +57,7 @@ export interface JudgeJobView {
   author: number;
   authorUsername: string;
   authorNickname: string;
-  language: string;
+  language: number;
   approveTime: string;
   code?: string;
   compileMessage?: string;

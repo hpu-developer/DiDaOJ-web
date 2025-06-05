@@ -69,4 +69,6 @@ export interface ContestEditRequest {
   notification: string;
   start_time?: Date;
   end_time?: Date;
+  lock_rank_duration: number;
+  always_lock: boolean;
 }

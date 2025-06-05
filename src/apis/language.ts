@@ -44,7 +44,7 @@ export function GetJudgeLanguageStr(language: JudgeLanguage) {
     case JudgeLanguage.TypeScript:
       return "TypeScript";
     default:
-      return "Unknown";
+      return "未知";
   }
 }
 

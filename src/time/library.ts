@@ -1,4 +1,11 @@
-﻿export function GetTimeStringBySeconds(seconds: number): string {
+﻿export function GetSecondFromDuration(duration: number): number {
+  if (!duration) {
+    return 0;
+  }
+  return Math.floor(duration / 1000000000);
+}
+
+export function GetTimeStringBySeconds(seconds: number): string {
   if (seconds <= 0) {
     return "0秒";
   }

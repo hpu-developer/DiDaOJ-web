@@ -94,6 +94,7 @@ export const GetJudgeStatusTheme = (status: JudgeStatus): ButtonProps["theme"] =
     case JudgeStatus.Queuing:
     case JudgeStatus.Compiling:
     case JudgeStatus.Running:
+    case JudgeStatus.Unknown:
       return "default";
     case JudgeStatus.Accept:
       return "success";
@@ -112,6 +113,10 @@ export function GetJudgeStatusOptions() {
       value,
       label: GetJudgeStatusStr(value as JudgeStatus),
     })) as { label: string; value: JudgeStatus }[];
+}
+
+export function IsJudgeStatusValid(status: JudgeStatus) {
+  return status >= JudgeStatus.Init && status < JudgeStatus.Unknown;
 }
 
 export function IsJudgeStatusRunning(status: JudgeStatus) {
@@ -135,7 +140,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   result.contestProblemIndex = item.contest_problem_index;
   result.status = item.status;
 
-  if (IsJudgeStatusRunning(item.status)) {
+  if (IsJudgeStatusRunning(item.status) || !IsJudgeStatusValid(item.status)) {
     result.score = "-";
   } else {
     result.score = item.score.toString();
@@ -153,7 +158,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
     result.memory = "-";
   }
 
-  result.language = GetJudgeLanguageStr(item.language);
+  result.language = item.language;
   result.codeLength = item.code_length;
   if (item.approve_time) {
     result.approveTime = new Date(item.approve_time).toLocaleString();

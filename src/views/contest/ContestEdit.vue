@@ -9,6 +9,7 @@ import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ContestEditRequest, ContestView } from "@/types/contest.ts";
 import ParseProblemList from "@/components/problem/ParseProblemList.vue";
 import ParseUserList from "@/components/user/ParseUserList.vue";
+import { GetSecondFromDuration, GetTimeStringBySeconds } from "@/time/library.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -32,6 +33,8 @@ const contestEditForm = ref({
   members: [] as number[],
   description: "",
   notification: "",
+  lockRankDuration: 0,
+  alwaysLock: true,
 });
 
 const parseDialogTitle = ref<string>("");
@@ -60,12 +63,18 @@ const handleClickCreate = async () => {
       title: contestEditForm.value.title,
       description: descriptionEditor.getValue(),
       notification: contestEditForm.value.notification,
+      lock_rank_duration: contestEditForm.value.lockRankDuration,
+      always_lock: contestEditForm.value.alwaysLock,
       problems: contestEditForm.value.problems,
       members: contestEditForm.value.members,
-      start_time: new Date(contestEditForm.value.openTime[0]),
-      end_time: new Date(contestEditForm.value.openTime[1]),
       private: contestEditForm.value.private,
     } as ContestEditRequest;
+    if (contestEditForm.value.openTime[0]) {
+      postData.start_time = new Date(contestEditForm.value.openTime[0]);
+    }
+    if (contestEditForm.value.openTime[1]) {
+      postData.end_time = new Date(contestEditForm.value.openTime[1]);
+    }
     const res = await PostContestCreate(postData);
 
     isEditing.value = true;
@@ -99,11 +108,13 @@ const handleClickSave = async () => {
     const postData = {
       id: Number(contestId.value),
       title: contestEditForm.value.title,
-      private: contestEditForm.value.private,
-      problems: contestEditForm.value.problems,
-      members: contestEditForm.value.members,
       description: descriptionEditor.getValue(),
       notification: contestEditForm.value.notification,
+      lock_rank_duration: contestEditForm.value.lockRankDuration,
+      always_lock: contestEditForm.value.alwaysLock,
+      problems: contestEditForm.value.problems,
+      members: contestEditForm.value.members,
+      private: contestEditForm.value.private,
     } as ContestEditRequest;
     if (contestEditForm.value.openTime[0]) {
       postData.start_time = new Date(contestEditForm.value.openTime[0]);
@@ -174,6 +185,13 @@ const loadContest = async () => {
   contestEditForm.value.problems = res.data.problems;
   contestEditForm.value.members = res.data.members;
 
+  if (contest.lock_rank_duration) {
+    contestEditForm.value.lockRankDuration = GetSecondFromDuration(contest.lock_rank_duration);
+  } else {
+    contestEditForm.value.lockRankDuration = 0;
+  }
+  contestEditForm.value.alwaysLock = contest.always_lock;
+
   webStyleStore.setTitle(contest.title + " - " + webStyleStore.getTitle);
 
   let contestDescription = "";
@@ -206,7 +224,7 @@ onMounted(async () => {
       <t-col :span="8">
         <div style="margin: 10px">
           <t-card class="sh-card">
-            <t-form :model="contestEditForm">
+            <t-form :model="contestEditForm" label-width="150px">
               <t-form-item label="标题">
                 <t-input v-model="contestEditForm.title" placeholder="比赛标题"></t-input>
               </t-form-item>
@@ -222,10 +240,20 @@ onMounted(async () => {
               <t-form-item label="通知">
                 <t-input v-model="contestEditForm.notification" placeholder="会更为醒目地提醒"></t-input>
               </t-form-item>
+
+              <t-form-item label="锁榜时长">
+                <t-input-number v-model="contestEditForm.lockRankDuration" :min="0" :format="GetTimeStringBySeconds" auto-width></t-input-number>
+              </t-form-item>
+              <t-form-item label="自动解锁">
+                <t-switch v-model="contestEditForm.alwaysLock">
+                  <template #label="slotProps">{{ slotProps.value ? "结束后仍锁榜" : "结束后解锁" }}</template>
+                </t-switch>
+              </t-form-item>
+
               <t-form-item label="私有">
                 <t-switch v-model="contestEditForm.private" />
               </t-form-item>
-              <t-form-item label="成员">
+              <t-form-item label="成员" v-if="contestEditForm.private">
                 <ParseUserList v-model="contestEditForm.members" />
               </t-form-item>
               <t-form-item label="问题">

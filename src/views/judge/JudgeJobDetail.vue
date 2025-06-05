@@ -11,7 +11,7 @@ import {
   ParseJudgeJob,
   PostRejudgeJob,
 } from "@/apis/judge.ts";
-import { GetHighlightKeyByJudgeLanguage } from "@/apis/language.ts";
+import { GetJudgeLanguageStr, GetHighlightKeyByJudgeLanguage } from "@/apis/language.ts";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
@@ -27,7 +27,8 @@ const { globalProperties } = useCurrentInstance();
 
 let viewActive = false;
 let refreshTimeout: ReturnType<typeof setTimeout>;
-let judgeId = -1;
+let judgeId = 0;
+let contestId = 0;
 const judgerName = ref("");
 const judgeJob = ref<JudgeJobView | null>(null);
 const judgeJobCode = ref("");
@@ -92,7 +93,7 @@ const ListColumns = ref([
     title: "代码",
     colKey: "language",
     cell: (_: any, data: any) => {
-      return <span>{data.row.language + " / " + data.row.codeLength}</span>;
+      return <span>{GetJudgeLanguageStr(data.row.language) + " / " + data.row.codeLength}</span>;
     },
   },
   {
@@ -264,6 +265,11 @@ const fetchData = async (needLoading: boolean) => {
       if (needLoading) {
         ShowErrorTips(globalProperties, res.code);
       }
+      if (contestId) {
+        await router.push({ name: "contest-judge", params: { contestId } });
+      } else {
+        await router.push({ name: "judge-list" });
+      }
     }
   } catch (err) {
     console.error(err);
@@ -296,6 +302,12 @@ onMounted(async () => {
     judgeId = Number(route.params.judgeId[0]);
   } else {
     judgeId = Number(route.params.judgeId);
+  }
+
+  if (Array.isArray(route.params.contestId)) {
+    contestId = Number(route.params.contestId[0]);
+  } else {
+    contestId = Number(route.params.contestId);
   }
 
   if (!judgeId) {

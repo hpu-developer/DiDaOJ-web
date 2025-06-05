@@ -3,7 +3,7 @@ import { nextTick, WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetHighlightKeyByJudgeLanguage, GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
+import { GetHighlightKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
 import {
   GetJudgeJobList,
   GetJudgeStatusStr,
@@ -13,7 +13,9 @@ import {
   ParseJudgeJob,
   GetJudgeJobCode,
   GetJudgeStatusTheme,
+  IsJudgeStatusValid,
 } from "@/apis/judge.ts";
+import { GetJudgeLanguageStr } from "@/apis/language.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import Vditor from "vditor";
@@ -47,8 +49,14 @@ const listColumns = ref([
     title: "ID",
     colKey: "id",
     cell: (_: any, data: any) => {
+      let clickFunction = null;
+      if (IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
+        clickFunction = () => {
+          handleGotoJudgeJob(data.row.id);
+        };
+      }
       return (
-        <t-button variant="text" onClick={() => handleGotoJudgeJob(data.row.id)}>
+        <t-button variant="text" onClick={clickFunction}>
           {data.row.id}
         </t-button>
       );
@@ -58,7 +66,7 @@ const listColumns = ref([
     title: "问题",
     colKey: "problemId",
     cell: (_: any, data: any) => {
-      if (contestId){
+      if (contestId) {
         return (
           <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.contestProblemIndex)}>
             {GetContestProblemIndexStr(data.row.contestProblemIndex)}
@@ -77,8 +85,15 @@ const listColumns = ref([
     colKey: "status",
     align: "center",
     cell: (_: any, data: any) => {
+      let clickFunction = null;
+      if (IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
+        clickFunction = () => {
+          handleGotoJudgeJob(data.row.id);
+        };
+      }
       const status = data.row.status as JudgeStatus;
       const statusStr = GetJudgeStatusStr(status);
+      let disabled = !IsJudgeStatusValid(status);
       const theme = GetJudgeStatusTheme(status);
       let finalElements = [];
       if (IsJudgeStatusRunning(status)) {
@@ -86,7 +101,7 @@ const listColumns = ref([
       }
       finalElements.push(<span>{statusStr}</span>);
       return (
-        <t-button theme={theme} variant="outline" onClick={() => handleGotoJudgeJob(data.row.id)}>
+        <t-button theme={theme} variant="outline" onClick={clickFunction} disabled={disabled}>
           {finalElements}
         </t-button>
       );
@@ -108,9 +123,10 @@ const listColumns = ref([
     title: "代码",
     colKey: "code",
     cell: (_: any, data: any) => {
+      let disabled = !IsJudgeLanguageValid(data.row.language);
       return (
-        <t-button theme="default" onClick={() => handleShowCode(data.row)}>
-          {data.row.language + " / " + data.row.codeLength}
+        <t-button theme="default" onClick={() => handleShowCode(data.row)} disabled={disabled}>
+          {GetJudgeLanguageStr(data.row.language) + " / " + data.row.codeLength}
         </t-button>
       );
     },
