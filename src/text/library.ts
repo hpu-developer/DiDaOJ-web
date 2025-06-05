@@ -83,6 +83,12 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100011": {
         zh: "题目数量超过限制，无法添加",
       },
+      "100012": {
+        zh: "比赛开始时间无法设置为早于当前时间",
+      },
+      "100013": {
+        zh: "当前无法提交题目",
+      },
     });
   });
 }

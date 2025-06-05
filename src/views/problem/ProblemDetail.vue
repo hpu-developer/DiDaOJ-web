@@ -18,7 +18,7 @@ import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
-import { GetContestProblemIndexStr, GetContestProblemRealId } from "@/apis/contest.ts";
+import { GetContestProblemIndexStr, GetContestProblemRealId, GetContestProblems } from "@/apis/contest.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -48,6 +48,8 @@ const selectLanguage = ref("");
 const languageOptions = ref([] as { label: string; value: JudgeLanguage }[]);
 
 languageOptions.value = GetSubmitLanguages();
+
+const contestProblems = ref([]);
 
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
@@ -227,6 +229,8 @@ const onSelectLanguageChanged = (value: JudgeLanguage) => {
 };
 
 const fetchProblemData = async () => {
+  contestProblems.value = [];
+
   let res = await GetProblem(problemId, contestId, problemIndex);
 
   if (res.code !== 0) {
@@ -247,6 +251,15 @@ const fetchProblemData = async () => {
   webStyleStore.setTitle(problemData.value.title + " - " + webStyleStore.getTitle);
 
   let problemDescription = problemData.value.description as string;
+
+  if (contestId) {
+    res = await GetContestProblems(contestId);
+    if (res.code === 0) {
+      contestProblems.value = res.data.problems;
+    } else {
+      ShowErrorTips(globalProperties, res.code);
+    }
+  }
 
   const options = {
     math: {
@@ -323,6 +336,13 @@ onMounted(async () => {
         </t-card>
       </t-col>
       <t-col :span="4">
+        <div class="dida-problems-container" v-if="contestId">
+          <t-space>
+            <t-button v-for="(item, index) in contestProblems" :key="index">
+              {{ item }}
+            </t-button>
+          </t-space>
+        </div>
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="标题">{{ problemData?.title }}</t-descriptions-item>
@@ -365,7 +385,7 @@ onMounted(async () => {
               <t-button @click="handleClickRecommend" v-if="problemId">题目推荐</t-button>
             </t-space>
           </div>
-          <div class="dida-operation-container">
+          <div class="dida-operation-container" v-if="hasEditAuth || problemData?.originId">
             <t-space>
               <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
               <t-button v-if="problemData?.originId" @click="handleClickCrawl" :loading="problemCrawlLoading">更新描述 </t-button>
@@ -395,6 +415,10 @@ onMounted(async () => {
 .dida-operation-container {
   margin: 10px 0 20px;
   text-align: right;
+}
+
+.dida-problems-container{
+  margin: 20px;
 }
 
 .dida-code-submit-div {

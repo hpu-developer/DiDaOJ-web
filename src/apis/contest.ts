@@ -79,6 +79,13 @@ export function GetContestEdit(contestId: string) {
   });
 }
 
+export function GetContestProblems(contestId: number) {
+  return httpRequest({
+    url: "/contest/problem/list" + "?id=" + contestId,
+    method: "get",
+  });
+}
+
 export function GetContestProblemRealId(contestId: number, problemIndex: number) {
   return httpRequest({
     url: "/contest/problem" + "?id=" + contestId + "&problem_index=" + problemIndex,
