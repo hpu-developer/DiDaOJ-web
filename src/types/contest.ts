@@ -46,6 +46,7 @@ export interface ContestRankProblem {
   index: number;
   attempt: number;
   ac: string;
+  lock: number;
 }
 
 export interface ContestRank {

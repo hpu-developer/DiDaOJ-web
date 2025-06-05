@@ -7,7 +7,7 @@ import { GetContestProblemIndexStr, GetContestRank } from "@/apis/contest.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { JudgeStatus } from "@/apis/judge.ts";
 import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
-import { GetTimeStringBySeconds } from "@/time/library.ts";
+import { GetSecondFromDuration, GetTimeStringBySeconds } from "@/time/library.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -18,6 +18,7 @@ let watchHandle: WatchStopHandle | null = null;
 let contestId = 0;
 let contestStartTime = null;
 let contestEndTime = null;
+let lockRankDurationSeconds = 0;
 const progressValue = ref(0);
 const progressMax = ref(0);
 const autoRefresh = ref(true);
@@ -39,7 +40,7 @@ const getDurationText = (duration: number) => {
   return `${hours}:${minutes}:${seconds}`;
 };
 
-const progressMarks = ref({});
+const progressMarks = ref({} as Record<number, string>);
 
 const listColumns1 = [
   {
@@ -198,6 +199,7 @@ const loadProgress = () => {
     let penalty = 0;
     item.problems.forEach((problem: ContestRankProblem) => {
       let acDuration = -1;
+      let lockCount = problem.lock || 0;
       if (problem.ac) {
         acDuration = (new Date(problem.ac).getTime() - contestStartTime.getTime()) / 1000; // 转换为秒
         if (acDuration > progressValue.value) {
@@ -208,10 +210,17 @@ const loadProgress = () => {
         // 每一次尝试罚时20分钟
         penalty += problem.attempt * 20 * 60;
       }
+      if (lockCount > 0 && lockRankDurationSeconds > 0) {
+        const lockTimeSeconds = progressMax.value - lockRankDurationSeconds;
+        if (progressValue.value < lockTimeSeconds) {
+          lockCount = 0;
+        }
+      }
       const problemIndex = problem.index;
       result[`problem_${problemIndex}`] = {
         acDuration: acDuration,
-        attempt: problem.attempt,
+        attempt: problem.attempt || 0, // 尝试次数
+        lock: lockCount, // 锁定状态
       };
     });
     result.solved = acCount;
@@ -354,6 +363,12 @@ const fetchData = async (needLoading: boolean) => {
               }
               text += `(-${problem.attempt})`;
             }
+            if (problem.lock > 0) {
+              if (text) {
+                text += " ";
+              }
+              text += `(+${problem.lock})`;
+            }
             return <span>{text}</span>;
           },
           attrs: (data: any) => {
@@ -365,6 +380,13 @@ const fetchData = async (needLoading: boolean) => {
               return {
                 style: {
                   backgroundColor: "rgba(130,255,30,0.5)",
+                },
+              };
+            }
+            if (problem.lock > 0) {
+              return {
+                style: {
+                  backgroundColor: "rgb(255,180,50,0.5)",
                 },
               };
             }
@@ -388,6 +410,11 @@ const fetchData = async (needLoading: boolean) => {
         [Math.floor(progressMax.value / 2)]: GetTimeStringBySeconds(Math.floor(progressMax.value / 2)),
         [progressMax.value]: GetTimeStringBySeconds(progressMax.value),
       };
+      lockRankDurationSeconds = GetSecondFromDuration(contest.lock_rank_duration || 0);
+      if (lockRankDurationSeconds > 0) {
+        const lockTimeSeconds = progressMax.value - lockRankDurationSeconds;
+        progressMarks.value[lockTimeSeconds] = `锁榜(${GetTimeStringBySeconds(lockTimeSeconds)})`;
+      }
 
       progressValue.value = Math.floor((new Date().getTime() - contestStartTime.getTime()) / 1000);
 
@@ -463,7 +490,7 @@ onBeforeUnmount(() => {
           :max="progressMax"
           :label="progressLabelRender"
           :tooltip-props="{ placement: 'top' }"
-          :input-number-props="{ theme: 'column', autoWidth: true, format: GetTimeStringBySeconds }"
+          :input-number-props="{ theme: 'column', autoWidth: true, format: GetTimeStringBySeconds, onChange: handleProgressChange }"
           @change-end="handleProgressChange"
         />
       </div>
