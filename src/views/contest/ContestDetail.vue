@@ -9,6 +9,7 @@ import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
+import { handleGotoContestProblem } from "@/util/router.ts";
 import type { ContestView } from "@/types/contest.ts";
 import type { ProblemView } from "@/types/problem.ts";
 
@@ -31,7 +32,7 @@ const listColumns = ref([
     colKey: "id",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.index)}>
+        <t-button variant="text" onClick={async () => await handleGotoContestProblem(contestId, data.row.index)}>
           {data.row.id}
         </t-button>
       );
@@ -42,7 +43,7 @@ const listColumns = ref([
     colKey: "title",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.index)}>
+        <t-button variant="text" onClick={async () => await handleGotoContestProblem(contestId, data.row.index)}>
           {data.row.title}
         </t-button>
       );
@@ -59,10 +60,6 @@ const listColumns = ref([
 ]);
 
 const problemViews = ref<ProblemView[]>([]);
-
-const handleGotoContestProblem = (contestId: number, problemIndex: string) => {
-  router.push({ name: "contest-problem-detail", params: { contestId: contestId, problemIndex: problemIndex } });
-};
 
 const handleClickEdit = () => {
   router.push({ name: "contest-edit", params: { contestId: contestId } });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch, WatchStopHandle } from "vue";
 import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
@@ -19,9 +19,11 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
 import { GetContestProblemIndexStr, GetContestProblemRealId, GetContestProblems } from "@/apis/contest.ts";
+import { handleGotoContestProblem } from "@/util/router.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
+let watchHandle: WatchStopHandle | null = null;
 
 const webStyleStore = useWebStyleStore();
 const userStore = useUserStore();
@@ -30,7 +32,7 @@ let content = ref("");
 
 let problemId = "";
 let contestId = 0;
-let problemIndex = 0;
+let problemIndex = ref(0);
 
 const isContestProblem = ref(false);
 
@@ -74,7 +76,7 @@ const handleClickEdit = async () => {
 
   if (!realProblemId) {
     try {
-      const res = await GetContestProblemRealId(contestId, problemIndex);
+      const res = await GetContestProblemRealId(contestId, problemIndex.value);
       if (res.code === 0) {
         realProblemId = res.data;
       } else {
@@ -109,7 +111,7 @@ const handleClickJudgeStatus = () => {
         contestId: contestId,
       },
       query: {
-        problem_id: GetContestProblemIndexStr(problemIndex),
+        problem_id: GetContestProblemIndexStr(problemIndex.value),
       },
     });
   }
@@ -130,7 +132,7 @@ const handleClickDiscuss = () => {
         contestId: contestId,
       },
       query: {
-        problem_id: GetContestProblemIndexStr(problemIndex),
+        problem_id: GetContestProblemIndexStr(problemIndex.value),
       },
     });
   }
@@ -179,7 +181,7 @@ const handleSubmitCode = async () => {
     ShowTextTipsError(globalProperties, "请输入所需提交的代码");
     return;
   }
-  if (!problemId && (!contestId || !problemIndex)) {
+  if (!problemId && (!contestId || !problemIndex.value)) {
     ShowTextTipsError(globalProperties, "问题ID无效");
     return;
   }
@@ -187,7 +189,7 @@ const handleSubmitCode = async () => {
   problemSubmitting.value = true;
 
   try {
-    const res = await PostJudgeJob(problemId, contestId, problemIndex, selectValue, code);
+    const res = await PostJudgeJob(problemId, contestId, problemIndex.value, selectValue, code);
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
@@ -231,7 +233,7 @@ const onSelectLanguageChanged = (value: JudgeLanguage) => {
 const fetchProblemData = async () => {
   contestProblems.value = [];
 
-  let res = await GetProblem(problemId, contestId, problemIndex);
+  let res = await GetProblem(problemId, contestId, problemIndex.value);
 
   if (res.code !== 0) {
     problemLoading.value = false;
@@ -292,38 +294,51 @@ const fetchProblemData = async () => {
 };
 
 onMounted(async () => {
-  if (Array.isArray(route.params.problemId)) {
-    problemId = route.params.problemId[0];
-  } else {
-    problemId = route.params.problemId;
-  }
-  if (!problemId) {
-    if (Array.isArray(route.params.contestId)) {
-      contestId = Number(route.params.contestId[0]);
-    } else {
-      contestId = Number(route.params.contestId);
-    }
-    if (!contestId) {
-      ShowTextTipsError(globalProperties, "题目不存在");
-      await router.push({ name: "problem" });
-      return;
-    }
-    if (Array.isArray(route.params.problemIndex)) {
-      problemIndex = parseInt(route.params.problemIndex[0]);
-    } else {
-      problemIndex = parseInt(route.params.problemIndex);
-    }
-    if (!problemIndex) {
-      ShowTextTipsError(globalProperties, "题目不存在");
-      await router.push({ name: "problem" });
-      return;
-    }
-  }
-  isContestProblem.value = !!contestId;
+  watchHandle = watch(
+    () => route.params,
+    async () => {
+      if (Array.isArray(route.params.problemId)) {
+        problemId = route.params.problemId[0];
+      } else {
+        problemId = route.params.problemId;
+      }
+      if (!problemId) {
+        if (Array.isArray(route.params.contestId)) {
+          contestId = Number(route.params.contestId[0]);
+        } else {
+          contestId = Number(route.params.contestId);
+        }
+        if (!contestId) {
+          ShowTextTipsError(globalProperties, "题目不存在");
+          await router.push({ name: "problem" });
+          return;
+        }
+        if (Array.isArray(route.params.problemIndex)) {
+          problemIndex.value = parseInt(route.params.problemIndex[0]);
+        } else {
+          problemIndex.value = parseInt(route.params.problemIndex);
+        }
+        if (!problemIndex.value) {
+          ShowTextTipsError(globalProperties, "题目不存在");
+          await router.push({ name: "problem" });
+          return;
+        }
+      }
+      isContestProblem.value = !!contestId;
 
-  problemLoading.value = true;
+      problemLoading.value = true;
 
-  await fetchProblemData();
+      await fetchProblemData();
+    },
+    { immediate: true }
+  );
+});
+
+onBeforeUnmount(() => {
+  if (watchHandle) {
+    watchHandle();
+    watchHandle = null;
+  }
 });
 </script>
 
@@ -338,8 +353,13 @@ onMounted(async () => {
       <t-col :span="4">
         <div class="dida-problems-container" v-if="contestId">
           <t-space>
-            <t-button v-for="(item, index) in contestProblems" :key="index">
-              {{ item }}
+            <t-button
+              v-for="(item, index) in contestProblems"
+              :key="index"
+              :theme="item == problemIndex ? 'primary' : 'default'"
+              @click="async () => await handleGotoContestProblem(contestId, item)"
+            >
+              {{ GetContestProblemIndexStr(item) }}
             </t-button>
           </t-space>
         </div>
@@ -417,7 +437,7 @@ onMounted(async () => {
   text-align: right;
 }
 
-.dida-problems-container{
+.dida-problems-container {
   margin: 20px;
 }
 
