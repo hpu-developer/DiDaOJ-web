@@ -1,5 +1,9 @@
 import { ProblemView } from "@/types/problem.ts";
 
+export interface ContestState {
+  starMembers: Record<number, Record<number, boolean>>; // 使用 Record 来存储星标成员
+}
+
 export interface ContestProblem {
   index: number;
   id: string;

@@ -8,9 +8,12 @@ import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { JudgeStatus } from "@/apis/judge.ts";
 import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
 import { GetSecondFromDuration, GetTimeStringBySeconds } from "@/time/library.ts";
+import { StarIcon, StarFilledIcon } from "tdesign-icons-vue-next";
+import { useContestStore } from "@/stores/contest.ts";
 
 const route = useRoute();
 const router = useRouter();
+const contestStore = useContestStore();
 const { globalProperties } = useCurrentInstance();
 
 let viewActive = false;
@@ -21,8 +24,9 @@ let contestEndTime = null as Date | null;
 let lockRankDurationSeconds = 0;
 const progressValue = ref(0);
 const progressMax = ref(0);
-const autoRefresh = ref(true);
+const onlyShowStarMembers = ref(false);
 const enableAnimation = ref(true);
+const autoRefresh = ref(true);
 let fetchTimer: ReturnType<typeof setInterval> | null = null;
 let updateProgressTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -37,7 +41,12 @@ const pagination = ref({
   pageSizeOptions: [50, 100, 1000],
 });
 
+const isUserBeStar = (userId: number) => {
+  return contestStore && contestStore.isStarMember(contestId, userId);
+};
+
 const onPageChange = async (pageInfo: { current: number; pageSize: number }) => {
+  pagination.value = { ...pagination.value, current: pageInfo.current, pageSize: pageInfo.pageSize };
   // 更新 URL 查询参数
   await router.push({
     query: { ...route.query, page: pageInfo.current, page_size: pageInfo.pageSize },
@@ -71,22 +80,67 @@ const listColumns1 = [
     title: "昵称",
     colKey: "nickname",
     fixed: "left",
+    attrs: (data: any) => {
+      let style = {};
+      if (isUserBeStar(data.row.userId)) {
+        style = { backgroundColor: "rgba(255,165,30,0.5)" };
+      }
+      return {
+        style: style,
+      };
+    },
     cell: (_: any, data: any) => {
       const text = GetEllipsisText(data.row.nickname, 18);
-      return (
-        <t-tooltip content={data.row.nickname}>
+
+      let starButton = null;
+      if (isUserBeStar(data.row.userId)) {
+        starButton = (
           <t-button
+            shape="circle"
             variant="text"
-            onClick={() =>
-              router.push({
-                name: "user",
-                params: { username: data.row.username },
-              })
-            }
+            class="rank-unstar-button"
+            onClick={() => {
+              contestStore.removeStarMember(contestId, data.row.userId);
+              loadProgress();
+            }}
           >
-            {text}
+            <StarFilledIcon slot="icon" />
           </t-button>
-        </t-tooltip>
+        );
+      } else {
+        starButton = (
+          <t-button
+            shape="circle"
+            variant="text"
+            class="rank-star-button"
+            onClick={() => {
+              contestStore.addStarMember(contestId, data.row.userId);
+              loadProgress();
+            }}
+          >
+            <StarIcon slot="icon" />
+          </t-button>
+        );
+      }
+      return (
+        <div class="rank-nickname-cell">
+          <t-space>
+            <t-tooltip content={data.row.nickname}>
+              <t-button
+                variant="text"
+                onClick={() =>
+                  router.push({
+                    name: "user",
+                    params: { username: data.row.username },
+                  })
+                }
+              >
+                {text}
+              </t-button>
+            </t-tooltip>
+            {starButton}
+          </t-space>
+        </div>
       );
     },
   },
@@ -133,13 +187,17 @@ const listColumns = ref<BaseTableCol[]>([]);
 const dataLoading = ref(false);
 
 let fetchRankViews = [] as ContestRank[];
-let fetchVMembersViews = [] as ContestRank[];
+let fetchVMembersViews = [] as number[];
 const contestRankViews = ref<ContestRankView[]>([]);
 let lastContestRankView = [] as ContestRankView[];
 
 const rowspanAndColspan = ({ col, rowIndex }: any) => {
   if (col.colKey === "rank") {
-    const offset = pagination.value.pageSize * (pagination.value.current - 1);
+    let realCurrent = pagination.value.current;
+    if (pagination.value.current > Math.ceil(contestRankViews.value.length / pagination.value.pageSize)) {
+      realCurrent = Math.ceil(contestRankViews.value.length / pagination.value.pageSize);
+    }
+    let offset = pagination.value.pageSize * (realCurrent - 1);
     let rowspan = 1;
     for (let i = rowIndex + 1; offset + i < contestRankViews.value.length; i++) {
       if (contestRankViews.value[offset + i].rank === contestRankViews.value[offset + rowIndex].rank) {
@@ -179,6 +237,8 @@ const createProgressTimer = () => {
       return;
     }
     progressValue.value = (new Date().getTime() - contestStartTime.getTime()) / 1000;
+    const progressValueRealMax = Math.min(progressValue.value, progressMax.value);
+    progressValue.value = Math.min(progressValue.value, progressValueRealMax);
     loadProgress();
   }, 1000);
 };
@@ -204,9 +264,14 @@ const handleSwitchAutoRefresh = async (value: boolean) => {
   }
 };
 
+const handleSwitchOnlyStar = () => {
+  loadProgress();
+  pagination.value = { ...pagination.value, current: 1 };
+};
+
 const loadProgress = () => {
   contestRankViews.value = [];
-  const results = [];
+  let results = [];
   for (let i = 0; i < fetchRankViews.length; i++) {
     const item = fetchRankViews[i];
     let result = {
@@ -220,7 +285,7 @@ const loadProgress = () => {
       let acDuration = -1;
       let lockCount = problem.lock || 0;
       if (problem.ac) {
-        acDuration = (new Date(problem.ac).getTime() - contestStartTime.getTime()) / 1000; // 转换为秒
+        acDuration = (new Date(problem.ac).getTime() - contestStartTime?.getTime()) / 1000; // 转换为秒
         if (acDuration > progressValue.value) {
           return;
         }
@@ -250,15 +315,18 @@ const loadProgress = () => {
     if (a.solved !== b.solved) {
       return b.solved - a.solved; // 降序
     }
-    return a.penalty - b.penalty; // 升序
+    if (a.penalty !== b.penalty) {
+      return a.penalty - b.penalty; // 升序
+    }
+    return a.userId - b.userId; // 按用户ID升序
   });
+
   const vMembers = fetchVMembersViews;
   let rank = 0;
   let rankIncrement = 0;
   let lastAccept = -1;
   let lastPenalty = -1;
   for (let i = 0; i < results.length; i++) {
-    results[i].index = i + 1;
     if (vMembers && vMembers.includes(results[i].userId)) {
       results[i].rank = "*";
     } else {
@@ -270,6 +338,12 @@ const loadProgress = () => {
       }
       results[i].rank = String(rank);
     }
+  }
+
+  if (onlyShowStarMembers.value) {
+    results = results.filter((item) => {
+      return isUserBeStar(item.userId);
+    });
   }
 
   const rows = document.querySelectorAll("tbody tr");
@@ -285,6 +359,11 @@ const loadProgress = () => {
   pagination.value = { ...pagination.value, total: results.length };
 
   contestRankViews.value = results;
+
+  for (let i = 0; i < contestRankViews.value.length; i++) {
+    contestRankViews.value[i].index = i + 1;
+  }
+
   lastContestRankView = [...contestRankViews.value];
 
   if (enableAnimation.value) {
@@ -326,10 +405,8 @@ const loadProgress = () => {
 const handleProgressChange = (value: number) => {
   handleSwitchAutoRefresh(false);
   progressValue.value = value;
-  const progressValueRealMax = (new Date().getTime() - contestStartTime.getTime()) / 1000;
-  if (progressValue.value > progressValueRealMax) {
-    progressValue.value = progressValueRealMax;
-  }
+  const progressValueRealMax = Math.min(progressMax.value, (new Date().getTime() - contestStartTime?.getTime()) / 1000);
+  progressValue.value = Math.min(progressValue.value, progressValueRealMax);
   loadProgress();
 };
 
@@ -439,6 +516,8 @@ const fetchData = async (needLoading: boolean) => {
       }
 
       progressValue.value = Math.floor((new Date().getTime() - contestStartTime.getTime()) / 1000);
+      const progressValueRealMax = Math.min(progressValue.value, progressMax.value);
+      progressValue.value = Math.min(progressValue.value, progressValueRealMax);
 
       autoRefresh.value = true;
       createProgressTimer();
@@ -503,6 +582,9 @@ onBeforeUnmount(() => {
       <div style="margin: 10px 10px 40px">
         <div style="text-align: right; margin-bottom: 10px">
           <t-space>
+            <t-switch size="large" v-model="onlyShowStarMembers" @change="handleSwitchOnlyStar">
+              <template #label="slotProps">{{ slotProps.value ? "仅展示收藏" : "展示全部" }}</template>
+            </t-switch>
             <t-switch size="large" v-model="enableAnimation">
               <template #label="slotProps">{{ slotProps.value ? "开启动画" : "关闭动画" }}</template>
             </t-switch>
@@ -544,5 +626,15 @@ onBeforeUnmount(() => {
 <style scoped>
 .table-scroll-wrapper {
   width: max(1400px, calc(100vw - 320px));
+}
+
+:deep(.rank-nickname-cell:hover .rank-star-button) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.rank-nickname-cell .rank-star-button) {
+  display: none;
 }
 </style>
