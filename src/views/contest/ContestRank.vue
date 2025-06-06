@@ -583,7 +583,7 @@ onBeforeUnmount(() => {
         <div style="text-align: right; margin-bottom: 10px">
           <t-space>
             <t-switch size="large" v-model="onlyShowStarMembers" @change="handleSwitchOnlyStar">
-              <template #label="slotProps">{{ slotProps.value ? "仅展示收藏" : "展示全部" }}</template>
+              <template #label="slotProps">{{ slotProps.value ? "仅展示收藏" : "未过滤收藏" }}</template>
             </t-switch>
             <t-switch size="large" v-model="enableAnimation">
               <template #label="slotProps">{{ slotProps.value ? "开启动画" : "关闭动画" }}</template>
