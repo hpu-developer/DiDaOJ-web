@@ -58,7 +58,7 @@ const getDurationText = (duration: number) => {
   return `${hours}:${minutes}:${seconds}`;
 };
 
-const progressMarks = ref({} as Record<number, string>);
+const progressMarks = ref({} as Record<number, string | JSX.Element>);
 
 const listColumns1 = [
   {
@@ -433,9 +433,9 @@ const fetchData = async (needLoading: boolean) => {
         [progressMax.value]: GetTimeStringBySeconds(progressMax.value),
       };
       lockRankDurationSeconds = GetSecondFromDuration(contest.lock_rank_duration || 0);
-      if (lockRankDurationSeconds > 0) {
-        const lockTimeSeconds = progressMax.value - lockRankDurationSeconds;
-        progressMarks.value[lockTimeSeconds] = `锁榜(${GetTimeStringBySeconds(lockTimeSeconds)})`;
+      if (res.data.is_locked && lockRankDurationSeconds > 0) {
+        const lockTimeSeconds = Math.max(0, progressMax.value - lockRankDurationSeconds);
+        progressMarks.value[lockTimeSeconds] = <span style="color: #0052d9">锁榜({GetTimeStringBySeconds(lockTimeSeconds)})</span>;
       }
 
       progressValue.value = Math.floor((new Date().getTime() - contestStartTime.getTime()) / 1000);
