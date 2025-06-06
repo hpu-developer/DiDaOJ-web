@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { LocationQuery, useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, GetEllipsisText, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { GetContestProblemIndexStr, GetContestRank } from "@/apis/contest.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
@@ -16,8 +16,8 @@ const { globalProperties } = useCurrentInstance();
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
 let contestId = 0;
-let contestStartTime = null;
-let contestEndTime = null;
+let contestStartTime = null as Date | null;
+let contestEndTime = null as Date | null;
 let lockRankDurationSeconds = 0;
 const progressValue = ref(0);
 const progressMax = ref(0);
@@ -25,6 +25,24 @@ const autoRefresh = ref(true);
 const enableAnimation = ref(true);
 let fetchTimer: ReturnType<typeof setInterval> | null = null;
 let updateProgressTimer: ReturnType<typeof setInterval> | null = null;
+
+let currentPage = 1;
+let currentPageSize = 50;
+const pagination = ref({
+  current: currentPage,
+  pageSize: currentPageSize,
+  defaultCurrent: 1,
+  defaultPageSize: 50,
+  total: 0,
+  pageSizeOptions: [50, 100, 1000],
+});
+
+const onPageChange = async (pageInfo: { current: number; pageSize: number }) => {
+  // 更新 URL 查询参数
+  await router.push({
+    query: { ...route.query, page: pageInfo.current, page_size: pageInfo.pageSize },
+  });
+};
 
 const getDurationText = (duration: number) => {
   if (duration === undefined || duration === null) {
@@ -120,15 +138,16 @@ const contestRankViews = ref<ContestRankView[]>([]);
 let lastContestRankView = [] as ContestRankView[];
 
 const rowspanAndColspan = ({ col, rowIndex }: any) => {
-  let rowspan = 1;
-  for (let i = rowIndex + 1; i < contestRankViews.value.length; i++) {
-    if (contestRankViews.value[i].rank === contestRankViews.value[rowIndex].rank) {
-      rowspan++;
-    } else {
-      break;
-    }
-  }
   if (col.colKey === "rank") {
+    const offset = pagination.value.pageSize * (pagination.value.current - 1);
+    let rowspan = 1;
+    for (let i = rowIndex + 1; offset + i < contestRankViews.value.length; i++) {
+      if (contestRankViews.value[offset + i].rank === contestRankViews.value[offset + rowIndex].rank) {
+        rowspan++;
+      } else {
+        break;
+      }
+    }
     return {
       rowspan: rowspan,
     };
@@ -263,6 +282,8 @@ const loadProgress = () => {
     oldRectsMap[row.userId] = tr.getBoundingClientRect();
   });
 
+  pagination.value = { ...pagination.value, total: results.length };
+
   contestRankViews.value = results;
   lastContestRankView = [...contestRankViews.value];
 
@@ -322,6 +343,7 @@ const fetchData = async (needLoading: boolean) => {
     fetchRankViews = [];
     fetchVMembersViews = [];
     contestRankViews.value = [];
+    pagination.value = { ...pagination.value, total: 0 };
     if (res.code === 0) {
       if (!res.data.has_auth) {
         ShowTextTipsInfo(globalProperties, "您目前没有权限查看比赛排名");
@@ -445,7 +467,7 @@ onMounted(async () => {
 
   watchHandle = watch(
     () => route.query,
-    async () => {
+    async (newQuery: LocationQuery) => {
       if (Array.isArray(route.params.contestId)) {
         contestId = Number(route.params.contestId[0]);
       } else {
@@ -455,6 +477,11 @@ onMounted(async () => {
         await router.push({ name: "contest" });
         return;
       }
+      const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
+      const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
+      currentPage = queryPage;
+      currentPageSize = queryPageSize;
+      pagination.value = { ...pagination.value, current: currentPage, pageSize: currentPageSize };
       await fetchData(true);
     },
     { immediate: true }
@@ -506,6 +533,8 @@ onBeforeUnmount(() => {
           :rowspan-and-colspan="rowspanAndColspan"
           :loading="dataLoading"
           class="dida-contest-rank-table"
+          :pagination="pagination"
+          @page-change="onPageChange"
         />
       </div>
     </t-card>
