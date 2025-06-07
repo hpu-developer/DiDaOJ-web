@@ -225,7 +225,7 @@ onMounted(async () => {
               <t-form-item label="成员">
                 <ParseUserList v-model="collectionEditForm.members" />
               </t-form-item>
-              <t-form-item label="问题测试">
+              <t-form-item label="问题">
                 <ParseProblemList v-model="collectionEditForm.problems" />
               </t-form-item>
             </t-form>

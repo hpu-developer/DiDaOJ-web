@@ -4,6 +4,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
 import { GetContestList, ParseContest } from "@/apis/contest.ts";
+import { handleGotoUsername } from "@/util/router.ts";
 import { Contest, ContestView } from "@/types/contest.ts";
 
 const route = useRoute();
@@ -39,6 +40,13 @@ const ListColumns = ref([
   {
     title: "负责人",
     colKey: "ownerNickname",
+    cell: (_: any, data: any) => {
+      return (
+        <t-button variant="text" onClick={() => handleGotoUsername(router, data.row.ownerUsername)}>
+          {data.row.ownerNickname}
+        </t-button>
+      );
+    },
   },
   {
     title: "权限",

@@ -3,14 +3,16 @@ import { ref, onMounted, nextTick, computed } from "vue";
 import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetCollection, ParseCollection } from "@/apis/collection.ts";
-import { ShowErrorTips, useCurrentInstance } from "@/util";
+import { GetCollection, ParseCollection, PostCollectionJoin, PostCollectionQuit } from "@/apis/collection.ts";
+import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { CollectionView } from "@/types/collection.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { Problem, ProblemView } from "@/types/problem.ts";
 import { AuthType } from "@/auth";
 import { useUserStore } from "@/stores/user.ts";
+import { ProblemAttemptStatus } from "@/apis/problem.ts";
+import { handleGotoContestProblem, handleGotoProblem } from "@/util/router.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -20,18 +22,43 @@ const userStore = useUserStore();
 let collectionId = 0;
 const collectionLoading = ref(false);
 const collectionData = ref<CollectionView | null>(null);
+const joined = ref(false);
+const joinLoading = ref(false);
+let problemAttemptStatus = {} as { [key: string]: ProblemAttemptStatus };
 
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageCollection) || (collectionData.value && userStore.getUserId == collectionData.value.ownerId);
 });
+
+const getProblemIdTheme = (id: string) => {
+  if (!id) {
+    return "default";
+  }
+  if (!problemAttemptStatus) {
+    return "default";
+  }
+  const status = problemAttemptStatus[id];
+  if (!status) {
+    return "default";
+  }
+  switch (status) {
+    case ProblemAttemptStatus.Accept:
+      return "success";
+    case ProblemAttemptStatus.Attempt:
+      return "warning";
+    default:
+      return "default";
+  }
+};
 
 const listColumns = ref([
   {
     title: "问题ID",
     colKey: "id",
     cell: (_: any, data: any) => {
+      const theme = getProblemIdTheme(data.row.id);
       return (
-        <t-button variant="text" onClick={() => handleGotoCollectionProblem(data.row.id)}>
+        <t-button variant="dashed" theme={theme} onClick={async () => await handleGotoProblem(data.row.id)}>
           {data.row.id}
         </t-button>
       );
@@ -42,7 +69,7 @@ const listColumns = ref([
     colKey: "title",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoCollectionProblem(data.row.id)}>
+        <t-button variant="text" onClick={() => handleGotoProblem(data.row.id)}>
           {data.row.title}
         </t-button>
       );
@@ -66,11 +93,44 @@ const listColumns = ref([
 
 const problemViews = ref<ProblemView[]>([]);
 
-const handleGotoCollectionProblem = (problemId: string) => {
-  router.push({
-    name: "problem-detail",
-    params: { problemId: problemId },
-  });
+const handleClickJoin = async () => {
+  if (!userStore.isLogin()) {
+    await router.push({ name: "login" });
+    return;
+  }
+
+  joinLoading.value = true;
+  try {
+    const res = await PostCollectionJoin(collectionId);
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+    joined.value = true;
+    ShowTextTipsSuccess(globalProperties, "加入成功");
+  } finally {
+    joinLoading.value = false;
+  }
+};
+
+const handleClickQuit = async () => {
+  if (!userStore.isLogin()) {
+    await router.push({ name: "login" });
+    return;
+  }
+
+  joinLoading.value = true;
+  try {
+    const res = await PostCollectionQuit(collectionId);
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+    joined.value = false;
+    ShowTextTipsSuccess(globalProperties, "退出成功");
+  } finally {
+    joinLoading.value = false;
+  }
 };
 
 const handleClickEdit = () => {
@@ -93,7 +153,7 @@ onMounted(async () => {
     await router.push({ name: "problem-collection-list" });
     return;
   }
-
+  joined.value = false;
   collectionLoading.value = true;
 
   const res = await GetCollection(collectionId);
@@ -104,6 +164,8 @@ onMounted(async () => {
     return;
   }
 
+  joined.value = res.data.joined;
+  problemAttemptStatus = res.data.attempt_status || {};
   collectionData.value = await ParseCollection(res.data.collection);
   problemViews.value = [];
   if (res.data.collection.problems) {
@@ -146,6 +208,8 @@ onMounted(async () => {
       <t-col :span="6">
         <div class="dida-operation-container">
           <t-space>
+            <t-button v-if="joined" @click="handleClickQuit" :loading="joinLoading">退出</t-button>
+            <t-button v-else @click="handleClickJoin" :loading="joinLoading">加入</t-button>
             <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
           </t-space>
         </div>
