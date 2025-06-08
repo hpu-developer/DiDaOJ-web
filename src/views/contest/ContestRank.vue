@@ -489,11 +489,14 @@ const fetchData = async (needLoading: boolean) => {
                 },
               };
             }
-            return {
-              style: {
-                backgroundColor: "rgba(255,120,120,0.5)",
-              },
-            };
+            if (problem.attempt > 0) {
+              return {
+                style: {
+                  backgroundColor: "rgba(255,120,120,0.5)",
+                },
+              };
+            }
+            return {};
           },
         });
       });
