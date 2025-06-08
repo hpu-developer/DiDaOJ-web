@@ -8,6 +8,14 @@ export const handleGotoUsername = async (router: Router, username: string) => {
   await router.push({ name: "user", params: { username: username } });
 };
 
+export const handleOpenProblem = (problemId: string) => {
+  const routeData = router.resolve({
+    name: "problem-detail",
+    params: { problemId }
+  });
+  window.open(routeData.href, '_blank');
+};
+
 export const handleGotoProblem = async (problemId: string) => {
   await router.push({
     name: "problem-detail",

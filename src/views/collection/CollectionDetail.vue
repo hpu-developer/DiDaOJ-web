@@ -12,7 +12,7 @@ import type { Problem, ProblemView } from "@/types/problem.ts";
 import { AuthType } from "@/auth";
 import { useUserStore } from "@/stores/user.ts";
 import { ProblemAttemptStatus } from "@/apis/problem.ts";
-import { handleGotoContestProblem, handleGotoProblem } from "@/util/router.ts";
+import { handleGotoContestProblem, handleGotoProblem, handleOpenProblem } from "@/util/router.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -58,7 +58,7 @@ const listColumns = ref([
     cell: (_: any, data: any) => {
       const theme = getProblemIdTheme(data.row.id);
       return (
-        <t-button variant="dashed" theme={theme} onClick={async () => await handleGotoProblem(data.row.id)}>
+        <t-button variant="dashed" theme={theme} onClick={() => handleOpenProblem(data.row.id)}>
           {data.row.id}
         </t-button>
       );
@@ -69,7 +69,7 @@ const listColumns = ref([
     colKey: "title",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoProblem(data.row.id)}>
+        <t-button variant="text"  onClick={() => handleOpenProblem(data.row.id)}>
           {data.row.title}
         </t-button>
       );
