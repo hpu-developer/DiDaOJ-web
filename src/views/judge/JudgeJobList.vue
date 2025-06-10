@@ -441,7 +441,7 @@ onBeforeUnmount(() => {
           }
         "
       >
-        {{ showJudgeJob?.id + " - " + showJudgeJob?.language }}
+        {{ showJudgeJob?.id + " - " + GetJudgeLanguageStr(showJudgeJob?.language) }}
       </t-link>
     </template>
     <t-loading :loading="isCodeLoading">
