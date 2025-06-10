@@ -91,3 +91,23 @@ export function PostCollectionEdit(request: CollectionEditRequest) {
     data: request,
   });
 }
+
+export function PostCollectionJoin(collectionId: number) {
+  return httpRequest({
+    url: "/collection/join",
+    method: "post",
+    data: {
+      id: collectionId,
+    },
+  });
+}
+
+export function PostCollectionQuit(collectionId: number) {
+  return httpRequest({
+    url: "/collection/quit",
+    method: "post",
+    data: {
+      id: collectionId,
+    },
+  });
+}

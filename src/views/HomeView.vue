@@ -50,7 +50,6 @@ onUnmounted(() => {
     <t-col :span="4">
       <Hitokoto style="margin: 10px" />
 
-      <SystemStatus />
       <t-card style="margin: 10px" :bordered="true">
         <template #header>
           <b>友情链接</b>

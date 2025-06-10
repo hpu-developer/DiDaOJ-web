@@ -257,6 +257,7 @@ const fetchProblemData = async () => {
   if (contestId) {
     res = await GetContestProblems(contestId);
     if (res.code === 0) {
+      res.data.problems.sort((a, b) => a - b );
       contestProblems.value = res.data.problems;
     } else {
       ShowErrorTips(globalProperties, res.code);
@@ -369,8 +370,8 @@ onBeforeUnmount(() => {
             <t-descriptions-item label="时间限制">{{ problemData?.timeLimit }}</t-descriptions-item>
             <t-descriptions-item label="内存限制">{{ problemData?.memoryLimit }}</t-descriptions-item>
             <t-descriptions-item label="判题方式">{{ problemData?.judgeType }}</t-descriptions-item>
-            <t-descriptions-item label="正确提交">{{ problemData?.accept }}</t-descriptions-item>
-            <t-descriptions-item label="提交总数">{{ problemData?.attempt }}</t-descriptions-item>
+            <t-descriptions-item label="正确提交" v-if="!isContestProblem">{{ problemData?.accept }}</t-descriptions-item>
+            <t-descriptions-item label="提交总数" v-if="!isContestProblem">{{ problemData?.attempt }}</t-descriptions-item>
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
             <t-descriptions-item label="上传用户">{{ problemData?.creatorNickname }}</t-descriptions-item>

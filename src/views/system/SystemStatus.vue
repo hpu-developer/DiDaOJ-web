@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { GetSystemStatus } from "@/apis/system.ts";
 import { ShowErrorTips, useCurrentInstance } from "@/util";
 
@@ -192,7 +192,7 @@ onMounted(async () => {
   }, 5000);
 });
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   clearInterval(intervalId);
 });
 </script>
