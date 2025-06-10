@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { GetJudgers, GetJudgerStatus, GetWebStatus } from "@/apis/system.ts";
 
 const weberList = ref([]);
@@ -208,7 +208,7 @@ onMounted(async () => {
   }, 5000);
 });
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   clearInterval(intervalId);
 });
 </script>
