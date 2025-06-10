@@ -18,7 +18,6 @@ import type { ButtonProps } from "tdesign-vue-next";
 import Vditor from "vditor";
 import { AuthType } from "@/auth";
 import { useUserStore } from "@/stores/user.ts";
-import { GetJudgerStatus } from "@/apis/system.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -207,12 +206,7 @@ const fetchData = async (needLoading: boolean) => {
       const result = ParseJudgeJob(response);
       judgeJobViews.value?.push(result);
 
-      if (response.judger) {
-        const judgerStatus = await GetJudgerStatus(response.judger);
-        judgerName.value = judgerStatus.name;
-      } else {
-        judgerName.value = "";
-      }
+      judgerName.value = result.judgerName;
 
       jobProgressToColor.value.to = "#00A870";
 

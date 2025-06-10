@@ -42,6 +42,7 @@ export interface JudgeJob {
   task?: JudgeTask[];
 
   judger?: string;
+  judger_name?: string;
   judge_time?: string;
 }
 
@@ -66,5 +67,6 @@ export interface JudgeJobView {
   task?: JudgeTaskView[];
 
   judger?: string;
+  judgerName: string;
   judgeTime?: string;
 }

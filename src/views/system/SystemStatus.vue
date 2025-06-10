@@ -1,11 +1,13 @@
 <script setup lang="tsx">
 import { ref, onMounted, onUnmounted } from "vue";
-import { GetJudgers, GetJudgerStatus, GetWebStatus } from "@/apis/system.ts";
+import { GetSystemStatus } from "@/apis/system.ts";
+import { ShowErrorTips, useCurrentInstance } from "@/util";
+
+const { globalProperties } = useCurrentInstance();
 
 const weberList = ref([]);
 const judgerList = ref([]);
 const weberLoading = ref(false);
-const judgerLoading = ref(false);
 let intervalId: number;
 
 const handleRenderStatusHeader = (judger) => {
@@ -44,123 +46,108 @@ const handleRenderStatusHeader = (judger) => {
 };
 
 const handleReloadWeberStatus = async () => {
-  // 目前机器不足，先仅固定一个，但逻辑先兼容
-  const webApiList = [
-    {
-      key: "didaoj",
-      name: "DidaOj",
-    },
-  ];
-
   const oldWebers = {};
   for (let i = 0; i < weberList.value.length; i++) {
     const web = weberList.value[i];
-    oldWebers[web.key] = web;
+    oldWebers[web.key] = {...web };
   }
-
-  const webers = [];
-  for (let i = 0; i < webApiList.length; i++) {
-    const weber = webApiList[i];
-    const weberView = {
-      key: weber.key,
-    };
-    const webStatus = await GetWebStatus(weber.key);
-    if (!webStatus) {
-      continue;
-    }
-    if (webStatus.name) {
-      weberView.name = webStatus.name;
-    } else {
-      weberView.name = "-";
-    }
-    if (webStatus.update_time) {
-      weberView.updateTime = new Date(webStatus.update_time).toLocaleString();
-    } else {
-      weberView.updateTime = "-";
-    }
-    if (webStatus.cpu_usage) {
-      weberView.cpuUsage = Number(webStatus.cpu_usage);
-    } else {
-      weberView.cpuUsage = 0;
-    }
-    if (webStatus.mem_usage) {
-      weberView.memUsage = webStatus.mem_usage / (1024.0 * 1024.0 * 1024.0);
-    } else {
-      weberView.memUsage = 0;
-    }
-    if (webStatus.mem_total) {
-      weberView.memTotal = webStatus.mem_total / (1024.0 * 1024.0 * 1024.0);
-    } else {
-      weberView.memTotal = 0;
-    }
-    if (weberView.memTotal > 0) {
-      weberView.memPercent = Math.round((weberView.memUsage / weberView.memTotal) * 10000) / 100;
-    } else {
-      weberView.memPercent = 0;
-    }
-
-    weberView.avgMessage = webStatus.avg_message;
-
-    if (oldWebers[weber.key]) {
-      weberView.cpuUsageFrom = oldWebers[weber.key].cpuUsage;
-      weberView.memPercentFrom = oldWebers[weber.key].memPercent;
-      weberView.memUsageFrom = oldWebers[weber.key].memUsage;
-      weberView.memTotalFrom = oldWebers[weber.key].memTotal;
-    } else {
-      weberView.cpuUsageFrom = 0;
-      weberView.memPercentFrom = 0;
-      weberView.memUsageFrom = 0;
-      weberView.memTotalFrom = 0;
-    }
-
-    webers.push(weberView);
-  }
-
-  weberList.value = webers;
-};
-
-const handleReloadJudgerStatus = async () => {
-  const judgerResponse = await GetJudgers();
-
   const oldJudgers = {};
   for (let i = 0; i < judgerList.value.length; i++) {
     const judger = judgerList.value[i];
-    oldJudgers[judger.key] = judger;
+    oldJudgers[judger.key] = {...judger };;
+  }
+  const webers = [];
+  const judgers = [];
+
+  const res = await GetSystemStatus();
+  if (res.code !== 0) {
+    ShowErrorTips(globalProperties, res.code);
+    return;
+  }
+  const weber = res.data.web;
+  const weberView = {
+    key: "didaoj",
+  };
+  if (weber.name) {
+    weberView.name = weber.name;
+  } else {
+    weberView.name = "-";
+  }
+  if (weber.update_time) {
+    weberView.updateTime = new Date(weber.update_time).toLocaleString();
+  } else {
+    weberView.updateTime = "-";
+  }
+  if (weber.cpu_usage) {
+    weberView.cpuUsage = Number(weber.cpu_usage);
+  } else {
+    weberView.cpuUsage = 0;
+  }
+  if (weber.mem_usage) {
+    weberView.memUsage = weber.mem_usage / (1024.0 * 1024.0 * 1024.0);
+  } else {
+    weberView.memUsage = 0;
+  }
+  if (weber.mem_total) {
+    weberView.memTotal = weber.mem_total / (1024.0 * 1024.0 * 1024.0);
+  } else {
+    weberView.memTotal = 0;
+  }
+  if (weberView.memTotal > 0) {
+    weberView.memPercent = Math.round((weberView.memUsage / weberView.memTotal) * 10000) / 100;
+  } else {
+    weberView.memPercent = 0;
   }
 
-  const judgers = [];
-  for (let i = 0; i < judgerResponse.judgers.length; i++) {
-    const judger = judgerResponse.judgers[i];
+  weberView.avgMessage = weber.avg_message;
+
+  const oldWeber = oldWebers[weberView.key];
+  if (oldWeber) {
+    weberView.cpuUsageFrom = oldWeber.cpuUsage;
+    weberView.memPercentFrom = oldWeber.memPercent;
+    weberView.memUsageFrom = oldWeber.memUsage;
+    weberView.memTotalFrom = oldWeber.memTotal;
+  } else {
+    weberView.cpuUsageFrom = 0;
+    weberView.memPercentFrom = 0;
+    weberView.memUsageFrom = 0;
+    weberView.memTotalFrom = 0;
+  }
+
+  webers.push(weberView);
+
+  weberList.value = webers;
+
+  const responseJudgers = res.data.judger;
+
+  for (let i = 0; i < responseJudgers.length; i++) {
+    const judger = responseJudgers[i];
     const judgerView = {
       key: judger.key,
       name: judger.name,
     };
-    const judgerStatus = await GetJudgerStatus(judger.key);
-    if (!judgerStatus) {
-      continue;
-    }
-    if (judgerStatus.name) {
-      judgerView.name = judgerStatus.name;
+    if (judger.name) {
+      judgerView.name = judger.name;
     } else {
       judgerView.name = "-";
     }
-    if (judgerStatus.update_time) {
-      judgerView.updateTime = new Date(judgerStatus.update_time).toLocaleString();
+    if (judger.update_time) {
+      judgerView.updateTime = new Date(judger.update_time).toLocaleString();
     } else {
       judgerView.updateTime = "-";
     }
-    if (judgerStatus.cpu_usage) {
-      judgerView.cpuUsage = Number(judgerStatus.cpu_usage);
+    if (judger.cpu_usage) {
+      judgerView.cpuUsage = Number(judger.cpu_usage);
     } else {
       judgerView.cpuUsage = 0;
     }
-    if (judgerStatus.mem_usage) {
-      judgerView.memUsage = judgerStatus.mem_usage / (1024.0 * 1024.0 * 1024.0);
+    if (judger.mem_usage) {
+      judgerView.memUsage = judger.mem_usage / (1024.0 * 1024.0 * 1024.0);
     } else {
       judgerView.memUsage = 0;
     }
-    if (judgerStatus.mem_total) {
-      judgerView.memTotal = judgerStatus.mem_total / (1024.0 * 1024.0 * 1024.0);
+    if (judger.mem_total) {
+      judgerView.memTotal = judger.mem_total / (1024.0 * 1024.0 * 1024.0);
     } else {
       judgerView.memTotal = 0;
     }
@@ -170,7 +157,7 @@ const handleReloadJudgerStatus = async () => {
       judgerView.memPercent = 0;
     }
 
-    judgerView.avgMessage = judgerStatus.avg_message;
+    judgerView.avgMessage = judger.avg_message;
 
     if (oldJudgers[judger.key]) {
       judgerView.cpuUsageFrom = oldJudgers[judger.key].cpuUsage;
@@ -193,14 +180,11 @@ const handleReloadJudgerStatus = async () => {
 const handleReloadStatus = async () => {
   await handleReloadWeberStatus();
   weberLoading.value = false;
-  await handleReloadJudgerStatus();
-  judgerLoading.value = false;
 };
 
 onMounted(async () => {
   judgerList.value = [];
   weberList.value = [];
-  judgerLoading.value = true;
   weberLoading.value = true;
   await handleReloadStatus();
   intervalId = setInterval(() => {
@@ -214,8 +198,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <t-card title="接口状态" class="judger-status">
-    <t-loading :loading="weberLoading">
+  <t-loading :loading="weberLoading">
+    <t-card title="接口状态" class="judger-status">
       <div class="judger-status-panel">
         <t-card v-for="weber in weberList" :key="weber.key" :header="() => handleRenderStatusHeader(weber)" class="judge-status-judger">
           <t-space class="judge-status-judger">
@@ -269,10 +253,8 @@ onUnmounted(() => {
           </template>
         </t-card>
       </div>
-    </t-loading>
-  </t-card>
-  <t-card title="判题机状态" class="judger-status">
-    <t-loading :loading="judgerLoading">
+    </t-card>
+    <t-card title="判题机状态" class="judger-status">
       <div class="judger-status-panel">
         <t-card v-for="judger in judgerList" :key="judger.key" :header="() => handleRenderStatusHeader(judger)" class="judge-status-judger">
           <t-space class="judge-status-judger">
@@ -326,8 +308,8 @@ onUnmounted(() => {
           </template>
         </t-card>
       </div>
-    </t-loading>
-  </t-card>
+    </t-card>
+  </t-loading>
 </template>
 
 <style scoped>

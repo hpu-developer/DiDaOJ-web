@@ -2,7 +2,7 @@
 import httpRequest from "@/apis/axios-api";
 
 import type { JudgeTaskView, JudgeJob, JudgeJobView } from "@/types/judge";
-import { GetJudgeLanguageStr, JudgeLanguage } from "@/apis/language.ts";
+import { JudgeLanguage } from "@/apis/language.ts";
 import type { ButtonProps } from "tdesign-vue-next";
 
 export enum JudgeType {
@@ -202,6 +202,11 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   }
   if (item.judger) {
     result.judger = item.judger;
+  }
+  if (item.judger_name) {
+    result.judgerName = item.judger_name;
+  } else {
+    result.judgerName = "-";
   }
   if (item.judge_time) {
     result.judgeTime = new Date(item.judge_time).toLocaleString();
