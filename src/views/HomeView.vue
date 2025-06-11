@@ -48,8 +48,10 @@ onUnmounted(() => {
       </div>
     </t-col>
     <t-col :span="4">
+      <t-card style="margin: 10px" :bordered="true">
+        <img src="https://api.jysafe.cn/ip/" alt="Welcome" style="width: 100%" />
+      </t-card>
       <Hitokoto style="margin: 10px" />
-
       <t-card style="margin: 10px" :bordered="true">
         <template #header>
           <b>友情链接</b>
