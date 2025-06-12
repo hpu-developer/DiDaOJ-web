@@ -4,8 +4,15 @@ import { useRoute } from "vue-router";
 import router from "@/router";
 import { ChevronDownIcon } from "tdesign-icons-vue-next";
 import Vditor from "vditor";
-import { GetProblem, GetProblemTagList, ParseProblem, PostProblemCreate, PostProblemEdit } from "@/apis/problem.ts";
-import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import {
+  GetProblem,
+  GetProblemImageToken,
+  GetProblemTagList,
+  ParseProblem,
+  PostProblemCreate,
+  PostProblemEdit,
+} from "@/apis/problem.ts";
+import { ShowErrorTips, ShowTextTipsInfo, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ProblemTag, ProblemView } from "@/types/problem.ts";
 
@@ -202,6 +209,61 @@ const loadDescriptionEditor = (description: string) => {
       descriptionEditor?.setValue(description);
       problemLoading.value = false;
     },
+    upload: {
+      accept: "image/*,.mp3, .wav, .rar",
+      token: "test",
+      url: "/api/upload/editor",
+      linkToImgUrl: "/api/upload/fetch",
+      filename(name) {
+        return name
+          .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")
+          .replace(/[\?\\/:|<>\*\[\]\(\)\$%\{\}@~]/g, "")
+          .replace("/\\s/g", "");
+      },
+      async handler(files: File[]) {
+
+        if (!descriptionEditor) {
+          ShowErrorTips(globalProperties, "编辑器已失效，请刷新后重试");
+          return null;
+        }
+
+        // 使用唯一字符串作为占位符，避免替换出错
+        let randomRequestId = crypto.randomUUID?.() || Math.random().toString(36).substring(2);
+        const originalPlace = `[正在上传 ⏳ ${randomRequestId}]`;
+        let randomContent = originalPlace.replace("⏳", `<span class="sh-anim-loop" style="display: inline-block; font-size: 16px;">⏳</span>`);
+
+        descriptionEditor.insertValue(`\n${randomContent}\n`, false);
+        descriptionEditor.disabled();
+
+        ShowTextTipsInfo(globalProperties, "图片正在上传，请稍候...");
+
+        const res = await GetProblemImageToken(problemId.value)
+        if (res.code !== 0) {
+          ShowErrorTips(globalProperties, res.code);
+          let finalContent = descriptionEditor.getValue();
+          finalContent = finalContent.replace(originalPlace, "上传失败");
+          descriptionEditor.setValue(finalContent);
+          descriptionEditor.focus()
+          descriptionEditor.enable()
+          return null;
+        }
+        console.log(res)
+        // 获取上传的 token
+        const uploadToken = res.data.token;
+
+        // 构建 Markdown 图片语法
+        const content = "成功"
+
+        // 替换掉占位符
+        let finalContent = descriptionEditor.getValue();
+        finalContent = finalContent.replace(originalPlace, content);
+        descriptionEditor.setValue(finalContent);
+        descriptionEditor.focus()
+        descriptionEditor.enable()
+
+        return null;
+      },
+    },
   } as IOptions;
   descriptionEditor = new Vditor("problemEditDiv", codeEditOptions);
 };
@@ -277,9 +339,8 @@ onMounted(async () => {
         await router.push({ name: "problem" });
       });
   } else {
-
-    problemEditForm.value.timeLimit = 1000
-    problemEditForm.value.memoryLimit = 65536
+    problemEditForm.value.timeLimit = 1000;
+    problemEditForm.value.memoryLimit = 65536;
 
     loadDescriptionEditor("");
   }
@@ -362,7 +423,7 @@ onMounted(async () => {
               <t-button @click="handleClickCreate" theme="danger" :loading="isEditing">创建</t-button>
             </t-space>
           </div>
-          <t-descriptions layout="vertical" :bordered="true"  v-if="problemId">
+          <t-descriptions layout="vertical" :bordered="true" v-if="problemId">
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
             <t-descriptions-item label="判题方式">{{ problemData?.judgeType }}</t-descriptions-item>

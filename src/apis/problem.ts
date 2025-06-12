@@ -218,6 +218,13 @@ export function GetJudgeDataDownload(id: string, key: string) {
   });
 }
 
+export function GetProblemImageToken(problemId: string) {
+  return httpRequest({
+    url: "/problem/image/token" + "?id=" + problemId,
+    method: "get",
+  });
+}
+
 export function PostJudgeData(id: string, zip: File) {
   const formData = new FormData();
   formData.append("id", id);
