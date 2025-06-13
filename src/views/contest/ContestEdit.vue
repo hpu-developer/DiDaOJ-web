@@ -155,6 +155,12 @@ const loadDescriptionEditor = (description: string) => {
       descriptionEditor?.setValue(description);
       contestLoading.value = false;
     },
+    preview: {
+      math: {
+        inlineDigit: true,
+        engine: "KaTeX",
+      },
+    },
   } as IOptions;
   descriptionEditor = new Vditor("contestEditDiv", codeEditOptions);
 };

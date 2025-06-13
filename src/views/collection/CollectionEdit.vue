@@ -139,6 +139,12 @@ const loadDescriptionEditor = (description: string) => {
       descriptionEditor?.setValue(description);
       collectionLoading.value = false;
     },
+    preview: {
+      math: {
+        inlineDigit: true,
+        engine: "KaTeX",
+      },
+    },
   } as IOptions;
   descriptionEditor = new Vditor("collectionEditDiv", codeEditOptions);
 };

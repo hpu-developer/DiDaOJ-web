@@ -274,6 +274,12 @@ const loadDescriptionEditor = (description: string) => {
         return null;
       },
     },
+    preview: {
+      math: {
+        inlineDigit: true,
+        engine: "KaTeX",
+      },
+    },
   } as IOptions;
   descriptionEditor = new Vditor("problemEditDiv", codeEditOptions);
 };

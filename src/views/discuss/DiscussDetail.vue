@@ -206,6 +206,12 @@ onMounted(async () => {
 
   const codeEditOptions = {
     after: () => {},
+    preview: {
+      math: {
+        inlineDigit: true,
+        engine: "KaTeX",
+      },
+    },
   } as IOptions;
   descriptionEditor = new Vditor("commentEditRef", codeEditOptions);
 });
