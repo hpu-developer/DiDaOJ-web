@@ -16,6 +16,7 @@
     "highlight.js": "^11.6.0",
     "md5": "^2.3.0",
     "monaco-editor": "^0.52.2",
+    "pangu": "^4.0.7",
     "pinia": "^2.2.1",
     "pinia-plugin-persistedstate": "^4.1.3",
     "tdesign-icons-vue-next": "^0.3.0",

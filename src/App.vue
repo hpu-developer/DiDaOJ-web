@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
+import pangu from "pangu";
 import { PostLoginRefresh } from "@/apis/user.ts";
 import { useLoginStore } from "@/stores/login";
 import { useUserStore } from "@/stores/user.ts";
@@ -56,9 +57,9 @@ sidebarStyleStore.$subscribe((_, state) => {
 const route = useRoute();
 
 const hasNotAuth = computed(() => {
-  const auths = route.meta.auths as string[] | undefined
-  return auths ? !userStore.hasAllAuths(auths) : false
-})
+  const auths = route.meta.auths as string[] | undefined;
+  return auths ? !userStore.hasAllAuths(auths) : false;
+});
 
 function handleError() {
   globalProperties.$message.warning({
@@ -72,31 +73,36 @@ function handleError() {
 }
 
 onMounted(() => {
-  if (token == "") {
+  document.addEventListener("DOMContentLoaded", () => {
+    // listen to any DOM change and automatically perform spacing via MutationObserver()
+    pangu.autoSpacingPage();
+  });
+
+  if (token) {
+    PostLoginRefresh()
+      .then((res) => {
+        if (res.code == 0) {
+          userStore.loadResponse(res.data);
+          loginStore.$patch({
+            Loaded: true,
+          });
+        } else {
+          ShowErrorTips(globalProperties, res.code);
+          loginStore.$patch({
+            Loaded: true,
+          });
+          userStore.clear();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        handleError();
+      });
+  } else {
     loginStore.$patch({
       Loaded: true,
     });
-    return;
   }
-  PostLoginRefresh()
-    .then((res) => {
-      if (res.code == 0) {
-        userStore.loadResponse(res.data);
-        loginStore.$patch({
-          Loaded: true,
-        });
-      } else {
-        ShowErrorTips(globalProperties, res.code);
-        loginStore.$patch({
-          Loaded: true,
-        });
-        userStore.clear();
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      handleError();
-    });
 });
 </script>
 
