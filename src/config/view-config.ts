@@ -340,16 +340,6 @@ const viewsConfig = [
   },
 
   {
-    name: "tool-paste",
-    tab: "tool",
-    sidebar: "tool-paste",
-    path: "paste",
-    title: "码池",
-    icon: "base-station",
-    component: SystemStatus,
-  },
-
-  {
     name: "system-status",
     tab: "system",
     sidebar: "system-status",

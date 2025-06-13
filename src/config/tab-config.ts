@@ -4,7 +4,6 @@ import HomeView from "@/views/HomeView.vue";
 import View404 from "@/views/View404.vue";
 import LoginView from "@/views/user/LoginView.vue";
 import RegisterView from "@/views/user/RegisterView.vue";
-import UserForget from "@/views/user/UserForget.vue";
 import UserView from "@/views/user/UserView.vue";
 
 import type { RouteRecordRaw } from "vue-router";
@@ -74,15 +73,6 @@ const tabsConfig: Tab[] = [
     icon: "chart-column",
     showSidebar: true,
     redirect: "rank-ac-all",
-  },
-
-  {
-    name: "tool",
-    path: "/tool",
-    title: "工具",
-    icon: "tools",
-    showSidebar: true,
-    redirect: "tool-paste",
   },
 
   {
