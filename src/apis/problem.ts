@@ -110,9 +110,7 @@ export function GetProblemJudge(problemId: string) {
   });
 }
 
-export function GetProblemList(oj: string, title: string, tag: string,
-                               privateData: boolean,
-                               page: number, pageSize: number) {
+export function GetProblemList(oj: string, title: string, tag: string, privateData: boolean, page: number, pageSize: number) {
   const params = {} as any;
   if (oj) {
     params.oj = oj;
@@ -222,6 +220,16 @@ export function GetProblemImageToken(problemId: string) {
   return httpRequest({
     url: "/problem/image/token" + "?id=" + problemId,
     method: "get",
+  });
+}
+
+export function PostProblemImage(uploadUrl: string, image: File) {
+  return fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": image.type,
+    },
+    body: image,
   });
 }
 

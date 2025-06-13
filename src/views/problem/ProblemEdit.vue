@@ -11,8 +11,9 @@ import {
   ParseProblem,
   PostProblemCreate,
   PostProblemEdit,
+  PostProblemImage,
 } from "@/apis/problem.ts";
-import { ShowErrorTips, ShowTextTipsInfo, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { CloseTips, ShowErrorTips, ShowTextTipsInfo, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ProblemTag, ProblemView } from "@/types/problem.ts";
 
@@ -193,8 +194,11 @@ const handleClickSave = async () => {
       return;
     }
 
-    if (res.data != undefined) {
-      problemData.value.updateTime = new Date(res.data).toLocaleString();
+    if (res.data.update_time != undefined) {
+      problemData.value.updateTime = new Date(res.data.update_time).toLocaleString();
+    }
+    if (res.data.description != undefined) {
+      descriptionEditor?.setValue(res.data.description);
     }
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
@@ -221,45 +225,51 @@ const loadDescriptionEditor = (description: string) => {
           .replace("/\\s/g", "");
       },
       async handler(files: File[]) {
-
         if (!descriptionEditor) {
           ShowErrorTips(globalProperties, "编辑器已失效，请刷新后重试");
           return null;
         }
 
-        // 使用唯一字符串作为占位符，避免替换出错
-        let randomRequestId = crypto.randomUUID?.() || Math.random().toString(36).substring(2);
-        const originalPlace = `[正在上传 ⏳ ${randomRequestId}]`;
-        let randomContent = originalPlace.replace("⏳", `<span class="sh-anim-loop" style="display: inline-block; font-size: 16px;">⏳</span>`);
+        const loadingMessage = ShowTextTipsInfo(globalProperties, "图片正在上传，请稍候...", 0);
 
-        descriptionEditor.insertValue(`\n${randomContent}\n`, false);
+        console.log("正在上传图片", files);
+
         descriptionEditor.disabled();
 
-        ShowTextTipsInfo(globalProperties, "图片正在上传，请稍候...");
+        for (const file of files) {
+          console.log(file);
 
-        const res = await GetProblemImageToken(problemId.value)
-        if (res.code !== 0) {
-          ShowErrorTips(globalProperties, res.code);
+          // 使用唯一字符串作为占位符，避免替换出错
+          let randomRequestId = crypto.randomUUID?.() || Math.random().toString(36).substring(2);
+          const originalPlace = `[正在上传 ⏳ ${randomRequestId}]`;
+          let randomContent = originalPlace.replace("⏳", `<span class="sh-anim-loop" style="display: inline-block; font-size: 16px;">⏳</span>`);
+
+          descriptionEditor.insertValue(`\n${randomContent}\n`, false);
+
+          const res = await GetProblemImageToken(problemId.value);
+          if (res.code !== 0) {
+            ShowErrorTips(globalProperties, res.code);
+            let finalContent = descriptionEditor.getValue();
+            finalContent = finalContent.replace(originalPlace, "图片上传失败");
+            descriptionEditor.setValue(finalContent);
+            continue;
+          }
+          // 获取上传的 token
+          const uploadUrl = res.data.upload_url;
+
+          await PostProblemImage(uploadUrl, file);
+
+          // 构建 Markdown 图片语法
+          const content = "![图片](" + res.data.preview_url + ")";
+
+          // 替换掉占位符
           let finalContent = descriptionEditor.getValue();
-          finalContent = finalContent.replace(originalPlace, "上传失败");
+          finalContent = finalContent.replace(originalPlace, content);
           descriptionEditor.setValue(finalContent);
-          descriptionEditor.focus()
-          descriptionEditor.enable()
-          return null;
         }
-        console.log(res)
-        // 获取上传的 token
-        const uploadToken = res.data.token;
 
-        // 构建 Markdown 图片语法
-        const content = "成功"
-
-        // 替换掉占位符
-        let finalContent = descriptionEditor.getValue();
-        finalContent = finalContent.replace(originalPlace, content);
-        descriptionEditor.setValue(finalContent);
-        descriptionEditor.focus()
-        descriptionEditor.enable()
+        descriptionEditor.enable();
+        CloseTips(globalProperties, loadingMessage);
 
         return null;
       },
