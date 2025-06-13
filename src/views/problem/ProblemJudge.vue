@@ -70,7 +70,7 @@ const dropZoneStyle = computed(() => ({
 
 const dropText = computed(() => {
   if (fileName.value) return `已选择：${fileName.value}`;
-  return isDragging.value ? "松开文件以上传" : "拖拽文件到这里，或点击选择文件";
+  return isDragging.value ? "松开文件以上传" : "拖拽判题数据压缩包到这里，或点击选择文件";
 });
 
 const handleClickView = () => {
