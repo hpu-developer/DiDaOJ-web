@@ -401,7 +401,7 @@ const viewsConfig = [
     sidebar: "manage-web",
     title: "站点管理",
     icon: "list",
-    auths: [AuthType.Manage],
+    auths: [AuthType.ManageWeb],
     component: ManageWeb,
   },
   {

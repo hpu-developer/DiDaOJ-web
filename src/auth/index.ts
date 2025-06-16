@@ -1,5 +1,5 @@
 ﻿export enum AuthType {
-  Manage = "i-manage",
+  ManageWeb = "i-manage-web",
   ManageJudge = "i-manage-judge",
   ManageProblem = "i-manage-problem",
   ManageContest = "i-manage-contest",
@@ -7,7 +7,7 @@
 }
 
 const roleAuths: Record<string, string[]> = {
-  "r-admin": [AuthType.Manage, AuthType.ManageJudge, AuthType.ManageProblem, AuthType.ManageContest, AuthType.ManageCollection],
+  "r-admin": [AuthType.ManageWeb, AuthType.ManageJudge, AuthType.ManageProblem, AuthType.ManageContest, AuthType.ManageCollection],
 };
 export function getRolesAllAuths(roles: string[] | undefined): string[] {
   if (roles == null) {

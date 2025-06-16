@@ -4,18 +4,11 @@ import { useRoute } from "vue-router";
 import router from "@/router";
 import { ChevronDownIcon } from "tdesign-icons-vue-next";
 import Vditor from "vditor";
-import {
-  GetProblem,
-  GetProblemImageToken,
-  GetProblemTagList,
-  ParseProblem,
-  PostProblemCreate,
-  PostProblemEdit,
-  PostProblemImage,
-} from "@/apis/problem.ts";
+import { GetProblem, GetProblemImageToken, GetProblemTagList, ParseProblem, PostProblemCreate, PostProblemEdit } from "@/apis/problem.ts";
 import { CloseTips, ShowErrorTips, ShowTextTipsInfo, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ProblemTag, ProblemView } from "@/types/problem.ts";
+import { PostR2Image } from "@/util/vditor.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -257,7 +250,7 @@ const loadDescriptionEditor = (description: string) => {
           // 获取上传的 token
           const uploadUrl = res.data.upload_url;
 
-          await PostProblemImage(uploadUrl, file);
+          await PostR2Image(uploadUrl, file);
 
           // 构建 Markdown 图片语法
           const content = "![图片](" + res.data.preview_url + ")";

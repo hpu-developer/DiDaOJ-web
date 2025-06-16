@@ -90,7 +90,7 @@ const tabsConfig: Tab[] = [
     icon: "command",
     showSidebar: true,
     redirect: "manage-web",
-    auths: [AuthType.Manage],
+    auths: [AuthType.ManageWeb],
   },
   {
     name: "login",

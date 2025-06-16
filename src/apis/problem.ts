@@ -223,16 +223,6 @@ export function GetProblemImageToken(problemId: string) {
   });
 }
 
-export function PostProblemImage(uploadUrl: string, image: File) {
-  return fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": image.type,
-    },
-    body: image,
-  });
-}
-
 export function PostJudgeData(id: string, zip: File) {
   const formData = new FormData();
   formData.append("id", id);
