@@ -54,6 +54,7 @@ const handleSaveAnnouncement = async () => {
       ShowErrorTips(globalProperties, res.code);
       return;
     }
+    announcementEditor.setValue(res.data.content);
     ShowTextTipsInfo(globalProperties, "保存成功");
   } catch (e) {
     console.error(e);

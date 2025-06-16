@@ -64,7 +64,9 @@ onUnmounted(() => {
     <t-row>
       <t-col :span="8">
         <div class="sh-main">
-          <t-alert v-if="notification" style="margin: 20px" :theme="notification.theme"> {{ notification.content }} </t-alert>
+          <t-alert v-if="notification" class="dida-notification-div" :theme="notification.theme">
+            {{ notification.content }}
+          </t-alert>
 
           <div class="dida-swiper-div">
             <t-swiper class="dida-swiper">
@@ -77,7 +79,7 @@ onUnmounted(() => {
             </t-swiper>
           </div>
 
-          <t-card :title="announcement?.title" style="width: 500px; margin: 0 auto">
+          <t-card :title="announcement?.title" style="width: calc(100% - 100px); margin: 0 auto">
             <div v-html="announcement?.content"></div>
           </t-card>
         </div>
@@ -107,7 +109,13 @@ onUnmounted(() => {
   margin: 10px;
 }
 
+.dida-notification-div {
+  width: calc(100% - 100px);
+  margin: 20px auto;
+}
+
 .dida-swiper-div {
+  width: calc(100% - 100px);
   margin: 20px auto;
 }
 
