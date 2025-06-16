@@ -16,3 +16,14 @@ export function GetSystemStatus() {
     method: "get",
   });
 }
+
+export function PostNotificationSave(theme: string, content: string) {
+  return httpRequest({
+    url: "/system/notification",
+    method: "post",
+    data: {
+      theme: theme,
+      content: content,
+    },
+  });
+}

@@ -1,106 +1,74 @@
 <script setup lang="tsx">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { GetWebNotification, PostNotificationSave } from "@/apis/system.ts";
+import { Notification } from "@/types/notification.ts";
 import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { PostRejudgeRecently, PostRejudgeSearch, PostRejudgeAll, JudgeStatus, GetJudgeStatusOptions, PostRejudgeStatus } from "@/apis/judge.ts";
-import router from "@/router";
-import { GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
 
 const { globalProperties } = useCurrentInstance();
 
-const rejudgeRecentlyLoading = ref(false);
-const rejudgeAllLoading = ref(false);
-
-const searchForm = ref({
-  problemId: "",
-  language: undefined as JudgeLanguage | undefined,
-  status: undefined as JudgeStatus | undefined,
+const notification = ref<Notification>({
+  theme: "",
+  content: "",
 });
 
-const rejudgeSearchLoading = ref(false);
+const stateLoading = ref(false);
+const notificationSaving = ref(false);
 
-const languageOptions = ref([] as { label: string; value: JudgeLanguage }[]);
-languageOptions.value = GetSubmitLanguages();
-const judgeStatusOptions = ref([] as { label: string; value: JudgeStatus }[]);
-judgeStatusOptions.value = GetJudgeStatusOptions();
-
-const handleRejudgeRecently = async () => {
-  rejudgeRecentlyLoading.value = true;
+const handleSaveNotification = async (e: Event) => {
+  notificationSaving.value = true;
   try {
-    const res = await PostRejudgeRecently();
+    const res = await PostNotificationSave(notification.value.theme, notification.value.content);
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
     }
-    ShowTextTipsInfo(globalProperties, "重判成功");
-    await router.push({ name: "judge-list" });
+    ShowTextTipsInfo(globalProperties, "保存成功");
   } catch (e) {
     console.error(e);
-    ShowErrorTips(globalProperties, "重判失败");
+    ShowErrorTips(globalProperties, "保存失败");
   } finally {
-    rejudgeRecentlyLoading.value = false;
+    notificationSaving.value = false;
   }
 };
 
-const handleRejudgeSearch = async () => {
-  if (!searchForm.value.problemId && !searchForm.value.language && !searchForm.value.status) {
-    ShowErrorTips(globalProperties, "请输入问题Id");
-    return;
-  }
-  rejudgeSearchLoading.value = true;
-  try {
-    const res = await PostRejudgeSearch(searchForm.value.problemId, searchForm.value.language, searchForm.value.status);
-    if (res.code !== 0) {
-      ShowErrorTips(globalProperties, res.code);
-      return;
-    }
-    ShowTextTipsInfo(globalProperties, "重判成功");
-    await router.push({
-      name: "judge-list",
-      query: {
-        problem_id: searchForm.value.problemId,
-        language: searchForm.value.language,
-      },
-    });
-  } catch (e) {
-    console.error(e);
-    ShowErrorTips(globalProperties, "重判失败");
-  } finally {
-    rejudgeSearchLoading.value = false;
-  }
+const handleReloadStatus = async () => {
+  notification.value = await GetWebNotification();
 };
 
-const handleRejudgeAll = async () => {
-  rejudgeAllLoading.value = true;
-  try {
-    const res = await PostRejudgeAll();
-    if (res.code !== 0) {
-      ShowErrorTips(globalProperties, res.code);
-      return;
-    }
-    ShowTextTipsInfo(globalProperties, "重判成功");
-    await router.push({ name: "judge-list" });
-  } catch (e) {
-    console.error(e);
-    ShowErrorTips(globalProperties, "重判失败");
-  } finally {
-    rejudgeAllLoading.value = false;
-  }
-};
+onMounted(async () => {
+  stateLoading.value = true;
+  await handleReloadStatus();
+  stateLoading.value = false;
+});
 </script>
 
 <template>
-  <t-card class="yj-manage-card" title="重判指定记录">
-    <t-form layout="inline" @submit="handleRejudgeSearch">
-      <t-form-item label="题号">
-        <t-input v-model="searchForm.problemId" placeholder="请输入描述" />
-      </t-form-item>
-      <t-form-item>
-        <t-space>
-          <t-button theme="primary" type="submit" :loading="rejudgeSearchLoading">重判</t-button>
-        </t-space>
-      </t-form-item>
-    </t-form>
-  </t-card>
+  <t-loading :loading="stateLoading">
+    <t-card class="yj-manage-card" title="站点通知">
+      <t-form @submit="handleSaveNotification">
+        <t-form-item label="主题">
+          <t-select
+            v-model="notification.theme"
+            :options="[
+              { label: 'success', value: 'success' },
+              { label: 'info', value: 'info' },
+              { label: 'warning', value: 'warning' },
+              { label: 'error', value: 'error' },
+            ]"
+            placeholder="请选择主题"
+          />
+        </t-form-item>
+        <t-form-item label="内容">
+          <t-input v-model="notification.content" placeholder="请输入描述" />
+        </t-form-item>
+        <t-form-item>
+          <t-space>
+            <t-button theme="primary" type="submit" :loading="notificationSaving">保存</t-button>
+          </t-space>
+        </t-form-item>
+      </t-form>
+    </t-card>
+  </t-loading>
 </template>
 
 <style scoped>

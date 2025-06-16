@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import SystemStatus from "@/views/system/SystemStatus.vue";
 import Hitokoto from "@/components/Hitokoto.vue";
 import { GetWebNotification } from "@/apis/system.ts";
 import { Notification } from "@/types/notification.ts";

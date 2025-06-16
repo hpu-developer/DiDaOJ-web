@@ -395,16 +395,6 @@ const viewsConfig = [
     auths: [AuthType.ManageProblem],
   },
   {
-    name: "manage-judge",
-    tab: "manage",
-    path: "judge",
-    sidebar: "manage-judge",
-    title: "评测管理",
-    icon: "list",
-    auths: ["i-manage-judge"],
-    component: ManageJudge,
-  },
-  {
     name: "manage-web",
     tab: "manage",
     path: "web",
@@ -413,6 +403,16 @@ const viewsConfig = [
     icon: "list",
     auths: [AuthType.Manage],
     component: ManageWeb,
+  },
+  {
+    name: "manage-judge",
+    tab: "manage",
+    path: "judge",
+    sidebar: "manage-judge",
+    title: "评测管理",
+    icon: "list",
+    auths: ["i-manage-judge"],
+    component: ManageJudge,
   },
 
   {

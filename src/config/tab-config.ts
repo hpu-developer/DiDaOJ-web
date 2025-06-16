@@ -89,7 +89,7 @@ const tabsConfig: Tab[] = [
     title: "管理",
     icon: "command",
     showSidebar: true,
-    redirect: "manage-judge",
+    redirect: "manage-web",
     auths: [AuthType.Manage],
   },
   {
