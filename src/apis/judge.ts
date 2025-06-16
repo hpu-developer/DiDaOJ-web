@@ -269,6 +269,13 @@ export function GetJudgeJobList(
   });
 }
 
+export function GetJudgeStaticsRecently(){
+  return httpRequest({
+    url: "/judge/statics/recently",
+    method: "get",
+  });
+}
+
 export function PostRejudgeRecently() {
   return httpRequest({
     url: "/judge/rejudge/recently",

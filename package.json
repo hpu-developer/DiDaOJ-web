@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@highlightjs/vue-plugin": "^2.1.0",
+    "@visactor/vchart": "^2.0.0",
     "axios": "1.8.2",
     "highlight.js": "^11.6.0",
     "md5": "^2.3.0",

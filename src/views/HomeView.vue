@@ -5,6 +5,8 @@ import { GetWebAnnouncement, GetWebNotification } from "@/apis/system.ts";
 import type { Notification, Announcement } from "@/types/system.ts";
 import { ShowTextTipsError, useCurrentInstance } from "@/util";
 import Vditor from "vditor";
+import VChart from "@visactor/vchart";
+import { GetJudgeStaticsRecently } from "@/apis/judge.ts";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -44,6 +46,60 @@ const loadWebAnnouncement = async () => {
   }
 };
 
+const loadOjStatics = async () => {
+  const res = await GetJudgeStaticsRecently();
+  if (res.code !== 0) {
+    ShowTextTipsError(globalProperties, "加载OJ统计数据失败");
+    return;
+  }
+
+  let values = [];
+  for (const item of res.data) {
+    const date = new Date(item.date);
+    const dataDayString = `${date.getMonth() + 1}-${date.getDate()}`;
+    values.push({
+      Date: dataDayString,
+      Type: "Unaccept",
+      Count: item.attempt - item.accept,
+    });
+    values.push({
+      Date: dataDayString,
+      Type: "Accept",
+      Count: item.accept,
+    });
+  }
+
+  const spec = {
+    type: "bar",
+    data: [
+      {
+        id: "barData",
+        values: values,
+      },
+    ],
+    xField: "Date",
+    yField: "Count",
+    seriesField: "Type",
+    stack: true,
+    legends: {
+      visible: true,
+    },
+    bar: {
+      // The state style of bar
+      state: {
+        hover: {
+          stroke: "#000",
+          lineWidth: 1,
+        },
+      },
+    },
+    height: 300,
+  };
+
+  const vchart = new VChart(spec, { dom: "ojStaticsDiv" });
+  vchart.renderSync();
+};
+
 onMounted(async () => {
   stateLoading.value = true;
   await handleReloadStatus();
@@ -51,6 +107,9 @@ onMounted(async () => {
     handleReloadStatus();
   }, 30000);
   await loadWebAnnouncement();
+
+  await loadOjStatics();
+
   stateLoading.value = false;
 });
 
@@ -78,6 +137,8 @@ onUnmounted(() => {
               </t-swiper-item>
             </t-swiper>
           </div>
+
+          <div id="ojStaticsDiv"></div>
 
           <t-card :title="announcement?.title" style="width: calc(100% - 100px); margin: 0 auto">
             <div v-html="announcement?.content"></div>
