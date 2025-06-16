@@ -9,6 +9,8 @@ import { AuthType } from "@/auth";
 import ProblemList from "@/views/problem/ProblemList.vue";
 import ProblemDetail from "@/views/problem/ProblemDetail.vue";
 import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
+import ProblemEdit from "@/views/problem/ProblemEdit.vue";
+import ProblemJudge from "@/views/problem/ProblemJudge.vue";
 
 import CollectionList from "@/views/collection/CollectionList.vue";
 import CollectionDetail from "@/views/collection/CollectionDetail.vue";
@@ -27,13 +29,12 @@ import DiscussList from "@/views/discuss/DiscussList.vue";
 import DiscussDetail from "@/views/discuss/DiscussDetail.vue";
 
 import RankUser from "@/views/rank/RankUser.vue";
+import UserForget from "@/views/user/UserForget.vue";
 
 import SystemStatus from "@/views/system/SystemStatus.vue";
 
 import ManageJudge from "@/views/manage/ManageJudge.vue";
-import ProblemEdit from "@/views/problem/ProblemEdit.vue";
-import ProblemJudge from "@/views/problem/ProblemJudge.vue";
-import UserForget from "@/views/user/UserForget.vue";
+import ManageWeb from "@/views/manage/ManageWeb.vue";
 
 const viewsConfig = [
   {
@@ -402,6 +403,16 @@ const viewsConfig = [
     icon: "list",
     auths: ["i-manage-judge"],
     component: ManageJudge,
+  },
+  {
+    name: "manage-web",
+    tab: "manage",
+    path: "web",
+    sidebar: "manage-web",
+    title: "站点管理",
+    icon: "list",
+    auths: [AuthType.Manage],
+    component: ManageWeb,
   },
 
   {
