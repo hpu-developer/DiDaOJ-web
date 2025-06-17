@@ -3,7 +3,7 @@ import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetRankACAll, GetRankACProblem, GetRankACProblemToday, GetRankACProblemDay7, GetRankACProblemYear } from "@/apis/rank.ts";
+import { GetRankACAll, GetRankACProblem, GetRankACProblemToday, GetRankACProblemDay7, GetRankACProblemDay30, GetRankACProblemYear } from "@/apis/rank.ts";
 import { UserRank } from "@/types/rank.ts";
 import { JudgeStatus } from "@/apis/judge.ts";
 
@@ -34,6 +34,10 @@ const descriptionConfig = {
   "problem-day7": {
     header: "统计所有用户最近7日在本站的提交记录",
     content: "以7日题目记录数量排序（从7日前的0点开始计算），如果相同，注册较早的用户靠前",
+  },
+  "problem-day30": {
+    header: "统计所有用户最近30日在本站的提交记录",
+    content: "以30日题目记录数量排序（从30日前的0点开始计算），如果相同，注册较早的用户靠前",
   },
   "problem-year": {
     header: "统计所有用户最近1年在本站的提交记录",
@@ -165,6 +169,9 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
         break;
       case "problem-day7":
         res = await GetRankACProblemDay7(current, pageSize);
+        break;
+      case "problem-day30":
+        res = await GetRankACProblemDay30(current, pageSize);
         break;
       case "problem-year":
         res = await GetRankACProblemYear(current, pageSize);

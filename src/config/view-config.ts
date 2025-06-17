@@ -328,6 +328,18 @@ const viewsConfig = [
     component: RankUser,
   },
   {
+    name: "rank-ac-problem-day30",
+    tab: "rank",
+    sidebar: "rank-ac-problem-day30",
+    path: "ac/problem/day30",
+    title: "30日题量",
+    icon: "base-station",
+    props: {
+      type: "problem-day30",
+    },
+    component: RankUser,
+  },
+  {
     name: "rank-ac-problem-year",
     tab: "rank",
     sidebar: "rank-ac-problem-year",
