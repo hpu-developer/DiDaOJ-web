@@ -3,7 +3,7 @@ import { ref, onMounted, nextTick, computed } from "vue";
 import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetContest, ParseContest, PostContestPassword } from "@/apis/contest.ts";
+import { GetContest, ParseContest, PostContestDolos, PostContestPassword } from "@/apis/contest.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
@@ -18,6 +18,8 @@ let route = useRoute();
 const { globalProperties } = useCurrentInstance();
 const webStyleStore = useWebStyleStore();
 const userStore = useUserStore();
+
+const dolosLoading = ref(false);
 
 let contestId = 0;
 const contestLoading = ref(false);
@@ -95,6 +97,22 @@ const handleClickEdit = () => {
   router.push({ name: "contest-edit", params: { contestId: contestId } });
 };
 
+const handleClickDolos = async () => {
+  dolosLoading.value = true;
+  try {
+    const res = await PostContestDolos(contestId);
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+    const url = res.data;
+    ShowTextTipsInfo(globalProperties, "查重报告已生成，请前往查看");
+    window.open(url, "_blank");
+  } finally {
+    dolosLoading.value = false;
+  }
+};
+
 const handlePostContestPassword = async (e: any) => {
   if (!userStore.isLogin()) {
     await router.push({ name: "login" });
@@ -122,7 +140,6 @@ const handlePostContestPassword = async (e: any) => {
 };
 
 const fetchContestData = async () => {
-
   contestLoading.value = true;
 
   const res = await GetContest(contestId);
@@ -168,7 +185,6 @@ onMounted(async () => {
   }
 
   await fetchContestData();
-
 });
 </script>
 
@@ -210,6 +226,7 @@ onMounted(async () => {
       <t-col :span="6">
         <div class="dida-operation-container">
           <t-space>
+            <t-button v-if="hasEditAuth" @click="handleClickDolos" :loading="dolosLoading">查重</t-button>
             <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
           </t-space>
         </div>

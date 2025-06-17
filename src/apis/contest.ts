@@ -134,3 +134,13 @@ export function PostContestPassword(contestId: number, password: string) {
     },
   });
 }
+
+export function PostContestDolos(contestId: number) {
+  return httpRequest({
+    url: "/contest/dolos",
+    method: "post",
+    data: {
+      id: contestId,
+    },
+  });
+}
