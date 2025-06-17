@@ -177,7 +177,7 @@ onUnmounted(() => {
           <div class="dida-swiper-div">
             <t-swiper class="dida-swiper">
               <t-swiper-item>
-                <img src="https://cdn.codeoj.cn/image/banner.jpg" class="swiper-img" />
+                <a href="http://codeoj.cn" target="_blank"><img src="https://cdn.codeoj.cn/image/banner.jpg" class="swiper-img" /></a>
               </t-swiper-item>
               <t-swiper-item>
                 <img src="https://cdn.codeoj.cn/image/banner.jpg" class="swiper-img" />
