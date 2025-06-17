@@ -215,6 +215,12 @@ onMounted(async () => {
         </div>
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
+            <t-descriptions-item label="创建时间">{{ contestData?.createTime }}</t-descriptions-item>
+          </t-descriptions>
+          <t-descriptions layout="vertical" :bordered="true">
+            <t-descriptions-item label="更新时间">{{ contestData?.updateTime }}</t-descriptions-item>
+          </t-descriptions>
+          <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="开始时间">{{ contestData?.startTime }}</t-descriptions-item>
           </t-descriptions>
           <t-descriptions layout="vertical" :bordered="true">
