@@ -223,6 +223,13 @@ export function GetProblemImageToken(problemId: string) {
   });
 }
 
+export function GetProblemDailyRecently() {
+  return httpRequest({
+    url: "/problem/daily/recently",
+    method: "get",
+  });
+}
+
 export function PostJudgeData(id: string, zip: File) {
   const formData = new FormData();
   formData.append("id", id);
