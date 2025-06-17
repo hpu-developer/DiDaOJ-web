@@ -3,7 +3,7 @@ import httpRequest from "@/apis/axios-api";
 
 import { GetJudgeTypeStr } from "@/apis/judge.ts";
 
-import type { Problem, ProblemTag, ProblemView } from "@/types/problem";
+import type { Problem, ProblemDaily, ProblemDailyView, ProblemTag, ProblemView } from "@/types/problem";
 
 export enum ProblemAttemptStatus {
   None = 0,
@@ -82,6 +82,36 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
   return result;
 }
 
+export function ParseProblemDaily(item: ProblemDaily, tagsMap: { [key: number]: ProblemTag }): ProblemDailyView {
+  const result: ProblemDailyView = {} as ProblemDailyView;
+  result.id = item.id;
+  result.problemId = item.problem_id;
+  result.title = item.title;
+  result.tags = [];
+  if (item.tags) {
+    for (const tag of item.tags) {
+      const tagData = tagsMap[tag];
+      if (tagData) {
+        result.tags.push(tagData);
+      }
+    }
+  }
+  if (item.accept) {
+    result.accept = item.accept;
+  } else {
+    result.accept = 0;
+  }
+  if (item.attempt) {
+    result.attempt = item.attempt;
+  } else {
+    result.attempt = 0;
+  }
+  result.solution = item.solution;
+  result.code = item.code;
+
+  return result;
+}
+
 export function GetProblem(problemId: string, contestId: number | undefined, problemIndex: number | undefined) {
   const params = {} as any;
   if (problemId) {
@@ -144,6 +174,34 @@ export function GetProblemRecommend(problemId: string) {
   }
   return httpRequest({
     url: `/problem/recommend?${new URLSearchParams(params).toString()}`,
+    method: "get",
+  });
+}
+
+export function GetProblemIdByDaily(dailyId: string) {
+  return httpRequest({
+    url: "/problem/daily" + "?id=" + dailyId,
+    method: "get",
+  });
+}
+
+export function GetProblemDailyList(startDate: string, endData: string, page: number, pageSize: number) {
+  const params = {} as any;
+  if (startDate) {
+    params.start_date = startDate;
+  }
+  if (endData) {
+    params.end_date = endData;
+  }
+  if (page) {
+    params.page = page;
+  }
+  if (pageSize) {
+    params.page_size = pageSize;
+  }
+
+  return httpRequest({
+    url: `/problem/daily/list?${new URLSearchParams(params).toString()}`,
     method: "get",
   });
 }

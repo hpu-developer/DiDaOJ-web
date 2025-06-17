@@ -92,6 +92,7 @@ router.afterEach((to: any, from: any) => {
   } else {
     sidebarStyleStore.setSidebarShow(false);
   }
+  window.scrollTo(0, 0);
 });
 
 export default router;

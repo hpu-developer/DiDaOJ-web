@@ -55,3 +55,25 @@ export interface ProblemJudgeData {
   size: number;
   last_modified: string;
 }
+
+export interface ProblemDaily {
+  id: string;
+  problem_id: string;
+  title: string;
+  tags: number[];
+  accept: number;
+  attempt: number;
+  solution?: string;
+  code?: string;
+}
+
+export interface ProblemDailyView {
+  id: string;
+  problemId: string;
+  title: string;
+  tags: ProblemTag[];
+  accept: number;
+  attempt: number;
+  solution?: string;
+  code?: string;
+}

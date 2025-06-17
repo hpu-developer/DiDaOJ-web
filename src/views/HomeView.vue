@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 import { ref, onMounted, onUnmounted } from "vue";
 import Hitokoto from "@/components/Hitokoto.vue";
 import { GetWebAnnouncement, GetWebNotification } from "@/apis/system.ts";
@@ -199,20 +199,31 @@ onUnmounted(() => {
         <Hitokoto style="margin: 10px" />
 
         <t-card style="margin: 10px" :bordered="true" title="每日一题">
+          <template #actions>
+            <t-link @click="$router.push({ name: 'problem-daily-list' })">查看全部</t-link>
+          </template>
           <t-list :split="true" size="small">
             <t-list-item v-for="item in problemDailies" :key="item.id">
-              <div>
-                <t-link @click="$router.push({ name: 'problem-detail', params: { problemId: item.problemId } })">
-                  {{ item.problemId }}
-                </t-link>
-              </div>
-              <div>
-                <t-link @click="$router.push({ name: 'problem-detail', params: { problemId: item.problemId } })">
-                  {{ item.title }}
-                </t-link>
-              </div>
+              <t-list-item-meta style="width: 100px">
+                <template #description>
+                  <t-link @click="$router.push({ name: 'problem-detail', params: { problemId: item.problemId } })">
+                    {{ item.problemId }}
+                  </t-link>
+                </template>
+              </t-list-item-meta>
+              <t-list-item-meta style="width: 200px">
+                <template #description>
+                  <t-link @click="$router.push({ name: 'problem-detail', params: { problemId: item.problemId } })">
+                    {{ item.title }}
+                  </t-link>
+                </template>
+              </t-list-item-meta>
               <t-list-item-meta :description="item.id" />
-              <t-tag :theme="item.theme">{{ item.tag }}</t-tag>
+              <t-list-item-meta>
+                <template #description>
+                  <t-tag :theme="item.theme">{{ item.tag }}</t-tag>
+                </template>
+              </t-list-item-meta>
             </t-list-item>
           </t-list>
         </t-card>

@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch, WatchStopHa
 import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetProblem, ParseProblem, PostProblemCrawl } from "@/apis/problem.ts";
+import { GetProblem, GetProblemIdByDaily, ParseProblem, PostProblemCrawl } from "@/apis/problem.ts";
 import { GetHighlightKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
@@ -31,10 +31,12 @@ const userStore = useUserStore();
 let content = ref("");
 
 let problemId = "";
+let dailyId = "";
 let contestId = 0;
 let problemIndex = ref(0);
 
 const isContestProblem = ref(false);
+const isDailyProblem = ref(false);
 
 const markdownRef = ref<HTMLElement | null>(null);
 const problemLoading = ref(false);
@@ -257,7 +259,7 @@ const fetchProblemData = async () => {
   if (contestId) {
     res = await GetContestProblems(contestId);
     if (res.code === 0) {
-      res.data.problems.sort((a, b) => a - b );
+      res.data.problems.sort((a, b) => a - b);
       contestProblems.value = res.data.problems;
     } else {
       ShowErrorTips(globalProperties, res.code);
@@ -298,10 +300,23 @@ onMounted(async () => {
   watchHandle = watch(
     () => route.params,
     async () => {
+      isDailyProblem.value = false;
       if (Array.isArray(route.params.problemId)) {
         problemId = route.params.problemId[0];
       } else {
         problemId = route.params.problemId;
+      }
+      if (!problemId) {
+        if (Array.isArray(route.params.dailyId)) {
+          dailyId = route.params.dailyId[0];
+        } else {
+          dailyId = route.params.dailyId;
+        }
+        const res = await GetProblemIdByDaily(dailyId);
+        if (res.code === 0) {
+          isDailyProblem.value = true;
+          problemId = res.data;
+        }
       }
       if (!problemId) {
         if (Array.isArray(route.params.contestId)) {
@@ -311,7 +326,11 @@ onMounted(async () => {
         }
         if (!contestId) {
           ShowTextTipsError(globalProperties, "题目不存在");
-          await router.push({ name: "problem" });
+          if (dailyId) {
+            await router.push({ name: "problem-daily-list" });
+          } else {
+            await router.push({ name: "problem" });
+          }
           return;
         }
         if (Array.isArray(route.params.problemIndex)) {
@@ -333,6 +352,12 @@ onMounted(async () => {
     },
     { immediate: true }
   );
+  const resizeObserver = new ResizeObserver(() => {
+    if (codeEditor) {
+      codeEditor.layout();
+    }
+  });
+  resizeObserver.observe(codeEditRef.value);
 });
 
 onBeforeUnmount(() => {
@@ -350,6 +375,14 @@ onBeforeUnmount(() => {
         <t-card style="margin: 10px">
           <div v-html="content" ref="markdownRef"></div>
         </t-card>
+        <t-card style="margin: 10px" v-if="isDailyProblem" title="题解">
+          距离解锁百分比
+          <t-progress theme="line" :color="{ from: '#0052D9', to: '#00A870' }" :percentage="60" :status="'active'" />
+        </t-card>
+        <t-card style="margin: 10px" v-if="isDailyProblem" title="示例代码">
+          距离解锁百分比
+          <t-progress theme="line" :color="{ from: '#0052D9', to: '#00A870' }" :percentage="60" :status="'active'" />
+        </t-card>
       </t-col>
       <t-col :span="4">
         <div class="dida-problems-container" v-if="contestId">
@@ -366,12 +399,13 @@ onBeforeUnmount(() => {
         </div>
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
+            <t-descriptions-item label="ID">{{ problemData?.id }}</t-descriptions-item>
             <t-descriptions-item label="标题">{{ problemData?.title }}</t-descriptions-item>
             <t-descriptions-item label="时间限制">{{ problemData?.timeLimit }}</t-descriptions-item>
             <t-descriptions-item label="内存限制">{{ problemData?.memoryLimit }}</t-descriptions-item>
             <t-descriptions-item label="判题方式">{{ problemData?.judgeType }}</t-descriptions-item>
-            <t-descriptions-item label="正确提交" v-if="!isContestProblem">{{ problemData?.accept }}</t-descriptions-item>
-            <t-descriptions-item label="提交总数" v-if="!isContestProblem">{{ problemData?.attempt }}</t-descriptions-item>
+            <t-descriptions-item label="正确提交" v-if="!isContestProblem">{{ problemData?.accept }} </t-descriptions-item>
+            <t-descriptions-item label="提交总数" v-if="!isContestProblem">{{ problemData?.attempt }} </t-descriptions-item>
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
             <t-descriptions-item label="上传用户">{{ problemData?.creatorNickname }}</t-descriptions-item>
@@ -420,7 +454,9 @@ onBeforeUnmount(() => {
               </t-select>
               <t-button @click="handleSubmitCode" :loading="problemSubmitting">提交</t-button>
             </t-space>
-            <div ref="codeEditRef" class="dida-code-editor"></div>
+            <div class="dida-code-editor-div">
+              <div ref="codeEditRef" class="dida-code-editor"></div>
+            </div>
           </div>
         </div>
       </t-col>
@@ -446,9 +482,12 @@ onBeforeUnmount(() => {
   margin-top: 10px;
 }
 
-.dida-code-editor {
-  margin-top: 10px;
+.dida-code-editor-div {
   width: 100%;
+  margin-top: 10px;
+}
+
+.dida-code-editor {
   min-height: 500px;
 }
 </style>

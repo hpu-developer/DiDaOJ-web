@@ -8,6 +8,7 @@ import { AuthType } from "@/auth";
 
 import ProblemList from "@/views/problem/ProblemList.vue";
 import ProblemDetail from "@/views/problem/ProblemDetail.vue";
+import ProblemDailyList from "@/views/problem/ProblemDailyList.vue";
 import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 import ProblemEdit from "@/views/problem/ProblemEdit.vue";
 import ProblemJudge from "@/views/problem/ProblemJudge.vue";
@@ -56,6 +57,24 @@ const viewsConfig = [
     component: ProblemDetail,
   },
   {
+    name: "problem-daily-list",
+    tab: "problem",
+    sidebar: "problem-daily-list",
+    path: "daily",
+    title: "每日一题",
+    icon: "list",
+    component: ProblemDailyList,
+  },
+  {
+    name: "problem-daily-detail",
+    tab: "problem",
+    sidebar: "problem-daily-list",
+    path: "daily/:dailyId+",
+    title: "问题详情",
+    icon: "list",
+    component: ProblemDetail,
+  },
+  {
     name: "problem-recommend",
     tab: "problem",
     sidebar: "problem-recommend",
@@ -65,7 +84,6 @@ const viewsConfig = [
     needLogin: true,
     component: ProblemRecommend,
   },
-
   {
     name: "problem-collection-list",
     tab: "problem",
