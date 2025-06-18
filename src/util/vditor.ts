@@ -16,7 +16,7 @@ export async function uploadR2Image(
   descriptionEditor: Vditor,
   files: File[],
   globalProperties: ComponentCustomProperties & Record<string, any>,
-  getTokenHandler: () => Promise<{ code: number; data: { upload_url: string; preview_url: string } }>
+  getTokenHandler: () => Promise<{ code: number; data: { upload_url: string; preview_url: string } }>,
 ) {
   if (!descriptionEditor) {
     ShowErrorTips(globalProperties, "编辑器已失效，请刷新后重试");
@@ -69,6 +69,28 @@ export async function uploadR2Image(
   return null;
 }
 
+export function getCustomRenders() {
+  return [
+    {
+      language: "right",
+      render: (element: HTMLElement, _vditor: Vditor) => {
+        const elements = element.querySelectorAll(".language-right") as NodeListOf<HTMLDivElement>;
+        let text = "";
+        elements.forEach((el: HTMLDivElement) => {
+          const parentElement = el.parentElement as HTMLDivElement | null;
+          if (!parentElement) {
+            return;
+          }
+          text += el.innerText;
+          parentElement.innerHTML = `<div style="text-align: right">${text}</div>`;
+        });
+
+        console.log(element);
+      },
+    },
+  ] as any;
+}
+
 export function md2html(markdown: string) {
   const options = {
     math: {
@@ -76,10 +98,22 @@ export function md2html(markdown: string) {
       engine: "KaTeX",
     },
     renderers: {
-      renderText: (node, entering) => {
-        console.log("renderText", node, entering);
+      renderText: (node: ILuteNode, entering: boolean) => {
         if (entering) {
-          return ["", Lute.WalkContinue];
+          const text = node.TokensStr();
+          console.log("text", text);
+          if (text.startsWith("{{%") && text.endsWith("%}}")) {
+            // 处理自定义指令
+            const command = text.slice(3, -3).trim();
+            if (command === "showtime") {
+              const date = new Date();
+              return [`当前时间: ${date.toLocaleString()}`, Lute.WalkContinue];
+            } else if (command === "showdate") {
+              const date = new Date();
+              return [`当前日期: ${date.toLocaleDateString()}`, Lute.WalkContinue];
+            }
+          }
+          return [text, Lute.WalkContinue];
         } else {
           return ["", Lute.WalkContinue];
         }

@@ -8,7 +8,7 @@ import { GetProblem, GetProblemImageToken, GetProblemTagList, ParseProblem, Post
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ProblemTag, ProblemView } from "@/types/problem.ts";
-import { uploadR2Image } from "@/util/vditor.ts";
+import { getCustomRenders, uploadR2Image } from "@/util/vditor.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -214,12 +214,10 @@ const loadDescriptionEditor = (description: string) => {
         });
       },
     },
-    preview: {
-      math: {
-        inlineDigit: true,
-        engine: "KaTeX",
-      },
+    fullscreen: {
+      index: 9999,
     },
+    customRenders: getCustomRenders(),
   } as IOptions;
   descriptionEditor = new Vditor("problemEditDiv", codeEditOptions);
 };
@@ -403,6 +401,5 @@ onMounted(async () => {
   width: 100%;
   max-width: calc(100vw - 300px);
   min-height: 500px;
-  z-index: 9999 !important;
 }
 </style>
