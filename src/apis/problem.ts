@@ -219,13 +219,16 @@ export function GetProblemDailyRecently() {
   });
 }
 
-export function GetProblemDailyList(startDate: string, endData: string, page: number, pageSize: number) {
+export function GetProblemDailyList(startDate: string, endData: string, problemId: string, page: number, pageSize: number) {
   const params = {} as any;
   if (startDate) {
     params.start_date = startDate;
   }
   if (endData) {
     params.end_date = endData;
+  }
+  if (problemId) {
+    params.problem_id = problemId;
   }
   if (page) {
     params.page = page;

@@ -3,16 +3,8 @@ import { computed, WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import {
-  GetProblemList,
-  GetProblemTagList,
-  ParseProblem,
-  ProblemAttemptStatus,
-  PostProblemCrawl,
-  GetProblemDailyList,
-  ParseProblemDaily,
-} from "@/apis/problem.ts";
-import { Problem, ProblemTag, ProblemView } from "@/types/problem.ts";
+import { ProblemAttemptStatus, GetProblemDailyList, ParseProblemDaily } from "@/apis/problem.ts";
+import { ProblemTag, ProblemDaily, ProblemDailyView } from "@/types/problem.ts";
 import { AuthType } from "@/auth";
 import { useUserStore } from "@/stores/user.ts";
 
@@ -27,8 +19,6 @@ let watchHandle: WatchStopHandle | null = null;
 let tagsMap = {} as { [key: number]: ProblemTag };
 let problemAttemptStatus = {} as { [key: string]: ProblemAttemptStatus };
 
-const isCrawling = ref(false);
-
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
 });
@@ -38,7 +28,6 @@ const listColumns = ref([
     title: "日期",
     colKey: "id",
     cell: (_: any, data: any) => {
-      let theme = getProblemIdTheme(data.row.problemId);
       return (
         <t-button variant="dashed" onClick={() => handleGotoProblem(data.row.id)}>
           {data.row.id}
@@ -113,25 +102,11 @@ const pagination = ref({
   pageSizeOptions: [50, 100],
 });
 
-const problemViews = ref<ProblemView[]>();
-
-const ojOptions = [
-  { label: "DidaOJ", value: "didaoj" },
-  { label: "HDU", value: "hdu" },
-  { label: "POJ", value: "poj" },
-  { label: "NYOJ", value: "nyoj" },
-];
+const problemViews = ref<ProblemDailyView[]>([]);
 
 const searchProblemForm = ref({
-  oj: "",
-  title: "",
-  tag: "",
-  private: false,
-});
-
-const crawlProblemForm = ref({
-  oj: "",
-  problem: "",
+  date: [] as string[],
+  problemId: "",
 });
 
 const handleGotoProblem = (id: string) => {
@@ -168,14 +143,31 @@ const getProblemIdTheme = (id: string) => {
 };
 
 const handleClickSearch = async () => {
+  let dateStr = "";
+  if (searchProblemForm.value.date && searchProblemForm.value.date.length > 1) {
+    dateStr = searchProblemForm.value.date[0] + "~" + searchProblemForm.value.date[1];
+  }
   // 更新 URL 查询参数
   await router.push({
     query: {
       ...route.query,
-      oj: searchProblemForm.value.oj,
-      title: searchProblemForm.value.title,
-      tag: searchProblemForm.value.tag,
-      private: searchProblemForm.value.private ? "1" : "0",
+      date: dateStr,
+      problem_id: searchProblemForm.value.problemId,
+      page: 1,
+      page_size: pagination.value.defaultPageSize,
+    },
+  });
+};
+
+const handleClickReset = async () => {
+  searchProblemForm.value.date = [];
+  searchProblemForm.value.problemId = "";
+  // 更新 URL 查询参数
+  await router.push({
+    query: {
+      ...route.query,
+      date: "",
+      problem_id: "",
       page: 1,
       page_size: pagination.value.defaultPageSize,
     },
@@ -208,10 +200,18 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   }
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetProblemDailyList(null, null, current, pageSize);
+    let startDate = "";
+    if (searchProblemForm.value.date[0]) {
+      startDate = searchProblemForm.value.date[0];
+    }
+    let endDate = "";
+    if (searchProblemForm.value.date[1]) {
+      endDate = searchProblemForm.value.date[1];
+    }
+    const res = await GetProblemDailyList(startDate, endDate, searchProblemForm.value.problemId, current, pageSize);
     problemViews.value = [];
     if (res.code === 0) {
-      const responseList = res.data.list as Problem[];
+      const responseList = res.data.list as ProblemDaily[];
       if (!responseList || responseList.length <= 0) {
         pagination.value = { ...pagination.value, total: 0 };
         problemAttemptStatus = {};
@@ -224,7 +224,7 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
           tagsMap[tag.id] = tag;
         });
       }
-      responseList.forEach((item) => {
+      responseList.forEach((item: ProblemDaily) => {
         const result = ParseProblemDaily(item, tagsMap);
         problemViews.value?.push(result);
       });
@@ -263,10 +263,17 @@ onMounted(async () => {
   watchHandle = watch(
     () => route.query,
     (newQuery) => {
-      searchProblemForm.value.oj = (newQuery.oj as string) || "";
-      searchProblemForm.value.title = (newQuery.title as string) || "";
-      searchProblemForm.value.tag = (newQuery.tag as string) || "";
-      searchProblemForm.value.private = (newQuery.private as string) === "1";
+      if (!viewActive) {
+        return;
+      }
+      searchProblemForm.value.date = [];
+      if (newQuery.date) {
+        const dateRange = (newQuery.date as string).split("~");
+        if (dateRange.length === 2) {
+          searchProblemForm.value.date = [dateRange[0], dateRange[1]];
+        }
+      }
+      searchProblemForm.value.problemId = (newQuery.problem_id as string) || "";
       const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
       const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
       currentPage = queryPage;
@@ -312,12 +319,18 @@ onBeforeUnmount(() => {
           </t-space>
         </div>
         <t-card class="sh-card">
-          <t-form :model="searchProblemForm" @submit="handleClickSearch">
-            <t-form-item label="时间">
-              <t-select v-model="searchProblemForm.oj" :options="ojOptions" placeholder="请选择OJ" clearable></t-select>
+          <t-form :model="searchProblemForm" @submit="handleClickSearch" @reset="handleClickReset">
+            <t-form-item label="日期" label-align="top">
+              <t-date-range-picker v-model="searchProblemForm.date" allow-input clearable format="YYYY-MM-DD" />
             </t-form-item>
-            <t-form-item>
-              <t-button theme="primary" type="submit">搜索</t-button>
+            <t-form-item label="问题" label-align="top">
+              <t-input v-model="searchProblemForm.problemId" placeholder="请输入问题ID" clearable></t-input>
+            </t-form-item>
+            <t-form-item label-align="top">
+              <t-space>
+                <t-button theme="primary" type="submit">搜索</t-button>
+                <t-button theme="danger" type="reset">重置</t-button>
+              </t-space>
             </t-form-item>
           </t-form>
         </t-card>
