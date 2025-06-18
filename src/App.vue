@@ -107,7 +107,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <t-layout>
+  <t-layout class="sh-app-layout">
     <t-header class="sh-header">
       <HeaderContent />
     </t-header>
@@ -132,6 +132,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.sh-app-layout {
+  min-width: 1440px;
+}
+
 .sh-header {
   padding: 0px;
   position: sticky;
@@ -192,9 +196,5 @@ onMounted(() => {
 .slide-leave-to {
   opacity: 0;
   transform: translateX(-100%);
-}
-
-.sh-main-content {
-  min-width: 1440px;
 }
 </style>

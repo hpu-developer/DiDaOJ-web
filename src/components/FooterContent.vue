@@ -46,7 +46,6 @@ onMounted(() => {
 .footer {
   margin-top: 30px;
   display: flex;
-  min-width: 1400px;
   color: #ffffff;
   background-color: #000000;
   justify-content: space-between;

@@ -68,3 +68,14 @@ export async function uploadProblemImage(
 
   return null;
 }
+
+
+export function md2html(markdown:string){
+  const options = {
+    math: {
+      inlineDigit: true,
+      engine: "KaTeX",
+    },
+  } as IPreviewOptions;
+  return Vditor.md2html(markdown, options);
+}

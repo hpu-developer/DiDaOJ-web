@@ -178,9 +178,23 @@ export function GetProblemRecommend(problemId: string) {
   });
 }
 
-export function GetProblemIdByDaily(dailyId: string) {
+export function GetProblemDaily(dailyId: string) {
   return httpRequest({
     url: "/problem/daily" + "?id=" + dailyId,
+    method: "get",
+  });
+}
+
+export function GetProblemIdByDaily(dailyId: string) {
+  return httpRequest({
+    url: "/problem/daily/id" + "?id=" + dailyId,
+    method: "get",
+  });
+}
+
+export function GetProblemDailyRecently() {
+  return httpRequest({
+    url: "/problem/daily/recently",
     method: "get",
   });
 }
@@ -277,13 +291,6 @@ export function GetJudgeDataDownload(id: string, key: string) {
 export function GetProblemImageToken(problemId: string) {
   return httpRequest({
     url: "/problem/image/token" + "?id=" + problemId,
-    method: "get",
-  });
-}
-
-export function GetProblemDailyRecently() {
-  return httpRequest({
-    url: "/problem/daily/recently",
     method: "get",
   });
 }
