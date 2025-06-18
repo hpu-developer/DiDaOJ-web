@@ -218,7 +218,7 @@ onUnmounted(() => {
                   </t-link>
                 </template>
               </t-list-item-meta>
-              <t-list-item-meta :description="item.id" />
+              <t-list-item-meta style="width: 135px" :description="item.id" />
               <t-list-item-meta>
                 <template #description>
                   <t-tag :theme="item.theme">{{ item.tag }}</t-tag>

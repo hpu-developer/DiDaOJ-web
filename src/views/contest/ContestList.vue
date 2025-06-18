@@ -192,6 +192,7 @@ onBeforeUnmount(() => {
           :loading="dataLoading"
           table-layout="auto"
           @page-change="onPageChange"
+          style="white-space: nowrap;"
         />
       </t-card>
     </t-col>

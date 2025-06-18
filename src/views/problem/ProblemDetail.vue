@@ -59,6 +59,8 @@ languageOptions.value = GetSubmitLanguages();
 
 const contestProblems = ref([]);
 
+const dailySolutionUnlockCountdown = ref(-1);
+const dailyCodeUnlockCountdown = ref(-1);
 const dailySolution = ref("");
 const dailyCode = ref("");
 
@@ -315,18 +317,24 @@ const loadDailyData = async () => {
   dailyCode.value = await md2html(res.data.code);
 
   await nextTick(() => {
-    Vditor.mathRender(dailySolutionMarkdownRef.value);
-    Vditor.highlightRender({ lineNumber: true, enable: true }, dailySolutionMarkdownRef.value);
-    enhanceCodeCopy(dailySolutionMarkdownRef.value);
+    if (dailySolutionMarkdownRef.value) {
+      Vditor.mathRender(dailySolutionMarkdownRef.value);
+      Vditor.highlightRender({ lineNumber: true, enable: true }, dailySolutionMarkdownRef.value);
+      enhanceCodeCopy(dailySolutionMarkdownRef.value);
+    }
 
-    Vditor.mathRender(dailyCodeMarkdownRef.value);
-    Vditor.highlightRender({ lineNumber: true, enable: true }, dailyCodeMarkdownRef.value);
-    enhanceCodeCopy(dailyCodeMarkdownRef.value);
+    if (dailyCodeMarkdownRef.value) {
+      Vditor.mathRender(dailyCodeMarkdownRef.value);
+      Vditor.highlightRender({ lineNumber: true, enable: true }, dailyCodeMarkdownRef.value);
+      enhanceCodeCopy(dailyCodeMarkdownRef.value);
+    }
   });
 
   const nowId = new Date().toISOString().split("T")[0];
   if (dailyId === nowId) {
   } else {
+    dailySolutionUnlockCountdown.value = -1;
+    dailyCodeUnlockCountdown.value = -1;
   }
 };
 
@@ -382,12 +390,14 @@ onMounted(async () => {
     },
     { immediate: true }
   );
-  const resizeObserver = new ResizeObserver(() => {
-    if (codeEditor) {
-      codeEditor.layout();
-    }
-  });
-  resizeObserver.observe(codeEditRef.value);
+  if (codeEditRef.value) {
+    const resizeObserver = new ResizeObserver(() => {
+      if (codeEditor) {
+        codeEditor.layout();
+      }
+    });
+    resizeObserver.observe(codeEditRef.value);
+  }
 });
 
 onBeforeUnmount(() => {
@@ -406,14 +416,19 @@ onBeforeUnmount(() => {
           <div v-html="content" ref="descriptionMarkdownRef"></div>
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="题解">
-          距离解锁百分比
-          <t-progress theme="line" :color="{ from: '#0052D9', to: '#00A870' }" :percentage="60" :status="'active'" />
-          <div ref="dailySolutionMarkdownRef" v-html="dailySolution"></div>
+          <div v-if="dailySolutionUnlockCountdown < 0" ref="dailyCodeMarkdownRef" v-html="dailyCode"></div>
+          <div v-else>
+            距离解锁百分比
+            <t-progress theme="line" :color="{ from: '#0052D9', to: '#00A870' }" :percentage="60" :status="'active'" />
+            <div ref="dailySolutionMarkdownRef" v-html="dailySolution"></div>
+          </div>
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="示例代码">
-          距离解锁百分比
-          <t-progress theme="line" :color="{ from: '#0052D9', to: '#00A870' }" :percentage="60" :status="'active'" />
-          <div ref="dailyCodeMarkdownRef" v-html="dailyCode"></div>
+          <div v-if="dailyCodeUnlockCountdown < 0" ref="dailyCodeMarkdownRef" v-html="dailyCode"></div>
+          <div v-else>
+            距离解锁百分比
+            <t-progress theme="line" :color="{ from: '#0052D9', to: '#00A870' }" :percentage="60" :status="'active'" />
+          </div>
         </t-card>
       </t-col>
       <t-col :span="4">
