@@ -176,7 +176,7 @@ const loadContest = async () => {
 
   const contest = res.data.contest;
 
-  contestData.value = await ParseContest(contest);
+  contestData.value = ParseContest(contest);
 
   contestEditForm.value.title = contest.title;
   contestEditForm.value.openTime = [] as (Date | string)[];

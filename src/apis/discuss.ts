@@ -31,7 +31,7 @@ export function ParseDiscuss(item: Discuss): DiscussView {
   return result;
 }
 
-export async function ParseDiscussComment(item: DiscussComment): DiscussCommentView {
+export function ParseDiscussComment(item: DiscussComment): DiscussCommentView {
   const result = {} as DiscussCommentView;
   result.id = item.id;
   result.authorId = item.author_id;
@@ -39,13 +39,7 @@ export async function ParseDiscussComment(item: DiscussComment): DiscussCommentV
   result.authorNickname = item.author_nickname;
   result.content = "";
   if (item.content) {
-    const options = {
-      math: {
-        inlineDigit: true,
-        engine: "KaTeX",
-      },
-    } as IPreviewOptions;
-    result.content = await Vditor.md2html(item.content, options);
+    result.content = item.content
   }
   if (item.insert_time) {
     result.insertTime = new Date(item.insert_time).toLocaleString();

@@ -7,9 +7,6 @@ import App from "./App.vue";
 import TDesign from "tdesign-vue-next";
 
 import axios from "axios";
-import hljs from "highlight.js/lib/core";
-import verilog from "highlight.js/lib/languages/verilog";
-import hljsVuePlugin from "@highlightjs/vue-plugin";
 
 import "tdesign-vue-next/es/style/index.css";
 import "./assets/main.css";
@@ -28,7 +25,33 @@ import 'monaco-editor/esm/vs/basic-languages/go/go.contribution'
 import 'monaco-editor/esm/vs/basic-languages/lua/lua.contribution'
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution'
 
-hljs.registerLanguage("verilog", verilog);
+import VMdPreview from '@kangc/v-md-editor/lib/preview';
+import '@kangc/v-md-editor/lib/style/preview.css';
+import githubTheme from '@kangc/v-md-editor/lib/theme/github.js';
+import '@kangc/v-md-editor/lib/theme/style/github.css';
+
+import createLineNumbertPlugin from '@kangc/v-md-editor/lib/plugins/line-number/index';
+import createKatexPlugin from '@kangc/v-md-editor/lib/plugins/katex/cdn';
+import createCopyCodePlugin from '@kangc/v-md-editor/lib/plugins/copy-code/index';
+import '@kangc/v-md-editor/lib/plugins/copy-code/copy-code.css';
+import createTodoListPlugin from '@kangc/v-md-editor/lib/plugins/todo-list/index';
+import '@kangc/v-md-editor/lib/plugins/todo-list/todo-list.css';
+import createMermaidPlugin from '@kangc/v-md-editor/lib/plugins/mermaid/cdn';
+import '@kangc/v-md-editor/lib/plugins/mermaid/mermaid.css';
+import createAlignPlugin from '@kangc/v-md-editor/lib/plugins/align';
+
+// highlightjs
+import hljs from 'highlight.js';
+
+VMdPreview.use(githubTheme, {
+  Hljs: hljs,
+});
+VMdPreview.use(createKatexPlugin());
+VMdPreview.use(createCopyCodePlugin());
+VMdPreview.use(createLineNumbertPlugin());
+VMdPreview.use(createTodoListPlugin());
+VMdPreview.use(createMermaidPlugin());
+VMdPreview.use(createAlignPlugin());
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
@@ -39,7 +62,7 @@ app.use(pinia);
 app.use(router);
 app.use(TDesign);
 
-app.use(hljsVuePlugin);
+app.use(VMdPreview);
 
 app.mount("#app");
 

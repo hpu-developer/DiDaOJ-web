@@ -114,7 +114,7 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
       const responseList = res.data.list as Collection[];
       for (let i = 0; i < responseList.length; i++) {
         const item = responseList[i];
-        const result = await ParseCollection(item);
+        const result = ParseCollection(item);
         collectionViews.value?.push(result);
       }
       pagination.value = { ...pagination.value, total: res.data.total_count };

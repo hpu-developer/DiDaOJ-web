@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
 import {
@@ -12,10 +12,8 @@ import {
   PostRejudgeJob,
 } from "@/apis/judge.ts";
 import { GetJudgeLanguageStr, GetHighlightKeyByJudgeLanguage } from "@/apis/language.ts";
-import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
-import Vditor from "vditor";
 import { AuthType } from "@/auth";
 import { useUserStore } from "@/stores/user.ts";
 
@@ -233,21 +231,9 @@ const fetchData = async (needLoading: boolean) => {
         }
       }
 
-      const options = {} as IPreviewOptions;
       if (response.code) {
         const language = GetHighlightKeyByJudgeLanguage(response.language);
-        const codeMarkdown = `\`\`\`${language}\n${response.code}\n\`\`\``;
-        judgeJobCode.value = await Vditor.md2html(codeMarkdown, options);
-
-        await nextTick(() => {
-          if (markdownCodeRef.value) {
-            if (!isInitHighlight) {
-              isInitHighlight = true;
-              Vditor.highlightRender({ lineNumber: true, enable: true }, markdownCodeRef.value);
-            }
-            enhanceCodeCopy(markdownCodeRef.value);
-          }
-        });
+        judgeJobCode.value = `\`\`\`${language}\n${response.code}\n\`\`\``;
       }
 
       judgeJob.value = result;
@@ -332,7 +318,7 @@ onBeforeUnmount(() => {
   <t-row>
     <t-col :span="8">
       <div class="dida-code-container">
-        <div v-html="judgeJobCode" ref="markdownCodeRef" class="dida-code-div"></div>
+        <v-md-preview :text="judgeJobCode" class="dida-code-div"></v-md-preview>
       </div>
     </t-col>
     <t-col :span="4">
@@ -385,6 +371,5 @@ onBeforeUnmount(() => {
 
 .dida-code-div {
   width: 100%;
-  max-width: 1000px;
 }
 </style>

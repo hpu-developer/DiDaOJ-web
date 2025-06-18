@@ -20,6 +20,7 @@ import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import Vditor from "vditor";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
+import SecretPanel from "@/components/SecretPanel.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -32,7 +33,6 @@ let refreshTimeout: ReturnType<typeof setTimeout>;
 const codeShow = ref(false);
 const showJudgeJob = ref<JudgeJobView | null>(null);
 
-const markdownCodeRef = ref<HTMLElement | null>(null);
 const isCodeLoading = ref(false);
 
 let contestId = -1;
@@ -182,17 +182,7 @@ const handleShowCode = async (jobView: JudgeJobView) => {
       const response = res.data;
       const language = GetHighlightKeyByJudgeLanguage(response.language);
 
-      const codeMarkdown = `\`\`\`${language}\n${response.code}\n\`\`\``;
-
-      const options = {} as IPreviewOptions;
-      showJudgeJob.value.code = await Vditor.md2html(codeMarkdown, options);
-
-      await nextTick(() => {
-        if (markdownCodeRef.value) {
-          Vditor.highlightRender({ lineNumber: true, enable: true }, markdownCodeRef.value);
-          enhanceCodeCopy(markdownCodeRef.value);
-        }
-      });
+      showJudgeJob.value.code = `\`\`\`${language}\n${response.code}\n\`\`\``;
     } else {
       ShowErrorTips(globalProperties, res.code);
     }
@@ -445,7 +435,7 @@ onBeforeUnmount(() => {
       </t-link>
     </template>
     <t-loading :loading="isCodeLoading">
-      <div v-html="showJudgeJob?.code" ref="markdownCodeRef" style="min-height: 100px"></div>
+      <v-md-preview :text="showJudgeJob?.code"></v-md-preview>
     </t-loading>
   </t-dialog>
 </template>

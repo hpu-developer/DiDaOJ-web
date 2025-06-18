@@ -160,7 +160,7 @@ const loadCollection = async () => {
 
   const collection = res.data.collection;
 
-  collectionData.value = await ParseCollection(collection);
+  collectionData.value = ParseCollection(collection);
 
   collectionEditForm.value.title = collection.title;
   collectionEditForm.value.openTime = [] as (Date | string)[];

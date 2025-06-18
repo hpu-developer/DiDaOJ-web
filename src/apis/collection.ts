@@ -2,9 +2,8 @@
 import httpRequest from "@/apis/axios-api";
 
 import type { Collection, CollectionView, CollectionEditRequest } from "@/types/collection";
-import Vditor from "vditor";
 
-export async function ParseCollection(item: Collection): Promise<CollectionView> {
+export function ParseCollection(item: Collection) {
   const result: CollectionView = {} as CollectionView;
   result.id = item.id;
   result.ownerId = item.owner_id;
@@ -34,13 +33,7 @@ export async function ParseCollection(item: Collection): Promise<CollectionView>
   }
 
   if (item.description) {
-    const options = {
-      math: {
-        inlineDigit: true,
-        engine: "KaTeX",
-      },
-    } as IPreviewOptions;
-    result.description = await Vditor.md2html(item.description, options);
+    result.description = item.description
   } else {
     result.description = "";
   }

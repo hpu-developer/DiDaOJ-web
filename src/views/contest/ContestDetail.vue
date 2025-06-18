@@ -153,24 +153,14 @@ const fetchContestData = async () => {
   hasContestViewAuth.value = res.data.has_auth;
   needContestPassword.value = res.data.need_password;
 
-  contestData.value = await ParseContest(res.data.contest);
+  contestData.value = ParseContest(res.data.contest);
   problemViews.value = contestData.value.problems;
 
   problemAttemptStatus = res.data.attempt_status || {};
 
   webStyleStore.setTitle(contestData.value.title + " - " + webStyleStore.getTitle);
 
-  await nextTick(() => {
-    const contestDescriptions = document.querySelectorAll(".dida-content-description");
-    if (contestDescriptions && contestDescriptions.length > 0) {
-      contestDescriptions.forEach((description: any) => {
-        Vditor.mathRender(description);
-        Vditor.highlightRender({ lineNumber: true, enable: true }, description);
-        enhanceCodeCopy(description);
-      });
-    }
-    contestLoading.value = false;
-  });
+  contestLoading.value = false;
 };
 
 onMounted(async () => {
@@ -245,7 +235,7 @@ onMounted(async () => {
           </t-descriptions>
         </div>
         <t-card style="margin: 12px" v-if="contestData?.description">
-          <div v-html="contestData?.description" class="dida-content-description"></div>
+          <v-md-preview :text="contestData?.description" class="dida-content-description"></v-md-preview>
         </t-card>
       </t-col>
     </t-row>

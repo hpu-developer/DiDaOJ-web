@@ -69,7 +69,7 @@ const listColumns = ref([
     colKey: "title",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text"  onClick={() => handleOpenProblem(data.row.id)}>
+        <t-button variant="text" onClick={() => handleOpenProblem(data.row.id)}>
           {data.row.title}
         </t-button>
       );
@@ -166,7 +166,7 @@ onMounted(async () => {
 
   joined.value = res.data.joined;
   problemAttemptStatus = res.data.attempt_status || {};
-  collectionData.value = await ParseCollection(res.data.collection);
+  collectionData.value = ParseCollection(res.data.collection);
   problemViews.value = [];
   if (res.data.collection.problems) {
     res.data.collection.problems.forEach((problemId: string) => {
@@ -177,17 +177,7 @@ onMounted(async () => {
 
   webStyleStore.setTitle(collectionData.value.title + " - " + webStyleStore.getTitle);
 
-  await nextTick(() => {
-    const collectionDescriptions = document.querySelectorAll(".dida-content-description");
-    if (collectionDescriptions && collectionDescriptions.length > 0) {
-      collectionDescriptions.forEach((description: any) => {
-        Vditor.mathRender(description);
-        Vditor.highlightRender({ lineNumber: true, enable: true }, description);
-        enhanceCodeCopy(description);
-      });
-    }
-    collectionLoading.value = false;
-  });
+  collectionLoading.value = false;
 });
 </script>
 
@@ -226,7 +216,7 @@ onMounted(async () => {
           </t-descriptions>
         </div>
         <t-card style="margin: 10px" v-if="collectionData?.description">
-          <div v-html="collectionData?.description" class="dida-content-description"></div>
+          <v-md-preview :text="collectionData?.description"></v-md-preview>
         </t-card>
       </t-col>
     </t-row>

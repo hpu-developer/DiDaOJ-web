@@ -1,6 +1,5 @@
 <script setup lang="tsx">
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount, type WatchStopHandle } from "vue";
-import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
@@ -28,7 +27,6 @@ const userStore = useUserStore();
 
 let content = ref("");
 const discussId = ref("");
-const markdownRef = ref<HTMLElement | null>(null);
 const discussLoading = ref(false);
 const discussData = ref<DiscussView | null>(null);
 
@@ -40,6 +38,7 @@ let currentPageSize = 20;
 
 const pagination = ref({
   current: 1,
+  pageSize: 20,
   total: 0,
   defaultPageSize: currentPageSize,
   defaultCurrent: currentPage,
@@ -96,19 +95,8 @@ const fetchCommentList = async (paginationInfo: { current: number; pageSize: num
       if (responseList) {
         for (let i = 0; i < responseList.length; i++) {
           const item = responseList[i];
-          const result = await ParseDiscussComment(item);
+          const result = ParseDiscussComment(item);
           discussCommentList.value?.push(result);
-
-          await nextTick(() => {
-            const discussContents = document.querySelectorAll(".dida-discuss-content");
-            if (discussContents && discussContents.length > 0) {
-              discussContents.forEach((content: any) => {
-                Vditor.mathRender(content);
-                Vditor.highlightRender({ lineNumber: true, enable: true }, content);
-                enhanceCodeCopy(content);
-              });
-            }
-          });
         }
       }
       pagination.value = { ...pagination.value, total: res.data.total_count };
@@ -173,23 +161,9 @@ onMounted(async () => {
 
   webStyleStore.setTitle(discussData.value.title + " - " + webStyleStore.getTitle);
 
-  let discussDescription = discussData.value.content as string;
+  content.value = discussData.value.content as string;
 
-  const options = {
-    math: {
-      inlineDigit: true,
-      engine: "KaTeX",
-    },
-  } as IPreviewOptions;
-  content.value = await Vditor.md2html(discussDescription, options);
-  await nextTick(() => {
-    if (markdownRef.value) {
-      Vditor.mathRender(markdownRef.value);
-      Vditor.highlightRender({ lineNumber: true, enable: true }, markdownRef.value);
-      enhanceCodeCopy(markdownRef.value);
-    }
-    discussLoading.value = false;
-  });
+  discussLoading.value = false;
 
   watchHandle = watch(
     () => route.query,
@@ -252,7 +226,7 @@ onBeforeUnmount(() => {
         </div>
 
         <t-card style="margin: 10px" :header="discussData?.title" :header-bordered="true">
-          <div v-html="content" class="dida-discuss-content"></div>
+          <v-md-preview :text="content" class="dida-discuss-content"></v-md-preview>
         </t-card>
         <t-card v-for="(comment, index) in discussCommentList" :key="index" style="margin: 10px" header-bordered>
           <template #header>
@@ -261,7 +235,7 @@ onBeforeUnmount(() => {
               <span>{{ comment.insertTime }}</span>
             </t-space>
           </template>
-          <div v-html="comment.content" class="dida-discuss-content"></div>
+          <v-md-preview :text="comment.content" class="dida-discuss-content"></v-md-preview>
         </t-card>
         <div style="margin: 10px">
           <t-pagination

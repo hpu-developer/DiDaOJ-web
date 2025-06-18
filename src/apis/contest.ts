@@ -15,7 +15,7 @@ export function GetContestProblemIndexStr(index: number): string {
   return result;
 }
 
-export async function ParseContest(item: Contest): Promise<ContestView> {
+export function ParseContest(item: Contest) {
   const result: ContestView = {} as ContestView;
   result.id = item.id;
   result.ownerId = item.owner_id;
@@ -28,14 +28,7 @@ export async function ParseContest(item: Contest): Promise<ContestView> {
   result.updateTime = new Date(item.update_time).toLocaleString();
   result.private = item.private;
 
-  const options = {
-    math: {
-      inlineDigit: true,
-      engine: "KaTeX",
-    },
-  } as IPreviewOptions;
-
-  result.description = await Vditor.md2html(item.description, options);
+  result.description = item.description;
 
   result.notification = item.notification;
   if (item.problems) {

@@ -4,7 +4,6 @@ import Hitokoto from "@/components/Hitokoto.vue";
 import { GetWebAnnouncement, GetWebNotification } from "@/apis/system.ts";
 import type { Notification, Announcement } from "@/types/system.ts";
 import { ShowTextTipsError, useCurrentInstance } from "@/util";
-import Vditor from "vditor";
 import VChart from "@visactor/vchart";
 import { GetJudgeStaticsRecently } from "@/apis/judge.ts";
 import { GetProblemDailyRecently, ProblemAttemptStatus } from "@/apis/problem.ts";
@@ -30,15 +29,8 @@ const handleReloadStatus = async () => {
 const loadWebAnnouncement = async () => {
   try {
     const announcementRes = await GetWebAnnouncement();
-
-    const options = {
-      math: {
-        inlineDigit: true,
-        engine: "KaTeX",
-      },
-    } as IPreviewOptions;
     announcement.value.title = announcementRes.title;
-    announcement.value.content = await Vditor.md2html(announcementRes.content, options);
+    announcement.value.content = announcementRes.content
   } catch (e) {
     ShowTextTipsError(globalProperties, "加载公告失败");
     announcement.value = {
@@ -188,7 +180,7 @@ onUnmounted(() => {
           <div id="ojStaticsDiv"></div>
 
           <t-card :title="announcement?.title" style="width: calc(100% - 100px); margin: 0 auto">
-            <div v-html="announcement?.content"></div>
+            <v-md-preview :text="announcement?.content"></v-md-preview>
           </t-card>
         </div>
       </t-col>

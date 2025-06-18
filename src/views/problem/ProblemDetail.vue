@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch, WatchStopHandle } from "vue";
-import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetProblem, GetProblemDaily, ParseProblem, PostProblemCrawl } from "@/apis/problem.ts";
@@ -20,7 +19,6 @@ import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
 import { GetContestProblemIndexStr, GetContestProblemRealId, GetContestProblems } from "@/apis/contest.ts";
 import { handleGotoContestProblem } from "@/util/router.ts";
-import { md2html } from "@/util/vditor.ts";
 import SecretPanel from "@/components/SecretPanel.vue";
 
 let route = useRoute();
@@ -324,31 +322,19 @@ const fetchProblemData = async () => {
     }
   }
 
-  const options = {
-    math: {
-      inlineDigit: true,
-      engine: "KaTeX",
-    },
-  } as IPreviewOptions;
-  content.value = await Vditor.md2html(problemDescription, options);
+  content.value = problemDescription;
   await nextTick(() => {
-    if (descriptionMarkdownRef.value) {
-      Vditor.mathRender(descriptionMarkdownRef.value);
-      Vditor.highlightRender({ lineNumber: true, enable: true }, descriptionMarkdownRef.value);
-      enhanceCodeCopy(descriptionMarkdownRef.value);
-
-      if (!codeEditor && codeEditRef.value) {
-        codeEditor = monaco.editor.create(codeEditRef.value, {
-          value: "",
-          language: "cpp",
-          minimap: {
-            enabled: true,
-          },
-          colorDecorators: true, //颜色装饰器
-          readOnly: false, //是否开启已读功能
-          theme: "vs-dark", //主题
-        });
-      }
+    if (!codeEditor && codeEditRef.value) {
+      codeEditor = monaco.editor.create(codeEditRef.value, {
+        value: "",
+        language: "cpp",
+        minimap: {
+          enabled: true,
+        },
+        colorDecorators: true, //颜色装饰器
+        readOnly: false, //是否开启已读功能
+        theme: "vs-dark", //主题
+      });
     }
     problemLoading.value = false;
   });
@@ -364,8 +350,8 @@ const loadDailyData = async () => {
   isDailyProblem.value = true;
   const daily = res.data.problem_daily;
   problemId = daily.problem_id;
-  dailySolution.value = await md2html(daily.solution);
-  dailyCode.value = await md2html(daily.code);
+  dailySolution.value = daily.solution;
+  dailyCode.value = daily.code;
 
   const serverTime = new Date(res.data.time);
   serverTimeOffset = serverTime.getTime() - new Date().getTime();
@@ -381,21 +367,6 @@ const loadDailyData = async () => {
     }
     dailyCodeUnlockCountdown.value = 24 * 60 * 60 - duration;
   }
-
-  await nextTick(() => {
-    if (dailySolutionMarkdownRef.value) {
-      Vditor.mathRender(dailySolutionMarkdownRef.value);
-      Vditor.highlightRender({ lineNumber: true, enable: true }, dailySolutionMarkdownRef.value);
-      enhanceCodeCopy(dailySolutionMarkdownRef.value);
-    }
-
-    if (dailyCodeMarkdownRef.value) {
-      Vditor.mathRender(dailyCodeMarkdownRef.value);
-      Vditor.highlightRender({ lineNumber: true, enable: true }, dailyCodeMarkdownRef.value);
-      enhanceCodeCopy(dailyCodeMarkdownRef.value);
-    }
-  });
-
   if (dailySolutionUnlockCountdown.value >= 0 || dailyCodeUnlockCountdown.value >= 0) {
     createDailyTimer();
   }
@@ -477,11 +448,11 @@ onBeforeUnmount(() => {
     <t-row class="dida-main-content">
       <t-col :span="8">
         <t-card style="margin: 10px">
-          <div v-html="content" ref="descriptionMarkdownRef"></div>
+          <v-md-preview :text="content"></v-md-preview>
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="题解">
           <SecretPanel v-if="dailySolutionUnlockCountdown < 0">
-            <div ref="dailyCodeMarkdownRef" v-html="dailySolution"></div>
+            <v-md-preview :text="dailySolution"></v-md-preview>
           </SecretPanel>
           <div style="text-align: center" v-else>
             <div style="margin-left: -100px">
@@ -502,7 +473,7 @@ onBeforeUnmount(() => {
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="示例代码">
           <SecretPanel v-if="dailyCodeUnlockCountdown < 0">
-            <div ref="dailyCodeMarkdownRef" v-html="dailyCode"></div>
+            <v-md-preview :text="dailyCode"></v-md-preview>
           </SecretPanel>
           <div style="text-align: center" v-else>
             <div style="margin-left: -100px">
