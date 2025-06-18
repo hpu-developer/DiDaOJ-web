@@ -99,7 +99,10 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
         zh: "未找到目标题目",
       },
       "100016": {
-        zh: "已经存在该日期或问题的条目",
+        zh: "已经存在该日期的条目",
+      },
+      "100017": {
+        zh: "已经存在该问题的条目",
       },
     });
   });
