@@ -213,7 +213,7 @@ const fetchData = async (needLoading: boolean) => {
       if (IsJudgeStatusRunning(response.status)) {
         jobProgressStatus.value = "active";
         if (result.taskTotal > 0) {
-          jobProgress.value = (result.taskCurrent / result.taskTotal) * 100;
+          jobProgress.value = Number(((result.taskCurrent / result.taskTotal) * 100).toFixed(2));
           if (result.taskCurrent >= result.taskTotal) {
             jobProgress.value = 99;
           }

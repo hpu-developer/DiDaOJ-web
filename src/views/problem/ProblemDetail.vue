@@ -59,6 +59,7 @@ languageOptions.value = GetSubmitLanguages();
 
 const contestProblems = ref([]);
 
+const dailyUpdateProgressTimer = ref<number | null>(null);
 const dailySolutionUnlockCountdown = ref(-1);
 const dailyCodeUnlockCountdown = ref(-1);
 const dailySolution = ref("");
@@ -71,6 +72,30 @@ const hasEditAuth = computed(() => {
 const hasEditDailyAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblemDaily);
 });
+
+const createDailyTimer = () => {
+  if (dailyUpdateProgressTimer.value) {
+    clearInterval(dailyUpdateProgressTimer.value);
+  }
+  dailyUpdateProgressTimer.value = setInterval(() => {
+    if (dailySolutionUnlockCountdown.value > 0) {
+      dailySolutionUnlockCountdown.value -= 1;
+    }
+    if (dailyCodeUnlockCountdown.value > 0) {
+      dailyCodeUnlockCountdown.value -= 1;
+    }
+    if (dailySolutionUnlockCountdown.value <= 0 || dailyCodeUnlockCountdown.value <= 0) {
+      loadDailyData();
+    }
+  }, 1000);
+};
+
+const clearDailyTimer = () => {
+  if (dailyUpdateProgressTimer.value) {
+    clearInterval(dailyUpdateProgressTimer.value);
+    dailyUpdateProgressTimer.value = null;
+  }
+};
 
 const handleClickTag = (tag: ProblemTag) => {
   if (!tag) {
@@ -285,7 +310,7 @@ const fetchProblemData = async () => {
   if (contestId) {
     res = await GetContestProblems(contestId);
     if (res.code === 0) {
-      res.data.problems.sort((a, b) => a - b);
+      res.data.problems.sort((a: number, b: number) => a - b);
       contestProblems.value = res.data.problems;
     } else {
       ShowErrorTips(globalProperties, res.code);
@@ -323,15 +348,31 @@ const fetchProblemData = async () => {
 };
 
 const loadDailyData = async () => {
+  clearDailyTimer();
   isDailyProblem.value = false;
   const res = await GetProblemDaily(dailyId);
   if (res.code !== 0) {
     return;
   }
   isDailyProblem.value = true;
-  problemId = res.data.problem_id;
-  dailySolution.value = await md2html(res.data.solution);
-  dailyCode.value = await md2html(res.data.code);
+  const daily = res.data.problem_daily;
+  problemId = daily.problem_id;
+  dailySolution.value = await md2html(daily.solution);
+  dailyCode.value = await md2html(daily.code);
+
+  const serverTime = new Date(res.data.time);
+  const timeId = serverTime.toISOString().split("T")[0];
+  if (dailyId === timeId) {
+    // 如果是当日的每日一题，则获取距离18点的倒计时
+    const duration = serverTime.getHours() * 60 * 60 + serverTime.getMinutes() * 60 + serverTime.getSeconds();
+    const duration18 = 18 * 60 * 60;
+    if (duration < duration18) {
+      dailySolutionUnlockCountdown.value = duration18 - duration;
+    } else {
+      dailySolutionUnlockCountdown.value = -1;
+    }
+    dailyCodeUnlockCountdown.value = 24 * 60 * 60 - duration;
+  }
 
   await nextTick(() => {
     if (dailySolutionMarkdownRef.value) {
@@ -347,11 +388,8 @@ const loadDailyData = async () => {
     }
   });
 
-  const nowId = new Date().toISOString().split("T")[0];
-  if (dailyId === nowId) {
-  } else {
-    dailySolutionUnlockCountdown.value = -1;
-    dailyCodeUnlockCountdown.value = -1;
+  if (dailySolutionUnlockCountdown.value >= 0 || dailyCodeUnlockCountdown.value >= 0) {
+    createDailyTimer();
   }
 };
 
@@ -422,6 +460,7 @@ onBeforeUnmount(() => {
     watchHandle();
     watchHandle = null;
   }
+  clearDailyTimer();
 });
 </script>
 
@@ -433,18 +472,41 @@ onBeforeUnmount(() => {
           <div v-html="content" ref="descriptionMarkdownRef"></div>
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="题解">
-          <div v-if="dailySolutionUnlockCountdown < 0" ref="dailyCodeMarkdownRef" v-html="dailyCode"></div>
-          <div v-else>
-            距离解锁百分比
-            <t-progress theme="line" :color="{ from: '#0052D9', to: '#00A870' }" :percentage="60" :status="'active'" />
-            <div ref="dailySolutionMarkdownRef" v-html="dailySolution"></div>
+          <div v-if="dailySolutionUnlockCountdown < 0" ref="dailyCodeMarkdownRef" v-html="dailySolution"></div>
+          <div style="text-align: center" v-else>
+            <div style="margin-left: -100px">
+              <t-space>
+                <p>距离解锁百分比</p>
+                <t-progress
+                  theme="circle"
+                  :color="{ from: '#0052D9', to: '#00A870' }"
+                  :percentage="100 - (dailySolutionUnlockCountdown / (18 * 60 * 60)) * 100"
+                  :status="'active'"
+                >
+                  <template #label>{{ (100 - (dailySolutionUnlockCountdown / (18 * 60 * 60)) * 100).toFixed(3) }}% </template>
+                  >
+                </t-progress>
+              </t-space>
+            </div>
           </div>
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="示例代码">
           <div v-if="dailyCodeUnlockCountdown < 0" ref="dailyCodeMarkdownRef" v-html="dailyCode"></div>
-          <div v-else>
-            距离解锁百分比
-            <t-progress theme="line" :color="{ from: '#0052D9', to: '#00A870' }" :percentage="60" :status="'active'" />
+          <div style="text-align: center" v-else>
+            <div style="margin-left: -100px">
+              <t-space style="margin: 0 auto">
+                <p>距离解锁百分比</p>
+                <t-progress
+                  theme="circle"
+                  :color="{ from: '#0052D9', to: '#00A870' }"
+                  :percentage="100 - (dailyCodeUnlockCountdown / (24 * 60 * 60)) * 100"
+                  :status="'active'"
+                >
+                  <template #label>{{ (100 - (dailyCodeUnlockCountdown / (24 * 60 * 60)) * 100).toFixed(3) }}% </template>
+                  >
+                </t-progress>
+              </t-space>
+            </div>
           </div>
         </t-card>
       </t-col>

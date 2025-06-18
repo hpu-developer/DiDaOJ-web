@@ -204,6 +204,7 @@ onBeforeUnmount(() => {
     <t-row>
       <t-col :span="8">
         <div style="margin: 10px">
+          <t-alert theme="info">可以提前配置将来日期的题目，对外仅展示到截止到当天的题目</t-alert>
           <t-card class="sh-form-card">
             <t-form :model="dailyEditForm">
               <t-form-item label="日期">
@@ -254,7 +255,7 @@ onBeforeUnmount(() => {
 }
 
 .sh-form-card {
-  margin: 60px 10px 10px;
+  margin: 10px;
 }
 
 .dida-description-editor {
