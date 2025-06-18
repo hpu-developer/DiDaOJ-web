@@ -69,12 +69,21 @@ export async function uploadR2Image(
   return null;
 }
 
-
-export function md2html(markdown:string){
+export function md2html(markdown: string) {
   const options = {
     math: {
       inlineDigit: true,
       engine: "KaTeX",
+    },
+    renderers: {
+      renderText: (node, entering) => {
+        console.log("renderText", node, entering);
+        if (entering) {
+          return ["", Lute.WalkContinue];
+        } else {
+          return ["", Lute.WalkContinue];
+        }
+      },
     },
   } as IPreviewOptions;
   return Vditor.md2html(markdown, options);
