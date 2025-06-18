@@ -16,6 +16,7 @@ declare module 'vue' {
     ParseUserList: typeof import('./src/components/user/ParseUserList.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SecretPanel: typeof import('./src/components/SecretPanel.vue')['default']
     SidebarContent: typeof import('./src/components/SidebarContent.vue')['default']
     TAlert: typeof import('tdesign-vue-next')['Alert']
     TAside: typeof import('tdesign-vue-next')['Aside']

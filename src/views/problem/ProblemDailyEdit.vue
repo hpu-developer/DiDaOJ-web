@@ -262,7 +262,7 @@ onBeforeUnmount(() => {
   margin: 20px;
   width: 100%;
   max-width: calc(100vw - 300px);
-  min-height: 500px;
+  min-height: 200px;
   z-index: 9999 !important;
 }
 </style>

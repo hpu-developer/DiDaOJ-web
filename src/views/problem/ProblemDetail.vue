@@ -21,6 +21,7 @@ import { AuthType } from "@/auth";
 import { GetContestProblemIndexStr, GetContestProblemRealId, GetContestProblems } from "@/apis/contest.ts";
 import { handleGotoContestProblem } from "@/util/router.ts";
 import { md2html } from "@/util/vditor.ts";
+import SecretPanel from "@/components/SecretPanel.vue";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -64,6 +65,7 @@ const dailySolutionUnlockCountdown = ref(-1);
 const dailyCodeUnlockCountdown = ref(-1);
 const dailySolution = ref("");
 const dailyCode = ref("");
+let serverTimeOffset = 0;
 
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
@@ -78,13 +80,18 @@ const createDailyTimer = () => {
     clearInterval(dailyUpdateProgressTimer.value);
   }
   dailyUpdateProgressTimer.value = setInterval(() => {
-    if (dailySolutionUnlockCountdown.value > 0) {
-      dailySolutionUnlockCountdown.value -= 1;
+    const solutionUnlock = dailySolutionUnlockCountdown.value <= 0;
+
+    const serverTime = new Date(new Date().getTime() + serverTimeOffset);
+    const duration = serverTime.getHours() * 60 * 60 + serverTime.getMinutes() * 60 + serverTime.getSeconds();
+    const duration18 = 18 * 60 * 60;
+    if (duration < duration18) {
+      dailySolutionUnlockCountdown.value = duration18 - duration;
+    } else {
+      dailySolutionUnlockCountdown.value = -1;
     }
-    if (dailyCodeUnlockCountdown.value > 0) {
-      dailyCodeUnlockCountdown.value -= 1;
-    }
-    if (dailySolutionUnlockCountdown.value <= 0 || dailyCodeUnlockCountdown.value <= 0) {
+    dailyCodeUnlockCountdown.value = 24 * 60 * 60 - duration;
+    if ((!solutionUnlock && dailySolutionUnlockCountdown.value <= 0) || dailyCodeUnlockCountdown.value <= 0) {
       loadDailyData();
     }
   }, 1000);
@@ -361,6 +368,7 @@ const loadDailyData = async () => {
   dailyCode.value = await md2html(daily.code);
 
   const serverTime = new Date(res.data.time);
+  serverTimeOffset = serverTime.getTime() - new Date().getTime();
   const timeId = serverTime.toISOString().split("T")[0];
   if (dailyId === timeId) {
     // 如果是当日的每日一题，则获取距离18点的倒计时
@@ -472,7 +480,9 @@ onBeforeUnmount(() => {
           <div v-html="content" ref="descriptionMarkdownRef"></div>
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="题解">
-          <div v-if="dailySolutionUnlockCountdown < 0" ref="dailyCodeMarkdownRef" v-html="dailySolution"></div>
+          <SecretPanel v-if="dailySolutionUnlockCountdown < 0">
+            <div ref="dailyCodeMarkdownRef" v-html="dailySolution"></div>
+          </SecretPanel>
           <div style="text-align: center" v-else>
             <div style="margin-left: -100px">
               <t-space>
@@ -491,7 +501,9 @@ onBeforeUnmount(() => {
           </div>
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="示例代码">
-          <div v-if="dailyCodeUnlockCountdown < 0" ref="dailyCodeMarkdownRef" v-html="dailyCode"></div>
+          <SecretPanel v-if="dailyCodeUnlockCountdown < 0">
+            <div ref="dailyCodeMarkdownRef" v-html="dailyCode"></div>
+          </SecretPanel>
           <div style="text-align: center" v-else>
             <div style="margin-left: -100px">
               <t-space style="margin: 0 auto">
