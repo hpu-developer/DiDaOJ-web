@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch, WatchStopHa
 import Vditor from "vditor";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetProblem, GetProblemIdByDaily, ParseProblem, PostProblemCrawl } from "@/apis/problem.ts";
+import { GetProblem, GetProblemDaily, ParseProblem, PostProblemCrawl } from "@/apis/problem.ts";
 import { GetHighlightKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
@@ -20,6 +20,7 @@ import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
 import { GetContestProblemIndexStr, GetContestProblemRealId, GetContestProblems } from "@/apis/contest.ts";
 import { handleGotoContestProblem } from "@/util/router.ts";
+import { md2html } from "@/util/vditor.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -38,7 +39,10 @@ let problemIndex = ref(0);
 const isContestProblem = ref(false);
 const isDailyProblem = ref(false);
 
-const markdownRef = ref<HTMLElement | null>(null);
+const descriptionMarkdownRef = ref<HTMLElement | null>(null);
+const dailySolutionMarkdownRef = ref<HTMLElement | null>(null);
+const dailyCodeMarkdownRef = ref<HTMLElement | null>(null);
+
 const problemLoading = ref(false);
 const problemData = ref<ProblemView | null>(null);
 let codeEditor = null as IStandaloneCodeEditor | null;
@@ -54,6 +58,9 @@ const languageOptions = ref([] as { label: string; value: JudgeLanguage }[]);
 languageOptions.value = GetSubmitLanguages();
 
 const contestProblems = ref([]);
+
+const dailySolution = ref("");
+const dailyCode = ref("");
 
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
@@ -274,10 +281,10 @@ const fetchProblemData = async () => {
   } as IPreviewOptions;
   content.value = await Vditor.md2html(problemDescription, options);
   await nextTick(() => {
-    if (markdownRef.value) {
-      Vditor.mathRender(markdownRef.value);
-      Vditor.highlightRender({ lineNumber: true, enable: true }, markdownRef.value);
-      enhanceCodeCopy(markdownRef.value);
+    if (descriptionMarkdownRef.value) {
+      Vditor.mathRender(descriptionMarkdownRef.value);
+      Vditor.highlightRender({ lineNumber: true, enable: true }, descriptionMarkdownRef.value);
+      enhanceCodeCopy(descriptionMarkdownRef.value);
 
       if (!codeEditor && codeEditRef.value) {
         codeEditor = monaco.editor.create(codeEditRef.value, {
@@ -296,6 +303,33 @@ const fetchProblemData = async () => {
   });
 };
 
+const loadDailyData = async () => {
+  isDailyProblem.value = false;
+  const res = await GetProblemDaily(dailyId);
+  if (res.code !== 0) {
+    return;
+  }
+  isDailyProblem.value = true;
+  problemId = res.data.problem_id;
+  dailySolution.value = await md2html(res.data.solution);
+  dailyCode.value = await md2html(res.data.code);
+
+  await nextTick(() => {
+    Vditor.mathRender(dailySolutionMarkdownRef.value);
+    Vditor.highlightRender({ lineNumber: true, enable: true }, dailySolutionMarkdownRef.value);
+    enhanceCodeCopy(dailySolutionMarkdownRef.value);
+
+    Vditor.mathRender(dailyCodeMarkdownRef.value);
+    Vditor.highlightRender({ lineNumber: true, enable: true }, dailyCodeMarkdownRef.value);
+    enhanceCodeCopy(dailyCodeMarkdownRef.value);
+  });
+
+  const nowId = new Date().toISOString().split("T")[0];
+  if (dailyId === nowId) {
+  } else {
+  }
+};
+
 onMounted(async () => {
   watchHandle = watch(
     () => route.params,
@@ -312,11 +346,7 @@ onMounted(async () => {
         } else {
           dailyId = route.params.dailyId;
         }
-        const res = await GetProblemIdByDaily(dailyId);
-        if (res.code === 0) {
-          isDailyProblem.value = true;
-          problemId = res.data;
-        }
+        await loadDailyData();
       }
       if (!problemId) {
         if (Array.isArray(route.params.contestId)) {
@@ -373,15 +403,17 @@ onBeforeUnmount(() => {
     <t-row class="dida-main-content">
       <t-col :span="8">
         <t-card style="margin: 10px">
-          <div v-html="content" ref="markdownRef"></div>
+          <div v-html="content" ref="descriptionMarkdownRef"></div>
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="题解">
           距离解锁百分比
           <t-progress theme="line" :color="{ from: '#0052D9', to: '#00A870' }" :percentage="60" :status="'active'" />
+          <div ref="dailySolutionMarkdownRef" v-html="dailySolution"></div>
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="示例代码">
           距离解锁百分比
           <t-progress theme="line" :color="{ from: '#0052D9', to: '#00A870' }" :percentage="60" :status="'active'" />
+          <div ref="dailyCodeMarkdownRef" v-html="dailyCode"></div>
         </t-card>
       </t-col>
       <t-col :span="4">

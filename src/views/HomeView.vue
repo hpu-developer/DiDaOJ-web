@@ -206,14 +206,14 @@ onUnmounted(() => {
             <t-list-item v-for="item in problemDailies" :key="item.id">
               <t-list-item-meta style="width: 100px">
                 <template #description>
-                  <t-link @click="$router.push({ name: 'problem-detail', params: { problemId: item.problemId } })">
+                  <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.id } })">
                     {{ item.problemId }}
                   </t-link>
                 </template>
               </t-list-item-meta>
               <t-list-item-meta style="width: 200px">
                 <template #description>
-                  <t-link @click="$router.push({ name: 'problem-detail', params: { problemId: item.problemId } })">
+                  <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.id } })">
                     {{ item.title }}
                   </t-link>
                 </template>
