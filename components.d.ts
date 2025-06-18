@@ -30,6 +30,7 @@ declare module 'vue' {
     TCollapse: typeof import('tdesign-vue-next')['Collapse']
     TCollapsePanel: typeof import('tdesign-vue-next')['CollapsePanel']
     TContent: typeof import('tdesign-vue-next')['Content']
+    TDatePicker: typeof import('tdesign-vue-next')['DatePicker']
     TDateRangePicker: typeof import('tdesign-vue-next')['DateRangePicker']
     TDescriptions: typeof import('tdesign-vue-next')['Descriptions']
     TDescriptionsItem: typeof import('tdesign-vue-next')['DescriptionsItem']

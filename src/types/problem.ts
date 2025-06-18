@@ -65,6 +65,11 @@ export interface ProblemDaily {
   attempt: number;
   solution?: string;
   code?: string;
+
+  create_time?: string; // 创建时间
+  update_time?: string; // 更新时间
+  creator_nickname?: string; // 创建者昵称
+  updater_nickname?: string; // 更新者昵称
 }
 
 export interface ProblemDailyView {
@@ -76,4 +81,9 @@ export interface ProblemDailyView {
   attempt: number;
   solution?: string;
   code?: string;
+
+  createTime?: string; // 创建时间
+  updateTime?: string; // 更新时间
+  creatorNickname?: string; // 创建者昵称
+  updaterNickname?: string; // 更新者昵称
 }

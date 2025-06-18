@@ -95,6 +95,12 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100014": {
         zh: "申请访问失败，密码错误",
       },
+      "100015": {
+        zh: "未找到目标题目",
+      },
+      "100016": {
+        zh: "已经存在该日期或问题的条目",
+      },
     });
   });
 }

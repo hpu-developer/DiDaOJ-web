@@ -9,6 +9,7 @@ import { AuthType } from "@/auth";
 import ProblemList from "@/views/problem/ProblemList.vue";
 import ProblemDetail from "@/views/problem/ProblemDetail.vue";
 import ProblemDailyList from "@/views/problem/ProblemDailyList.vue";
+import ProblemDailyEdit from "@/views/problem/ProblemDailyEdit.vue";
 import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 import ProblemEdit from "@/views/problem/ProblemEdit.vue";
 import ProblemJudge from "@/views/problem/ProblemJudge.vue";
@@ -412,6 +413,28 @@ const viewsConfig = [
     icon: "list",
     component: ProblemEdit,
     auths: [AuthType.ManageProblem],
+  },
+  {
+    name: "manage-problem-daily-create",
+    tab: "manage",
+    sidebar: "manage-problem-daily-create",
+    disableSidebar: true,
+    path: "problem/daily",
+    title: "新建每日一题",
+    icon: "list",
+    component: ProblemDailyEdit,
+    auths: [AuthType.ManageProblemDaily],
+  },
+  {
+    name: "manage-problem-daily",
+    tab: "manage",
+    sidebar: "manage-problem-daily",
+    disableSidebar: true,
+    path: "problem/daily/:dailyId+",
+    title: "编辑每日一题",
+    icon: "list",
+    component: ProblemDailyEdit,
+    auths: [AuthType.ManageProblemDaily],
   },
   {
     name: "manage-problem-judge",

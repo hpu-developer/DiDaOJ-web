@@ -109,6 +109,19 @@ export function ParseProblemDaily(item: ProblemDaily, tagsMap: { [key: number]: 
   result.solution = item.solution;
   result.code = item.code;
 
+  if (item.create_time != undefined) {
+    result.createTime = new Date(item.create_time).toLocaleString();
+  }
+  if (item.update_time != undefined) {
+    result.updateTime = new Date(item.update_time).toLocaleString();
+  }
+  if (item.creator_nickname != undefined) {
+    result.creatorNickname = item.creator_nickname;
+  }
+  if (item.updater_nickname != undefined) {
+    result.updaterNickname = item.updater_nickname;
+  }
+
   return result;
 }
 
@@ -181,6 +194,13 @@ export function GetProblemRecommend(problemId: string) {
 export function GetProblemDaily(dailyId: string) {
   return httpRequest({
     url: "/problem/daily" + "?id=" + dailyId,
+    method: "get",
+  });
+}
+
+export function GetProblemDailyEdit(dailyId: string) {
+  return httpRequest({
+    url: "/problem/daily/edit" + "?id=" + dailyId,
     method: "get",
   });
 }
@@ -281,6 +301,32 @@ export function PostProblemEdit(
   });
 }
 
+export function PostProblemDailyCreate(id: string, problemId: string, solution: string, code: string) {
+  return httpRequest({
+    url: "/problem/daily/create",
+    method: "post",
+    data: {
+      id: id,
+      problem_id: problemId,
+      solution: solution,
+      code: code,
+    },
+  });
+}
+
+export function PostProblemDailyEdit(dailyId: string, problemId: string, solution: string, code: string) {
+  return httpRequest({
+    url: "/problem/daily/edit",
+    method: "post",
+    data: {
+      id: dailyId,
+      problem_id: problemId,
+      solution: solution,
+      code: code,
+    },
+  });
+}
+
 export function GetJudgeDataDownload(id: string, key: string) {
   return httpRequest({
     url: "/problem/judge/data/download" + "?id=" + id + "&key=" + key,
@@ -289,8 +335,21 @@ export function GetJudgeDataDownload(id: string, key: string) {
 }
 
 export function GetProblemImageToken(problemId: string) {
+  if (!problemId) {
+    problemId = "";
+  }
   return httpRequest({
     url: "/problem/image/token" + "?id=" + problemId,
+    method: "get",
+  });
+}
+
+export function GetProblemDailyImageToken(dailyId: string) {
+  if (!dailyId) {
+    dailyId = "";
+  }
+  return httpRequest({
+    url: "/problem/daily/image/token" + "?id=" + dailyId,
     method: "get",
   });
 }

@@ -199,7 +199,7 @@ const handleClickTag = (tag: ProblemTag) => {
 };
 
 const handleClickCreate = () => {
-  router.push({ name: "manage-problem-create" });
+  router.push({ name: "manage-problem-daily-create" });
 };
 
 const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {

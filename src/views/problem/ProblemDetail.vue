@@ -68,6 +68,10 @@ const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
 });
 
+const hasEditDailyAuth = computed(() => {
+  return userStore.hasAuth(AuthType.ManageProblemDaily);
+});
+
 const handleClickTag = (tag: ProblemTag) => {
   if (!tag) {
     return;
@@ -78,6 +82,19 @@ const handleClickTag = (tag: ProblemTag) => {
       ...route.query,
       title: "",
       tag: tag.name,
+    },
+  });
+};
+
+const handleClickDailyEdit = async () => {
+  if (!dailyId) {
+    ShowTextTipsError(globalProperties, "每日问题ID无效");
+    return;
+  }
+  await router.push({
+    name: "manage-problem-daily",
+    params: {
+      dailyId: dailyId,
     },
   });
 };
@@ -487,8 +504,9 @@ onBeforeUnmount(() => {
               <t-button @click="handleClickRecommend" v-if="problemId">题目推荐</t-button>
             </t-space>
           </div>
-          <div class="dida-operation-container" v-if="hasEditAuth || problemData?.originId">
+          <div class="dida-operation-container" v-if="(isDailyProblem && hasEditDailyAuth) || hasEditAuth || problemData?.originId">
             <t-space>
+              <t-button v-if="isDailyProblem && hasEditDailyAuth" @click="handleClickDailyEdit">每日一题</t-button>
               <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
               <t-button v-if="problemData?.originId" @click="handleClickCrawl" :loading="problemCrawlLoading">更新描述 </t-button>
             </t-space>

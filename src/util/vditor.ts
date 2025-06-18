@@ -12,7 +12,7 @@ export function PostR2Image(uploadUrl: string, image: File) {
   });
 }
 
-export async function uploadProblemImage(
+export async function uploadR2Image(
   descriptionEditor: Vditor,
   files: File[],
   globalProperties: ComponentCustomProperties & Record<string, any>,

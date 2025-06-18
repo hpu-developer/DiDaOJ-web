@@ -2,13 +2,22 @@
   ManageWeb = "i-manage-web",
   ManageJudge = "i-manage-judge",
   ManageProblem = "i-manage-problem",
+  ManageProblemDaily = "i-manage-problem-daily",
   ManageContest = "i-manage-contest",
   ManageCollection = "i-manage-collection",
 }
 
 const roleAuths: Record<string, string[]> = {
-  "r-admin": [AuthType.ManageWeb, AuthType.ManageJudge, AuthType.ManageProblem, AuthType.ManageContest, AuthType.ManageCollection],
+  "r-admin": [
+    AuthType.ManageWeb,
+    AuthType.ManageJudge,
+    AuthType.ManageProblem,
+    AuthType.ManageProblemDaily,
+    AuthType.ManageContest,
+    AuthType.ManageCollection,
+  ],
 };
+
 export function getRolesAllAuths(roles: string[] | undefined): string[] {
   if (roles == null) {
     return [];

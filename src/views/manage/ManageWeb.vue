@@ -4,7 +4,7 @@ import { GetSystemImageToken, GetWebAnnouncement, GetWebNotification, PostAnnoun
 import { Notification, Announcement } from "@/types/system.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import Vditor from "vditor";
-import { uploadProblemImage } from "@/util/vditor.ts";
+import { uploadR2Image } from "@/util/vditor.ts";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -92,7 +92,7 @@ const loadWebAnnouncement = async () => {
           .replace("/\\s/g", "");
       },
       async handler(files: File[]) {
-        return uploadProblemImage(announcementEditor as Vditor, files, globalProperties, GetSystemImageToken);
+        return uploadR2Image(announcementEditor as Vditor, files, globalProperties, GetSystemImageToken);
       },
     },
     preview: {

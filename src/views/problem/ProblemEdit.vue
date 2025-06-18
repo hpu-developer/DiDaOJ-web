@@ -5,10 +5,10 @@ import router from "@/router";
 import { ChevronDownIcon } from "tdesign-icons-vue-next";
 import Vditor from "vditor";
 import { GetProblem, GetProblemImageToken, GetProblemTagList, ParseProblem, PostProblemCreate, PostProblemEdit } from "@/apis/problem.ts";
-import { CloseTips, ShowErrorTips, ShowTextTipsInfo, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ProblemTag, ProblemView } from "@/types/problem.ts";
-import { PostR2Image } from "@/util/vditor.ts";
+import { uploadR2Image } from "@/util/vditor.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -208,63 +208,10 @@ const loadDescriptionEditor = (description: string) => {
     },
     upload: {
       accept: "image/*,.mp3, .wav, .rar",
-      token: "test",
-      url: "/api/upload/editor",
-      linkToImgUrl: "/api/upload/fetch",
-      filename(name) {
-        return name
-          .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")
-          .replace(/[\?\\/:|<>\*\[\]\(\)\$%\{\}@~]/g, "")
-          .replace("/\\s/g", "");
-      },
       async handler(files: File[]) {
-        if (!descriptionEditor) {
-          ShowErrorTips(globalProperties, "编辑器已失效，请刷新后重试");
-          return null;
-        }
-
-        const loadingMessage = ShowTextTipsInfo(globalProperties, "图片正在上传，请稍候...", 0);
-
-        console.log("正在上传图片", files);
-
-        descriptionEditor.disabled();
-
-        for (const file of files) {
-          console.log(file);
-
-          // 使用唯一字符串作为占位符，避免替换出错
-          let randomRequestId = crypto.randomUUID?.() || Math.random().toString(36).substring(2);
-          const originalPlace = `[正在上传 ⏳ ${randomRequestId}]`;
-          let randomContent = originalPlace.replace("⏳", `<span class="sh-anim-loop" style="display: inline-block; font-size: 16px;">⏳</span>`);
-
-          descriptionEditor.insertValue(`\n${randomContent}\n`, false);
-
-          const res = await GetProblemImageToken(problemId.value);
-          if (res.code !== 0) {
-            ShowErrorTips(globalProperties, res.code);
-            let finalContent = descriptionEditor.getValue();
-            finalContent = finalContent.replace(originalPlace, "图片上传失败");
-            descriptionEditor.setValue(finalContent);
-            continue;
-          }
-          // 获取上传的 token
-          const uploadUrl = res.data.upload_url;
-
-          await PostR2Image(uploadUrl, file);
-
-          // 构建 Markdown 图片语法
-          const content = "![图片](" + res.data.preview_url + ")";
-
-          // 替换掉占位符
-          let finalContent = descriptionEditor.getValue();
-          finalContent = finalContent.replace(originalPlace, content);
-          descriptionEditor.setValue(finalContent);
-        }
-
-        descriptionEditor.enable();
-        CloseTips(globalProperties, loadingMessage);
-
-        return null;
+        return uploadR2Image(descriptionEditor as Vditor, files, globalProperties, () => {
+          return GetProblemImageToken(problemId.value);
+        });
       },
     },
     preview: {
