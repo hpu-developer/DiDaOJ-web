@@ -25,10 +25,38 @@ import 'monaco-editor/esm/vs/basic-languages/go/go.contribution'
 import 'monaco-editor/esm/vs/basic-languages/lua/lua.contribution'
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution'
 
-import VMdPreview from '@kangc/v-md-editor/lib/preview';
-import '@kangc/v-md-editor/lib/style/preview.css';
+// highlightjs
+import hljs from 'highlight.js';
+
 import githubTheme from '@kangc/v-md-editor/lib/theme/github.js';
 import '@kangc/v-md-editor/lib/theme/style/github.css';
+import '@kangc/v-md-editor/lib/style/codemirror-editor.css';
+import '@kangc/v-md-editor/lib/style/preview.css';
+
+import VMdEditor from '@kangc/v-md-editor/lib/codemirror-editor';
+// codemirror 编辑器的相关资源
+import Codemirror from 'codemirror';
+// mode
+import 'codemirror/mode/markdown/markdown';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/mode/css/css';
+import 'codemirror/mode/htmlmixed/htmlmixed';
+import 'codemirror/mode/vue/vue';
+// edit
+import 'codemirror/addon/edit/closebrackets';
+import 'codemirror/addon/edit/closetag';
+import 'codemirror/addon/edit/matchbrackets';
+// placeholder
+import 'codemirror/addon/display/placeholder';
+// active-line
+import 'codemirror/addon/selection/active-line';
+// scrollbar
+import 'codemirror/addon/scroll/simplescrollbars';
+import 'codemirror/addon/scroll/simplescrollbars.css';
+// style
+import 'codemirror/lib/codemirror.css';
+
+import VMdPreview from '@kangc/v-md-editor/lib/preview';
 
 import createLineNumbertPlugin from '@kangc/v-md-editor/lib/plugins/line-number/index';
 import createKatexPlugin from '@kangc/v-md-editor/lib/plugins/katex/cdn';
@@ -40,8 +68,17 @@ import createMermaidPlugin from '@kangc/v-md-editor/lib/plugins/mermaid/cdn';
 import '@kangc/v-md-editor/lib/plugins/mermaid/mermaid.css';
 import createAlignPlugin from '@kangc/v-md-editor/lib/plugins/align';
 
-// highlightjs
-import hljs from 'highlight.js';
+
+VMdEditor.Codemirror = Codemirror;
+VMdEditor.use(githubTheme, {
+  Hljs: hljs,
+});
+VMdEditor.use(createKatexPlugin());
+VMdEditor.use(createCopyCodePlugin());
+VMdEditor.use(createLineNumbertPlugin());
+VMdEditor.use(createTodoListPlugin());
+VMdEditor.use(createMermaidPlugin());
+VMdEditor.use(createAlignPlugin());
 
 VMdPreview.use(githubTheme, {
   Hljs: hljs,
@@ -63,6 +100,7 @@ app.use(router);
 app.use(TDesign);
 
 app.use(VMdPreview);
+app.use(VMdEditor);
 
 app.mount("#app");
 
