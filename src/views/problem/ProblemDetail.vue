@@ -455,7 +455,7 @@ onBeforeUnmount(() => {
             <v-md-preview :text="dailySolution"></v-md-preview>
           </SecretPanel>
           <div style="text-align: center" v-else>
-            <div style="margin-left: -100px">
+            <div>
               <t-space>
                 <p>距离解锁百分比</p>
                 <t-progress
@@ -476,7 +476,7 @@ onBeforeUnmount(() => {
             <v-md-preview :text="dailyCode"></v-md-preview>
           </SecretPanel>
           <div style="text-align: center" v-else>
-            <div style="margin-left: -100px">
+            <div>
               <t-space style="margin: 0 auto">
                 <p>距离解锁百分比</p>
                 <t-progress
