@@ -201,15 +201,25 @@ onBeforeUnmount(() => {
     </t-row>
     <div>
       <p style="margin-left: 20px">题解：</p>
-      <t-loading :loading="isSaving">
-        <md-editor-v3 v-model="dailyEditForm.solution" @save="handleClickSave" @onUploadImg="handleUploadImg" previewTheme="cyanosis"></md-editor-v3>
-      </t-loading>
+      <md-editor-v3
+        id="daily-solution-editor"
+        v-model="dailyEditForm.solution"
+        @save="handleClickSave"
+        @onUploadImg="handleUploadImg"
+        previewTheme="cyanosis"
+      ></md-editor-v3>
+      <t-loading :loading="isSaving" attach="#daily-solution-editor" :z-index="100000"></t-loading>
     </div>
     <div>
       <p style="margin-left: 20px">标程：</p>
-      <t-loading :loading="isSaving">
-        <md-editor-v3 v-model="dailyEditForm.code" @save="handleClickSave" @onUploadImg="handleUploadImg" previewTheme="cyanosis"></md-editor-v3>
-      </t-loading>
+      <md-editor-v3
+        id="daily-code-editor"
+        v-model="dailyEditForm.code"
+        @save="handleClickSave"
+        @onUploadImg="handleUploadImg"
+        previewTheme="cyanosis"
+      ></md-editor-v3>
+      <t-loading :loading="isSaving" attach="#daily-code-editor" :z-index="100000"></t-loading>
     </div>
   </t-loading>
 </template>

@@ -447,7 +447,7 @@ onBeforeUnmount(() => {
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="题解">
           <SecretPanel v-if="dailySolutionUnlockCountdown < 0">
-            <MdPreview :modelValue="dailySolution"></MdPreview>
+            <md-preview :model-value="dailySolution" previewTheme="cyanosis" />
           </SecretPanel>
           <div style="text-align: center" v-else>
             <div>
@@ -468,7 +468,7 @@ onBeforeUnmount(() => {
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="示例代码">
           <SecretPanel v-if="dailyCodeUnlockCountdown < 0">
-            <MdPreview :modelValue="dailyCode"></MdPreview>
+            <md-preview :model-value="dailyCode" previewTheme="cyanosis" />
           </SecretPanel>
           <div style="text-align: center" v-else>
             <div>

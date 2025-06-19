@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, watch, onBeforeUnmount, type WatchStopHandle } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { MdEditor, MdPreview } from "md-editor-v3";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsError, useCurrentInstance } from "@/util";
 import { GetDiscuss, ParseDiscuss, GetDiscussCommentList, ParseDiscussComment } from "@/apis/discuss.ts";
 import { DiscussComment, DiscussCommentView, DiscussTag, DiscussView } from "@/types/discuss.ts";
@@ -216,7 +215,7 @@ onBeforeUnmount(() => {
         </div>
 
         <t-card style="margin: 10px" :header="discussData?.title" :header-bordered="true">
-          <MdPreview :modelValue="discussContent" class="dida-discuss-content"></MdPreview>
+          <md-preview :model-value="discussContent" previewTheme="cyanosis" />
         </t-card>
         <t-card v-for="(comment, index) in discussCommentList" :key="index" style="margin: 10px" header-bordered>
           <template #header>
@@ -225,7 +224,7 @@ onBeforeUnmount(() => {
               <span>{{ comment.insertTime }}</span>
             </t-space>
           </template>
-          <MdPreview :modelValue="comment.content" class="dida-discuss-content"></MdPreview>
+          <md-preview :model-value="comment.content" previewTheme="cyanosis" />
         </t-card>
         <div style="margin: 10px">
           <t-pagination
