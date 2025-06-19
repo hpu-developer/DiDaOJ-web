@@ -31,18 +31,19 @@ import { config } from "md-editor-v3";
 import LinkAttr from "markdown-it-link-attributes";
 import container from "markdown-it-container";
 
-import shortcodeInlinePlugin from '@/util/shortcode.ts';
+import shortcodeInlinePlugin from "@/util/shortcode.ts";
 
 config({
   markdownItConfig(mdit) {
     mdit.use(container, "align-right", {
-      render(tokens, idx) {
+      render(tokens: any[], idx: number) {
         return tokens[idx].nesting === 1 ? '<div class="sh-align-right">\n' : "</div>\n";
       },
     });
     mdit.use(shortcodeInlinePlugin, {
       renderers: {
-        problem: ([id]) => `<a href="/problem/${id}" target="_blank" class="sh-problem-tag t-tag t-tag--default t-tag--dark" data-id="${id}">${id}</a>`,
+        problem: ([id]) =>
+          `<a href="/problem/${id}" target="_blank" class="sh-problem-tag t-tag t-tag--default t-tag--dark" data-id="${id}">${id}</a>`,
       },
     });
   },

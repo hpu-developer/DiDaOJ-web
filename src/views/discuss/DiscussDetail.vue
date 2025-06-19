@@ -206,7 +206,7 @@ onBeforeUnmount(() => {
               </t-breadcrumb-item>
             </template>
             <template v-else>
-              <t-breadcrumb-item :to="{ name: 'discuss-list-problem' }"> 问题讨论</t-breadcrumb-item>
+              <t-breadcrumb-item :to="{ name: 'discuss-list-problem' }"> 题目讨论</t-breadcrumb-item>
               <t-breadcrumb-item :to="{ name: 'problem-detail', params: { problemId: discussData?.problemId } }">
                 {{ discussData?.problemTitle }}
               </t-breadcrumb-item>
@@ -239,7 +239,12 @@ onBeforeUnmount(() => {
         </div>
 
         <div style="margin: 10px">
-          <MdEditor v-model="discussComment" class="dida-comment-editor"></MdEditor>
+          <md-editor-v3
+            id="discuss-comment-editor"
+            v-model="discussComment"
+            previewTheme="cyanosis"
+          ></md-editor-v3>
+          <t-loading :loading="false" attach="#discuss-comment-editor" :z-index="100000"></t-loading>
           <div style="margin: 10px; text-align: right">
             <t-space>
               <t-button theme="primary" @click="handleSaveReply">提交</t-button>

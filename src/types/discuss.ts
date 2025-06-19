@@ -61,7 +61,7 @@ export interface DiscussCommentView {
   updateTime: string;
 }
 
-export interface DiscussCreateRequest {
+export interface DiscussEditRequest {
   title: string;
   content: string;
 }

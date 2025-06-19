@@ -29,6 +29,7 @@ import ContestEdit from "@/views/contest/ContestEdit.vue";
 
 import DiscussList from "@/views/discuss/DiscussList.vue";
 import DiscussDetail from "@/views/discuss/DiscussDetail.vue";
+import DiscussEdit from "@/views/discuss/DiscussEdit.vue";
 
 import RankUser from "@/views/rank/RankUser.vue";
 import UserForget from "@/views/user/UserForget.vue";
@@ -271,20 +272,33 @@ const viewsConfig = [
     component: DiscussList,
   },
   {
+    name: "discuss-create",
+    tab: "discuss",
+    sidebar: "discuss-create",
+    disableSidebar: true,
+    needLogin: true,
+    path: "create",
+    title: "新建讨论",
+    icon: "list",
+    component: DiscussEdit,
+  },
+  {
+    name: "discuss-edit",
+    tab: "discuss-detail-tab",
+    sidebar: "discuss-edit",
+    disableSidebar: true,
+    needLogin: true,
+    path: ":discussId+/edit",
+    title: "编辑讨论",
+    icon: "list",
+    component: DiscussEdit,
+  },
+  {
     name: "discuss-list-problem",
     tab: "discuss",
     sidebar: "discuss-list-problem",
     path: "problem",
-    title: "问题讨论",
-    icon: "list",
-    component: DiscussList,
-  },
-  {
-    name: "discuss-list-judge",
-    tab: "discuss",
-    sidebar: "discuss-list-judge",
-    path: "judge",
-    title: "评测讨论",
+    title: "题目讨论",
     icon: "list",
     component: DiscussList,
   },

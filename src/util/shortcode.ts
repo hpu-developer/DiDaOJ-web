@@ -1,5 +1,4 @@
-﻿import type MarkdownIt from 'markdown-it';
-import type Token from 'markdown-it/lib/token';
+﻿import type MarkdownIt from "markdown-it";
 
 // 定义一个通用的渲染器：接受字符串数组（参数列表），返回字符串（HTML）
 type ShortcodeRenderer = (args: string[]) => string;
@@ -15,17 +14,13 @@ function shortcodeInlinePlugin(md: MarkdownIt, options: ShortcodePluginOptions =
   const renderers = options.renderers || {};
 
   // 原本的 text 渲染器
-  const defaultRender = md.renderer.rules.text ?? function (tokens: Token[], idx: number) {
-    return tokens[idx].content;
-  };
+  const defaultRender =
+    md.renderer.rules.text ??
+    function (tokens: any[], idx: number) {
+      return tokens[idx].content;
+    };
 
-  md.renderer.rules.text = function (
-    tokens: Token[],
-    idx: number,
-    opts,
-    env,
-    self
-  ) {
+  md.renderer.rules.text = function (tokens: any[], idx: number, opts, env, self) {
     const token = tokens[idx];
     const content = token.content;
 
@@ -35,10 +30,10 @@ function shortcodeInlinePlugin(md: MarkdownIt, options: ShortcodePluginOptions =
     }
 
     // 替换所有匹配的 shortcode
-    const replaced = content.replace(pattern, (_, name: string, argStr: string) => {
+    const replaced = content.replace(pattern, (_: any, name: string, argStr: string) => {
       const renderer = renderers[name];
 
-      if (typeof renderer === 'function') {
+      if (typeof renderer === "function") {
         const args = argStr.trim().split(/\s+/);
         return renderer(args);
       } else {

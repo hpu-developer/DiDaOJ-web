@@ -3,8 +3,8 @@ import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetDiscussList, ParseDiscuss, PostCreateDiscuss } from "@/apis/discuss.ts";
-import { Discuss, DiscussCreateRequest, DiscussView } from "@/types/discuss.ts";
+import { GetDiscussList, ParseDiscuss } from "@/apis/discuss.ts";
+import { Discuss, DiscussView } from "@/types/discuss.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { handleGotoUsername } from "@/util/router.ts";
@@ -15,10 +15,9 @@ const { globalProperties } = useCurrentInstance();
 
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
-const modalShow = ref(false);
-const confirmLoading = ref(false);
 
 let contestId = -1;
+let onlyProblemDiscuss = ref(false);
 
 const listColumns = ref<BaseTableCol[]>([] as BaseTableCol[]);
 
@@ -82,11 +81,6 @@ const discussSearchForm = ref({
   username: "",
 });
 
-const discussCreateForm = ref<DiscussCreateRequest>({
-  title: "",
-  content: "",
-});
-
 const handleGotoProblem = (id: string) => {
   if (!id) {
     return;
@@ -129,6 +123,7 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   try {
     const { current, pageSize } = paginationInfo;
     const res = await GetDiscussList(
+      onlyProblemDiscuss.value,
       contestId,
       discussSearchForm.value.problemId,
       discussSearchForm.value.title,
@@ -180,28 +175,10 @@ const onPageChange = async (pageInfo: { current: number; pageSize: number }) => 
   });
 };
 
-const handleCreateDiscuss = () => {
-  modalShow.value = true;
-};
-
-const handleConfirmCreate = async () => {
-  confirmLoading.value = true;
-
-  console.log("discussCreateForm", discussCreateForm.value);
-
-  PostCreateDiscuss(discussCreateForm.value)
-    .then((res) => {
-      if (res.code === 0) {
-        ShowTextTipsInfo(globalProperties, "创建比赛成功");
-        modalShow.value = false;
-        router.push({ path: "/discuss/" + res.data.id });
-      } else {
-        ShowErrorTips(globalProperties, res.code);
-      }
-    })
-    .finally(() => {
-      confirmLoading.value = false;
-    });
+const handleCreateDiscuss = async () => {
+  await router.push({
+    name: "discuss-create",
+  });
 };
 
 // 初始化分页信息
@@ -211,6 +188,11 @@ onMounted(async () => {
   watchHandle = watch(
     () => route.query,
     (newQuery) => {
+      if (!viewActive) {
+        return;
+      }
+      onlyProblemDiscuss.value = route.name === "discuss-list-problem";
+
       if (Array.isArray(route.params.contestId)) {
         contestId = Number(route.params.contestId[0]);
       } else {
@@ -323,26 +305,10 @@ onBeforeUnmount(() => {
       </div>
     </t-col>
   </t-row>
-
-  <t-dialog v-model:visible="modalShow" header="创建讨论" @confirm="handleConfirmCreate" :confirm-loading="confirmLoading">
-    <t-form :label-width="80" :model="discussCreateForm" @submit.prevent>
-      <t-form-item label="标题">
-        <t-input v-model="discussCreateForm.title" placeholder="请输入标题"></t-input>
-      </t-form-item>
-    </t-form>
-  </t-dialog>
 </template>
 
 <style scoped>
 .sh-card {
   margin: 10px;
-}
-
-.sh-background-black {
-  background-color: #212121;
-}
-
-.sh-tag-button {
-  margin: 2px;
 }
 </style>

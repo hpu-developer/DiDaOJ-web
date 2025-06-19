@@ -1,7 +1,7 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import type { Discuss, DiscussView, DiscussCreateRequest, DiscussComment, DiscussCommentView } from "@/types/discuss";
+import type { Discuss, DiscussView, DiscussEditRequest, DiscussComment, DiscussCommentView } from "@/types/discuss";
 
 export function ParseDiscuss(item: Discuss): DiscussView {
   const result: DiscussView = {} as DiscussView;
@@ -38,7 +38,7 @@ export function ParseDiscussComment(item: DiscussComment): DiscussCommentView {
   result.authorNickname = item.author_nickname;
   result.content = "";
   if (item.content) {
-    result.content = item.content
+    result.content = item.content;
   }
   if (item.insert_time) {
     result.insertTime = new Date(item.insert_time).toLocaleString();
@@ -59,8 +59,21 @@ export function GetDiscuss(discussId: string) {
   });
 }
 
-export function GetDiscussList(contestId: number, problemId: string, title: string, username: string, page: number, pageSize: number) {
+export function GetDiscussList(
+  onlyProblemDiscuss: boolean,
+  contestId: number,
+  problemId: string,
+  title: string,
+  username: string,
+  page: number,
+  pageSize: number
+) {
   const params = {} as any;
+  if (onlyProblemDiscuss) {
+    params.only_problem = "1";
+  } else {
+    params.only_problem = "0";
+  }
   if (contestId) {
     params.contest_id = contestId;
   }
@@ -85,6 +98,16 @@ export function GetDiscussList(contestId: number, problemId: string, title: stri
   });
 }
 
+export function GetDiscussImageToken(discussId: number) {
+  if (!discussId) {
+    discussId = 0;
+  }
+  return httpRequest({
+    url: "/discuss/image/token" + "?id=" + discussId,
+    method: "get",
+  });
+}
+
 export function GetDiscussCommentList(discussId: number, page: number, pageSize: number) {
   return httpRequest({
     url: "/discuss/comment/list" + "?id=" + discussId + "&page=" + page + "&page_size=" + pageSize,
@@ -92,9 +115,17 @@ export function GetDiscussCommentList(discussId: number, page: number, pageSize:
   });
 }
 
-export function PostCreateDiscuss(request: DiscussCreateRequest) {
+export function PostDiscussCreate(request: DiscussEditRequest) {
   return httpRequest({
     url: "/discuss/create",
+    method: "post",
+    data: request,
+  });
+}
+
+export function PostDiscussEdit(request: DiscussEditRequest) {
+  return httpRequest({
+    url: "/discuss/edit",
     method: "post",
     data: request,
   });

@@ -67,6 +67,14 @@ const tabsConfig: Tab[] = [
     redirect: "discuss-list",
   },
   {
+    name: "discuss-detail-tab",
+    title: "讨论",
+    path: "/discuss",
+    showSidebar: true,
+    disableGenerateTab: true,
+    redirect: "discuss-list",
+  },
+  {
     name: "rank",
     path: "/rank",
     title: "排名",
