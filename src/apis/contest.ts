@@ -80,6 +80,9 @@ export function GetContestProblems(contestId: number) {
 }
 
 export function GetContestImageToken(contestId: number) {
+  if (!contestId) {
+    contestId = 0;
+  }
   return httpRequest({
     url: "/contest/image/token" + "?id=" + contestId,
     method: "get",

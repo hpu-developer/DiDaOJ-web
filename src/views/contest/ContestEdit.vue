@@ -136,9 +136,12 @@ const handleClickSave = async () => {
       return;
     }
 
-    if (res.data != undefined) {
-      if (contestData.value) {
-        contestData.value.updateTime = new Date(res.data).toLocaleString();
+    if (contestData.value) {
+      if (res.data.description != undefined) {
+        contestEditForm.value.description = res.data.description;
+      }
+      if (res.data.update_time != undefined) {
+        contestData.value.updateTime = new Date(res.data.update_time).toLocaleString();
       }
     }
 
@@ -293,15 +296,17 @@ onMounted(async () => {
         </div>
       </t-col>
     </t-row>
-    <md-editor-v3
-      id="contest-description-editor"
-      v-model="contestEditForm.description"
-      @save="handleClickSave"
-      @onUploadImg="handleUploadImg"
-      previewTheme="cyanosis"
-      class="dida-description-editor"
-    />
-    <t-loading :loading="isSaving" attach="#contest-description-editor" :z-index="100000"></t-loading>
+    <div class="dida-description-editor">
+      <p>公告</p>
+      <md-editor-v3
+        id="contest-description-editor"
+        v-model="contestEditForm.description"
+        @save="handleClickSave"
+        @onUploadImg="handleUploadImg"
+        previewTheme="cyanosis"
+      />
+      <t-loading :loading="isSaving" attach="#contest-description-editor" :z-index="100000"></t-loading>
+    </div>
   </t-loading>
   <t-dialog v-model:visible="showDialog" @confirm="handleParse" :header="parseDialogTitle" :confirm-loading="isParsing">
     <div style="margin-bottom: 10px">
@@ -318,7 +323,6 @@ onMounted(async () => {
 }
 
 .dida-description-editor {
-  margin: 20px;
-  width: 100%;
+  margin: 10px;
 }
 </style>

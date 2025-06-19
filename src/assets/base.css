@@ -55,3 +55,9 @@ body {
 .sh-align-right {
   text-align: right;
 }
+
+/*取消 div.default-theme a[target=_blank]::after*/
+.sh-problem-tag[target=_blank]::after {
+  content: none !important;
+  display: none !important;
+}

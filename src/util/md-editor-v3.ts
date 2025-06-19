@@ -1,5 +1,6 @@
-import { CloseTips, ShowTextTipsInfo } from "@/util/index.ts";
+import { CloseTips, ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo } from "@/util/index.ts";
 import type { ComponentCustomProperties } from "vue";
+import { GetText } from "@/text/library.ts";
 
 export type UploadImageCallbackUrl = {
   url: string;
@@ -39,10 +40,12 @@ export async function HandleR2ImageUpload(
     for (const file of files) {
       const res = await getTokenHandler();
       if (res.code !== 0) {
+        ShowErrorTips(globalProperties, res.code);
+        const [_, text] = GetText(res.code);
         urls = urls.concat({
-          url: "上传失败",
-          alt: file.name,
-          title: file.name,
+          url: text,
+          alt: "上传失败",
+          title: "",
         });
         continue;
       }
@@ -54,6 +57,13 @@ export async function HandleR2ImageUpload(
         title: file.name,
       });
     }
+  } catch (error) {
+    ShowTextTipsError(globalProperties, "上传失败");
+    urls = urls.concat({
+      url: "上传失败",
+      alt: "上传失败",
+      title: "",
+    });
   } finally {
     callback(urls);
     CloseTips(globalProperties, loadingMessage);

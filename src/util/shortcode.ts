@@ -1,0 +1,55 @@
+﻿import type MarkdownIt from 'markdown-it';
+import type Token from 'markdown-it/lib/token';
+
+// 定义一个通用的渲染器：接受字符串数组（参数列表），返回字符串（HTML）
+type ShortcodeRenderer = (args: string[]) => string;
+
+// 插件选项类型
+interface ShortcodePluginOptions {
+  renderers?: Record<string, ShortcodeRenderer>;
+}
+
+// 插件本体
+function shortcodeInlinePlugin(md: MarkdownIt, options: ShortcodePluginOptions = {}) {
+  const pattern = /\{\{%\s*(\w+)\s+([^%]+?)\s*%\}\}/g;
+  const renderers = options.renderers || {};
+
+  // 原本的 text 渲染器
+  const defaultRender = md.renderer.rules.text ?? function (tokens: Token[], idx: number) {
+    return tokens[idx].content;
+  };
+
+  md.renderer.rules.text = function (
+    tokens: Token[],
+    idx: number,
+    opts,
+    env,
+    self
+  ) {
+    const token = tokens[idx];
+    const content = token.content;
+
+    // 如果不包含 shortcode 模式，直接返回原始渲染
+    if (!pattern.test(content)) {
+      return defaultRender(tokens, idx, opts, env, self);
+    }
+
+    // 替换所有匹配的 shortcode
+    const replaced = content.replace(pattern, (_, name: string, argStr: string) => {
+      const renderer = renderers[name];
+
+      if (typeof renderer === 'function') {
+        const args = argStr.trim().split(/\s+/);
+        return renderer(args);
+      } else {
+        // 默认渲染为 span
+        return `<span class="shortcode-${name}">${name}: ${argStr.trim()}</span>`;
+      }
+    });
+
+    return replaced;
+  };
+}
+
+export default shortcodeInlinePlugin;
+export type { ShortcodePluginOptions, ShortcodeRenderer };
