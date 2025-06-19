@@ -189,7 +189,7 @@ onUnmounted(() => {
             </t-swiper>
           </div>
 
-          <t-loading :loading="ojStaticsLoading">
+          <t-loading :loading="ojStaticsLoading && !stateLoading">
             <div id="ojStaticsDiv" style="min-height: 200px"></div>
           </t-loading>
 
@@ -208,7 +208,7 @@ onUnmounted(() => {
           <template #actions>
             <t-link @click="$router.push({ name: 'problem-daily-list' })">查看全部</t-link>
           </template>
-          <t-loading :loading="problemDailyLoading">
+          <t-loading :loading="problemDailyLoading && !stateLoading">
             <t-list :split="true" size="small" style="min-height: 200px">
               <t-list-item v-for="item in problemDailies" :key="item.id">
                 <t-list-item-meta style="width: 100px">
