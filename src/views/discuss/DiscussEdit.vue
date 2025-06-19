@@ -2,19 +2,26 @@
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetDiscuss, GetDiscussImageToken, ParseDiscuss, PostDiscussCreate, PostDiscussEdit } from "@/apis/discuss.ts";
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
-import type { WatchStopHandle } from "vue";
-import type { DiscussView } from "@/types/discuss.ts";
+import {
+  GetDiscuss,
+  GetDiscussEdit,
+  GetDiscussImageToken,
+  ParseDiscuss,
+  PostDiscussCreate,
+  PostDiscussEdit,
+} from "@/apis/discuss.ts";
 import { HandleR2ImageUpload, UploadImageCallbackUrl } from "@/util/md-editor-v3.ts";
-import type { ContestEditRequest } from "@/types/contest.ts";
+import type { WatchStopHandle } from "vue";
+import type { Discuss, DiscussView } from "@/types/discuss.ts";
+import type { DiscussEditRequest } from "@/types/discuss.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
 
 let watchHandle = null as WatchStopHandle | null;
 
-const discussId = ref("");
+const discussId = ref(0);
 const discussLoading = ref(false);
 const isSaving = ref(false);
 
@@ -22,14 +29,15 @@ const discussData = ref<DiscussView | null>(null);
 
 const discussEditForm = ref({
   title: "",
+  problemId: "",
   content: "",
 });
 
 const handleClickView = () => {
   router.push({
-    name: "problem-daily-detail",
+    name: "discuss-detail",
     params: {
-      dailyId: discussId.value,
+      discussId: discussId.value,
     },
   });
 };
@@ -48,6 +56,8 @@ const handleClickCreate = async () => {
   try {
     const postData = {
       title: discussEditForm.value.title,
+      content: discussEditForm.value.content,
+      problem_id: discussEditForm.value.problemId,
     } as DiscussEditRequest;
     const res = await PostDiscussCreate(postData);
 
@@ -58,9 +68,11 @@ const handleClickCreate = async () => {
       return;
     }
 
+    const createDiscussId = res.data as number;
+
     await router.push({
-      name: "manage-problem-daily",
-      params: { dailyId: createDailyId },
+      name: "discuss-detail",
+      params: { discussId: createDiscussId },
     });
 
     ShowTextTipsSuccess(globalProperties, "创建成功");
@@ -73,7 +85,13 @@ const handleClickSave = async () => {
   isSaving.value = true;
 
   try {
-    const res = await PostDiscussEdit(discussId.value, discussEditForm.value.problemId, discussEditForm.value.solution, discussEditForm.value.code);
+    const postData = {
+      id: discussId.value,
+      title: discussEditForm.value.title,
+      content: discussEditForm.value.content,
+      problem_id: discussEditForm.value.problemId,
+    } as DiscussEditRequest;
+    const res = await PostDiscussEdit(postData);
     isSaving.value = true;
 
     if (res.code !== 0) {
@@ -85,15 +103,9 @@ const handleClickSave = async () => {
       if (res.data.update_time != undefined) {
         discussData.value.updateTime = new Date(res.data.update_time).toLocaleString();
       }
-      if (res.data.updater_nickname != undefined) {
-        discussData.value.updaterNickname = res.data.updater_nickname;
-      }
     }
-    if (res.data.solution != undefined) {
-      discussEditForm.value.solution = res.data.solution;
-    }
-    if (res.data.code != undefined) {
-      discussEditForm.value.code = res.data.code;
+    if (res.data.content != undefined) {
+      discussEditForm.value.content = res.data.content;
     }
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
@@ -102,52 +114,42 @@ const handleClickSave = async () => {
   }
 };
 
-const loadSolutionEditor = (description: string) => {
-  discussEditForm.value.solution = description;
-  discussLoading.value = false;
-};
-
-const loadCodeEditor = (description: string) => {
-  discussEditForm.value.code = description;
-  discussLoading.value = false;
-};
-
 const loadDiscuss = async () => {
-  const res = await GetDiscuss(discussId.value);
+  const res = await GetDiscussEdit(discussId.value);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
-    console.error("problem get failed", res.code);
-    await router.push({ name: "problem" });
+    await router.push({ name: "discuss" });
     return;
   }
 
-  const daily = res.data;
+  const discuss = res.data.discuss as Discuss;
 
-  discussData.value = ParseDiscuss(daily, {} as any);
+  discussData.value = ParseDiscuss(discuss);
 
-  discussEditForm.value.problemId = daily.problem_id;
+  discussEditForm.value.title = discuss.title;
+  discussEditForm.value.content = discuss.content;
+  discussEditForm.value.problemId = discuss.problem_id;
 
-  loadSolutionEditor(daily.solution);
-  loadCodeEditor(daily.code);
+  discussLoading.value = false;
 };
 
 onMounted(async () => {
   watchHandle = watch(
     () => route.params,
     async () => {
-      if (Array.isArray(route.params.dailyId)) {
-        discussId.value = route.params.dailyId[0];
+      if (Array.isArray(route.params.discussId)) {
+        discussId.value = Number(route.params.discussId[0]);
       } else {
-        discussId.value = route.params.dailyId;
+        discussId.value = Number(route.params.discussId);
       }
 
       if (discussId.value) {
         discussLoading.value = true;
-        discussEditForm.value.date = discussId.value;
         await loadDiscuss();
       } else {
-        loadSolutionEditor("暂无题解");
-        loadCodeEditor("暂无标程");
+        discussEditForm.value.title = "";
+        discussEditForm.value.problemId = "";
+        discussEditForm.value.content = "";
       }
     },
     { immediate: true }
@@ -172,6 +174,9 @@ onBeforeUnmount(() => {
               <t-form-item label="标题">
                 <t-input v-model="discussEditForm.title" placeholder="讨论标题"></t-input>
               </t-form-item>
+              <t-form-item label="关联题目">
+                <t-input v-model="discussEditForm.problemId" placeholder="讨论题目"></t-input>
+              </t-form-item>
             </t-form>
           </t-card>
         </div>
@@ -188,10 +193,9 @@ onBeforeUnmount(() => {
             </t-space>
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="discussId">
-            <t-descriptions-item label="创建时间">{{ discussData?.createTime }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ discussData?.updateTime }}</t-descriptions-item>
-            <t-descriptions-item label="创建用户">{{ discussData?.creatorNickname }}</t-descriptions-item>
-            <t-descriptions-item label="更新用户">{{ discussData?.updaterNickname }}</t-descriptions-item>
+            <t-descriptions-item label="创建时间">{{ discussData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="更新时间">{{ discussData?.modifyTime }}</t-descriptions-item>
+            <t-descriptions-item label="创建用户">{{ discussData?.authorNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>

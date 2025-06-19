@@ -5,6 +5,7 @@
   ManageProblemDaily = "i-manage-problem-daily",
   ManageContest = "i-manage-contest",
   ManageCollection = "i-manage-collection",
+  ManageDiscuss = "i-manage-discuss",
 }
 
 const roleAuths: Record<string, string[]> = {
@@ -15,6 +16,7 @@ const roleAuths: Record<string, string[]> = {
     AuthType.ManageProblemDaily,
     AuthType.ManageContest,
     AuthType.ManageCollection,
+    AuthType.ManageDiscuss,
   ],
 };
 

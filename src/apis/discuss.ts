@@ -52,9 +52,16 @@ export function ParseDiscussComment(item: DiscussComment): DiscussCommentView {
   return result;
 }
 
-export function GetDiscuss(discussId: string) {
+export function GetDiscuss(discussId: number) {
   return httpRequest({
     url: "/discuss" + "?id=" + discussId,
+    method: "get",
+  });
+}
+
+export function GetDiscussEdit(discussId: number) {
+  return httpRequest({
+    url: "/discuss/edit" + "?id=" + discussId,
     method: "get",
   });
 }

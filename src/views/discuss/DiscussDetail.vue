@@ -50,7 +50,7 @@ const discussCommentList = ref([] as DiscussCommentView[]);
 const tagsMap = {} as { [key: number]: DiscussTag };
 
 const hasEditAuth = computed(() => {
-  return userStore.hasAuth(AuthType.ManageDiscuss);
+  return userStore.hasAuth(AuthType.ManageDiscuss) || (discussData.value && userStore.getUserId == discussData.value.authorId);
 });
 
 const handleClickTag = (tag: DiscussTag) => {
@@ -69,7 +69,7 @@ const handleClickTag = (tag: DiscussTag) => {
 
 const handleClickEdit = () => {
   router.push({
-    name: "manage-discuss",
+    name: "discuss-edit",
     params: {
       discussId: discussId.value,
     },

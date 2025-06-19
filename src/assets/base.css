@@ -56,6 +56,11 @@ body {
   text-align: right;
 }
 
+.sh-problem-tag {
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
 /*取消 div.default-theme a[target=_blank]::after*/
 .sh-problem-tag[target=_blank]::after {
   content: none !important;

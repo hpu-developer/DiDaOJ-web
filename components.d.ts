@@ -14,8 +14,6 @@ declare module 'vue' {
     Hitokoto: typeof import('./src/components/Hitokoto.vue')['default']
     ParseProblemList: typeof import('./src/components/problem/ParseProblemList.vue')['default']
     ParseUserList: typeof import('./src/components/user/ParseUserList.vue')['default']
-    ProblemCard: typeof import('./src/components/ProblemCard.vue')['default']
-    ProblemLinkTag: typeof import('./src/components/ProblemLinkTag.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SecretPanel: typeof import('./src/components/SecretPanel.vue')['default']

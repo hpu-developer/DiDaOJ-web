@@ -348,7 +348,11 @@ const loadDailyData = async () => {
 
   const serverTime = new Date(res.data.time);
   serverTimeOffset = serverTime.getTime() - new Date().getTime();
-  const timeId = serverTime.toISOString().split("T")[0];
+  const localTime = new Date(serverTime.getTime());
+  const year = localTime.getFullYear();
+  const month = String(localTime.getMonth() + 1).padStart(2, '0');
+  const day = String(localTime.getDate()).padStart(2, '0');
+  const timeId = `${year}-${month}-${day}`;
   if (dailyId === timeId) {
     // 如果是当日的每日一题，则获取距离18点的倒计时
     const duration = serverTime.getHours() * 60 * 60 + serverTime.getMinutes() * 60 + serverTime.getSeconds();

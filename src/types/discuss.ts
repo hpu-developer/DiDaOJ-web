@@ -7,7 +7,7 @@ export interface Discuss {
   id: string;
   title: string;
   content: string;
-  author_id: string;
+  author_id: number;
   author_username: string;
   author_nickname: string;
   insert_time: string;
@@ -25,7 +25,7 @@ export interface DiscussView {
   id: string;
   title: string;
   content: string;
-  authorId: string;
+  authorId: number;
   authorUsername: string;
   authorNickname: string;
   insertTime: string;
@@ -62,6 +62,8 @@ export interface DiscussCommentView {
 }
 
 export interface DiscussEditRequest {
+  id?: number;
   title: string;
   content: string;
+  problem_id?: string;
 }
