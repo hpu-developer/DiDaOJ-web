@@ -433,7 +433,7 @@ onBeforeUnmount(() => {
       </t-link>
     </template>
     <t-loading :loading="isCodeLoading">
-      <md-preview :model-value="showJudgeJob?.code" :code-foldable="false"></md-preview>
+      <md-preview :model-value="showJudgeJob?.code" :code-foldable="false" style="min-height: 100px"></md-preview>
     </t-loading>
   </t-dialog>
 </template>

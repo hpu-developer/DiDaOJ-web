@@ -37,10 +37,6 @@ let problemIndex = ref(0);
 const isContestProblem = ref(false);
 const isDailyProblem = ref(false);
 
-const descriptionMarkdownRef = ref<HTMLElement | null>(null);
-const dailySolutionMarkdownRef = ref<HTMLElement | null>(null);
-const dailyCodeMarkdownRef = ref<HTMLElement | null>(null);
-
 const problemLoading = ref(false);
 const problemData = ref<ProblemView | null>(null);
 let codeEditor = null as IStandaloneCodeEditor | null;
@@ -319,7 +315,7 @@ const fetchProblemData = async () => {
     }
   }
 
-  problemDescription.value = problemData.value.description as string;;
+  problemDescription.value = problemData.value.description as string;
   await nextTick(() => {
     if (!codeEditor && codeEditRef.value) {
       codeEditor = monaco.editor.create(codeEditRef.value, {
@@ -385,7 +381,9 @@ onMounted(async () => {
         } else {
           dailyId = route.params.dailyId;
         }
+        problemLoading.value = true;
         await loadDailyData();
+        problemLoading.value = false;
       }
       if (!problemId) {
         if (Array.isArray(route.params.contestId)) {

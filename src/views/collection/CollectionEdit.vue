@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetCollectionEdit, ParseCollection, PostCollectionCreate, PostCollectionEdit } from "@/apis/collection.ts";
-import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { CollectionEditRequest, CollectionView } from "@/types/collection.ts";
 import ParseProblemList from "@/components/problem/ParseProblemList.vue";
@@ -127,9 +127,10 @@ const loadDescriptionEditor = (description: string) => {
 
 async function handleUploadImg(files: File[], callback: (urls: UploadImageCallbackUrl[]) => void) {
   isSaving.value = true;
-  await HandleR2ImageUpload(files, callback, globalProperties, () => {
-    return null;
-  });
+  // await HandleR2ImageUpload(files, callback, globalProperties, () => {
+  //   return null;
+  // });
+  ShowTextTipsError(globalProperties, "本界面暂不支持上传图片");
   isSaving.value = false;
 }
 
