@@ -10,9 +10,6 @@ import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  optimizeDeps: {
-    include: ["@kangc/v-md-editor/lib/preview"],
-  },
   plugins: [
     visualizer({ open: true }),
     vue(),
@@ -91,6 +88,9 @@ export default defineConfig({
           }
           if (id.includes("node_modules/vditor")) {
             return "vditor";
+          }
+          if (id.includes("md-editor-v3")) {
+            return "md-editor-v3";
           }
           // 第三方库单独分为一个文件
           if (id.includes("node_modules")) {

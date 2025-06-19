@@ -180,7 +180,7 @@ onUnmounted(() => {
           <div id="ojStaticsDiv"></div>
 
           <t-card :title="announcement?.title" style="width: calc(100% - 100px); margin: 0 auto">
-            <v-md-preview :text="announcement?.content"></v-md-preview>
+            <md-preview :model-value="announcement?.content" previewTheme="cyanosis" />
           </t-card>
         </div>
       </t-col>

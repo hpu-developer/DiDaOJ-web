@@ -3,12 +3,11 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { ChevronDownIcon } from "tdesign-icons-vue-next";
-import Vditor from "vditor";
-import { GetProblem, GetProblemImageToken, GetProblemTagList, ParseProblem, PostProblemCreate, PostProblemEdit } from "@/apis/problem.ts";
-import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { PostR2Image } from "@/util/md-editor-v3.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
+import { useCurrentInstance, ShowErrorTips, ShowTextTipsSuccess } from "@/util";
+import { GetProblem, GetProblemTagList, ParseProblem, GetProblemImageToken, PostProblemCreate, PostProblemEdit } from "@/apis/problem.ts";
 import type { ProblemTag, ProblemView } from "@/types/problem.ts";
-import { getCustomRenders, uploadR2Image } from "@/util/md-editor-v3.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -17,8 +16,8 @@ const webStyleStore = useWebStyleStore();
 
 const problemId = ref("");
 const problemLoading = ref(false);
-let descriptionEditor = null as Vditor | null;
-const isEditing = ref(false);
+const isSaving = ref(false);
+const disabledEdit = ref(false);
 
 const problemData = ref<ProblemView | null>(null);
 
@@ -108,12 +107,36 @@ const handleClickJudge = () => {
   });
 };
 
-const handleClickCreate = async () => {
-  if (!descriptionEditor) {
-    return;
+const onUploadImg = async (files: File[], callback: (urls: { url: string; alt: string; title: string }[]) => void) => {
+  disabledEdit.value = true;
+  let urls = [] as { url: string; alt: string; title: string }[];
+  try {
+    for (const file of files) {
+      const res = await GetProblemImageToken(problemId.value);
+      if (res.code !== 0) {
+        urls = urls.concat({
+          url: "上传失败",
+          alt: file.name,
+          title: file.name,
+        });
+        continue;
+      }
+      const uploadUrl = res.data.upload_url;
+      await PostR2Image(uploadUrl, file);
+      urls = urls.concat({
+        url: res.data.preview_url,
+        alt: file.name,
+        title: file.name,
+      });
+    }
+  } finally {
+    callback(urls);
+    disabledEdit.value = false;
   }
+};
 
-  isEditing.value = true;
+const handleClickCreate = async () => {
+  isSaving.value = true;
 
   problemEditForm.value.tags = [];
   for (let i = 0; i < problemTags.value.length; i++) {
@@ -131,10 +154,10 @@ const handleClickCreate = async () => {
       problemEditForm.value.source,
       problemEditForm.value.private,
       problemEditForm.value.tags,
-      descriptionEditor.getValue()
+      problemEditForm.value.description
     );
 
-    isEditing.value = true;
+    isSaving.value = true;
 
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
@@ -150,12 +173,12 @@ const handleClickCreate = async () => {
 
     ShowTextTipsSuccess(globalProperties, "创建成功");
   } finally {
-    isEditing.value = false;
+    isSaving.value = false;
   }
 };
 
 const handleClickSave = async () => {
-  isEditing.value = true;
+  isSaving.value = true;
 
   problemEditForm.value.tags = [];
   for (let i = 0; i < problemTags.value.length; i++) {
@@ -177,15 +200,17 @@ const handleClickSave = async () => {
       problemEditForm.value.description
     );
 
-    isEditing.value = true;
+    isSaving.value = true;
 
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
     }
 
-    if (res.data.update_time != undefined) {
-      problemData.value.updateTime = new Date(res.data.update_time).toLocaleString();
+    if (problemData.value) {
+      if (res.data.update_time != undefined) {
+        problemData.value.updateTime = new Date(res.data.update_time).toLocaleString();
+      }
     }
     if (res.data.description != undefined) {
       problemEditForm.value.description = res.data.description;
@@ -193,31 +218,11 @@ const handleClickSave = async () => {
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
   } finally {
-    isEditing.value = false;
+    isSaving.value = false;
   }
 };
 
 const loadDescriptionEditor = (description: string) => {
-  // const codeEditOptions = {
-  //   after: () => {
-  //     descriptionEditor?.setValue(description);
-  //     problemLoading.value = false;
-  //   },
-  //   upload: {
-  //     accept: "image/*,.mp3, .wav, .rar",
-  //     async handler(files: File[]) {
-  //       return uploadR2Image(descriptionEditor as Vditor, files, globalProperties, () => {
-  //         return GetProblemImageToken(problemId.value);
-  //       });
-  //     },
-  //   },
-  //   fullscreen: {
-  //     index: 9999,
-  //   },
-  //   customRenders: getCustomRenders(),
-  // } as IOptions;
-  // descriptionEditor = new Vditor("problemEditDiv", codeEditOptions);
-
   problemEditForm.value.description = description;
   problemLoading.value = false;
 };
@@ -369,12 +374,12 @@ onMounted(async () => {
         <div style="margin: 12px">
           <div class="dida-edit-container">
             <t-space v-if="problemId">
-              <t-button @click="handleClickSave" theme="danger" :loading="isEditing">保存</t-button>
+              <t-button @click="handleClickSave" theme="danger" :loading="isSaving">保存</t-button>
               <t-button @click="handleClickJudge" theme="warning">判题数据</t-button>
               <t-button @click="handleClickView">查看</t-button>
             </t-space>
             <t-space v-else>
-              <t-button @click="handleClickCreate" theme="danger" :loading="isEditing">创建</t-button>
+              <t-button @click="handleClickCreate" theme="danger" :loading="isSaving">创建</t-button>
             </t-space>
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="problemId">
@@ -388,7 +393,9 @@ onMounted(async () => {
     </t-row>
     <div class="dida-description-editor">
       <p>题目描述</p>
-      <v-md-editor v-model="problemEditForm.description" @save="handleClickSave" @upload-image="handleUploadImage"></v-md-editor>
+      <t-loading :loading="disabledEdit || isSaving">
+        <md-editor-v3 v-model="problemEditForm.description" @save="handleClickSave" @onUploadImg="onUploadImg" previewTheme="cyanosis"></md-editor-v3>
+      </t-loading>
     </div>
   </t-loading>
 </template>

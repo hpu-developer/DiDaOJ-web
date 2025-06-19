@@ -5,7 +5,6 @@ import router from "@/router";
 import { GetProblem, GetProblemDaily, ParseProblem, PostProblemCrawl } from "@/apis/problem.ts";
 import { GetHighlightKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import { ProblemTag, ProblemView } from "@/types/problem.ts";
 import { PostJudgeJob } from "@/apis/judge.ts";
 
@@ -28,7 +27,7 @@ let watchHandle: WatchStopHandle | null = null;
 const webStyleStore = useWebStyleStore();
 const userStore = useUserStore();
 
-let content = ref("");
+let problemDescription = ref("");
 
 let problemId = "";
 let dailyId = "";
@@ -310,8 +309,6 @@ const fetchProblemData = async () => {
 
   webStyleStore.setTitle(problemData.value.title + " - " + webStyleStore.getTitle);
 
-  let problemDescription = problemData.value.description as string;
-
   if (contestId) {
     res = await GetContestProblems(contestId);
     if (res.code === 0) {
@@ -322,7 +319,7 @@ const fetchProblemData = async () => {
     }
   }
 
-  content.value = problemDescription;
+  problemDescription.value = problemData.value.description as string;;
   await nextTick(() => {
     if (!codeEditor && codeEditRef.value) {
       codeEditor = monaco.editor.create(codeEditRef.value, {
@@ -448,11 +445,11 @@ onBeforeUnmount(() => {
     <t-row class="dida-main-content">
       <t-col :span="8">
         <t-card style="margin: 10px">
-          <v-md-preview :text="content"></v-md-preview>
+          <md-preview :model-value="problemDescription" previewTheme="cyanosis" />
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="题解">
           <SecretPanel v-if="dailySolutionUnlockCountdown < 0">
-            <v-md-preview :text="dailySolution"></v-md-preview>
+            <MdPreview :modelValue="dailySolution"></MdPreview>
           </SecretPanel>
           <div style="text-align: center" v-else>
             <div>
@@ -473,7 +470,7 @@ onBeforeUnmount(() => {
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="示例代码">
           <SecretPanel v-if="dailyCodeUnlockCountdown < 0">
-            <v-md-preview :text="dailyCode"></v-md-preview>
+            <MdPreview :modelValue="dailyCode"></MdPreview>
           </SecretPanel>
           <div style="text-align: center" v-else>
             <div>

@@ -216,7 +216,7 @@ onMounted(async () => {
           </t-descriptions>
         </div>
         <t-card style="margin: 10px" v-if="collectionData?.description">
-          <v-md-preview :text="collectionData?.description"></v-md-preview>
+          <md-preview :model-value="collectionData?.description"></md-preview>
         </t-card>
       </t-col>
     </t-row>

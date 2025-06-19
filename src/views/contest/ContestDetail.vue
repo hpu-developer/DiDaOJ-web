@@ -235,7 +235,7 @@ onMounted(async () => {
           </t-descriptions>
         </div>
         <t-card style="margin: 12px" v-if="contestData?.description">
-          <v-md-preview :text="contestData?.description" class="dida-content-description"></v-md-preview>
+          <md-preview :model-value="contestData?.description" class="dida-content-description"></md-preview>
         </t-card>
       </t-col>
     </t-row>

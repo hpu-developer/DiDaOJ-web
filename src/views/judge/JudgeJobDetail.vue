@@ -29,14 +29,12 @@ let contestId = 0;
 const judgerName = ref("");
 const judgeJob = ref<JudgeJobView | null>(null);
 const judgeJobCode = ref("");
-const markdownCodeRef = ref<HTMLElement | null>(null);
 const jobProgress = ref(0);
 const jobProgressStatus = ref(null as null | string);
 const jobProgressToColor = ref({
   from: "#5a96ff",
   to: "#00A870",
 });
-let isInitHighlight = false;
 
 const ListColumns = ref([
   {
@@ -268,12 +266,6 @@ const fetchData = async (needLoading: boolean) => {
   }
 };
 
-function updateWidth() {
-  if (markdownCodeRef.value && markdownCodeRef.value.parentElement) {
-    markdownCodeRef.value.style.maxWidth = markdownCodeRef.value.parentElement.clientWidth + "px";
-  }
-}
-
 // 初始化分页信息
 onMounted(async () => {
   viewActive = true;
@@ -297,13 +289,10 @@ onMounted(async () => {
 
   await fetchData(true);
 
-  updateWidth();
-  window.addEventListener("resize", updateWidth);
 });
 
 onBeforeUnmount(() => {
   viewActive = false;
-  window.removeEventListener("resize", updateWidth);
   clearTimeout(refreshTimeout);
 });
 </script>
@@ -318,11 +307,11 @@ onBeforeUnmount(() => {
   <t-row>
     <t-col :span="8">
       <div class="dida-code-container">
-        <v-md-preview :text="judgeJobCode" class="dida-code-div"></v-md-preview>
+        <md-preview :model-value="judgeJobCode" class="dida-code-div"></md-preview>
       </div>
     </t-col>
     <t-col :span="4">
-      <t-descriptions layout="vertical" :bordered="true" style="margin: 10px">
+      <t-descriptions layout="vertical" :bordered="true" style="margin: 20px">
         <t-descriptions-item label="判题机">{{ judgerName }}</t-descriptions-item>
         <t-descriptions-item label="判题时间">{{ judgeJob?.judgeTime }}</t-descriptions-item>
       </t-descriptions>
@@ -367,9 +356,6 @@ onBeforeUnmount(() => {
 
 .dida-code-container {
   width: 100%;
-}
-
-.dida-code-div {
-  width: 100%;
+  margin: 10px;
 }
 </style>
