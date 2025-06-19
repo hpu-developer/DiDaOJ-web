@@ -51,3 +51,7 @@ body {
   opacity: 1;
   pointer-events: auto;
 }
+
+.sh-align-right {
+  text-align: right;
+}

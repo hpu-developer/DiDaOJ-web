@@ -27,6 +27,39 @@ import "md-editor-v3/lib/style.css";
 
 import { MdEditor, MdPreview } from "md-editor-v3";
 
+import { config } from "md-editor-v3";
+import LinkAttr from "markdown-it-link-attributes";
+import container from "markdown-it-container";
+
+config({
+  markdownItConfig(mdit) {
+    mdit.use(container, "align-right", {
+      render(tokens, idx) {
+        return tokens[idx].nesting === 1 ? '<div class="sh-align-right">\n' : "</div>\n";
+      },
+    });
+  },
+  markdownItPlugins(plugins) {
+    return [
+      ...plugins,
+      {
+        type: "linkAttr",
+        plugin: LinkAttr,
+        options: {
+          matcher(href: string) {
+            // 如果使用了markdown-it-anchor
+            // 应该忽略标题头部的锚点链接
+            return !href.startsWith("#");
+          },
+          attrs: {
+            target: "_blank",
+          },
+        },
+      },
+    ];
+  },
+});
+
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 

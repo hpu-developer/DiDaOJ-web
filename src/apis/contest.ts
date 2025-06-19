@@ -79,6 +79,13 @@ export function GetContestProblems(contestId: number) {
   });
 }
 
+export function GetContestImageToken(contestId: number) {
+  return httpRequest({
+    url: "/contest/image/token" + "?id=" + contestId,
+    method: "get",
+  });
+}
+
 export function GetContestProblemRealId(contestId: number, problemIndex: number) {
   return httpRequest({
     url: "/contest/problem" + "?id=" + contestId + "&problem_index=" + problemIndex,

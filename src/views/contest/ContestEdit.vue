@@ -2,13 +2,14 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetContestEdit, ParseContest, PostContestCreate, PostContestEdit } from "@/apis/contest.ts";
+import { GetContestEdit, GetContestImageToken, ParseContest, PostContestCreate, PostContestEdit } from "@/apis/contest.ts";
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ContestEditRequest, ContestView } from "@/types/contest.ts";
 import ParseProblemList from "@/components/problem/ParseProblemList.vue";
 import ParseUserList from "@/components/user/ParseUserList.vue";
 import { GetSecondFromDuration, GetTimeStringBySeconds } from "@/time/library.ts";
+import { HandleR2ImageUpload, UploadImageCallbackUrl } from "@/util/md-editor-v3.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -51,8 +52,15 @@ const handleParse = async () => {
   isParsing.value = false;
 };
 
-const handleClickCreate = async () => {
+const handleUploadImg = async (files: File[], callback: (urls: UploadImageCallbackUrl[]) => void) => {
+  isSaving.value = true;
+  await HandleR2ImageUpload(files, callback, globalProperties, () => {
+    return GetContestImageToken(contestId.value);
+  });
+  isSaving.value = false;
+};
 
+const handleClickCreate = async () => {
   isSaving.value = true;
 
   try {
@@ -97,7 +105,6 @@ const handleClickCreate = async () => {
 };
 
 const handleClickSave = async () => {
-
   isSaving.value = true;
 
   try {
@@ -286,7 +293,15 @@ onMounted(async () => {
         </div>
       </t-col>
     </t-row>
-    <div id="contestEditDiv" class="dida-description-editor"></div>
+    <md-editor-v3
+      id="contest-description-editor"
+      v-model="contestEditForm.description"
+      @save="handleClickSave"
+      @onUploadImg="handleUploadImg"
+      previewTheme="cyanosis"
+      class="dida-description-editor"
+    />
+    <t-loading :loading="isSaving" attach="#contest-description-editor" :z-index="100000"></t-loading>
   </t-loading>
   <t-dialog v-model:visible="showDialog" @confirm="handleParse" :header="parseDialogTitle" :confirm-loading="isParsing">
     <div style="margin-bottom: 10px">
@@ -305,8 +320,5 @@ onMounted(async () => {
 .dida-description-editor {
   margin: 20px;
   width: 100%;
-  max-width: calc(100vw - 300px);
-  min-height: 500px;
-  z-index: 9999 !important;
 }
 </style>
