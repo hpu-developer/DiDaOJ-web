@@ -388,8 +388,5 @@ onMounted(async () => {
 
 .dida-description-editor {
   margin: 20px;
-  width: 100%;
-  max-width: calc(100vw - 300px);
-  min-height: 500px;
 }
 </style>
