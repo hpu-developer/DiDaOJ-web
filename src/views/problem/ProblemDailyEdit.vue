@@ -5,7 +5,7 @@ import router from "@/router";
 import Vditor from "vditor";
 import { GetProblemDailyEdit, GetProblemDailyImageToken, ParseProblemDaily, PostProblemDailyCreate, PostProblemDailyEdit } from "@/apis/problem.ts";
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
-import { uploadR2Image } from "@/util/vditor.ts";
+import { uploadR2Image } from "@/util/md-editor-v3.ts";
 import type { ProblemDailyView } from "@/types/problem.ts";
 
 let route = useRoute();

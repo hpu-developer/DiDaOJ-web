@@ -8,7 +8,7 @@ import { GetProblem, GetProblemImageToken, GetProblemTagList, ParseProblem, Post
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { ProblemTag, ProblemView } from "@/types/problem.ts";
-import { getCustomRenders, uploadR2Image } from "@/util/vditor.ts";
+import { getCustomRenders, uploadR2Image } from "@/util/md-editor-v3.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -29,6 +29,7 @@ const problemEditForm = ref({
   source: "",
   private: true,
   tags: [] as string[],
+  description: "",
 });
 
 const problemTags = ref([] as { label: string; value: number }[]);
@@ -154,10 +155,6 @@ const handleClickCreate = async () => {
 };
 
 const handleClickSave = async () => {
-  if (!descriptionEditor) {
-    return;
-  }
-
   isEditing.value = true;
 
   problemEditForm.value.tags = [];
@@ -177,7 +174,7 @@ const handleClickSave = async () => {
       problemEditForm.value.source,
       problemEditForm.value.private,
       problemEditForm.value.tags,
-      descriptionEditor.getValue()
+      problemEditForm.value.description
     );
 
     isEditing.value = true;
@@ -191,7 +188,7 @@ const handleClickSave = async () => {
       problemData.value.updateTime = new Date(res.data.update_time).toLocaleString();
     }
     if (res.data.description != undefined) {
-      descriptionEditor?.setValue(res.data.description);
+      problemEditForm.value.description = res.data.description;
     }
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
@@ -201,25 +198,28 @@ const handleClickSave = async () => {
 };
 
 const loadDescriptionEditor = (description: string) => {
-  const codeEditOptions = {
-    after: () => {
-      descriptionEditor?.setValue(description);
-      problemLoading.value = false;
-    },
-    upload: {
-      accept: "image/*,.mp3, .wav, .rar",
-      async handler(files: File[]) {
-        return uploadR2Image(descriptionEditor as Vditor, files, globalProperties, () => {
-          return GetProblemImageToken(problemId.value);
-        });
-      },
-    },
-    fullscreen: {
-      index: 9999,
-    },
-    customRenders: getCustomRenders(),
-  } as IOptions;
-  descriptionEditor = new Vditor("problemEditDiv", codeEditOptions);
+  // const codeEditOptions = {
+  //   after: () => {
+  //     descriptionEditor?.setValue(description);
+  //     problemLoading.value = false;
+  //   },
+  //   upload: {
+  //     accept: "image/*,.mp3, .wav, .rar",
+  //     async handler(files: File[]) {
+  //       return uploadR2Image(descriptionEditor as Vditor, files, globalProperties, () => {
+  //         return GetProblemImageToken(problemId.value);
+  //       });
+  //     },
+  //   },
+  //   fullscreen: {
+  //     index: 9999,
+  //   },
+  //   customRenders: getCustomRenders(),
+  // } as IOptions;
+  // descriptionEditor = new Vditor("problemEditDiv", codeEditOptions);
+
+  problemEditForm.value.description = description;
+  problemLoading.value = false;
 };
 
 const loadProblem = async () => {
@@ -386,7 +386,10 @@ onMounted(async () => {
         </div>
       </t-col>
     </t-row>
-    <div id="problemEditDiv" class="dida-description-editor"></div>
+    <div class="dida-description-editor">
+      <p>题目描述</p>
+      <v-md-editor v-model="problemEditForm.description" @save="handleClickSave" @upload-image="handleUploadImage"></v-md-editor>
+    </div>
   </t-loading>
 </template>
 

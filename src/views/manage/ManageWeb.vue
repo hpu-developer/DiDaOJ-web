@@ -4,7 +4,7 @@ import { GetSystemImageToken, GetWebAnnouncement, GetWebNotification, PostAnnoun
 import { Notification, Announcement } from "@/types/system.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import Vditor from "vditor";
-import { uploadR2Image } from "@/util/vditor.ts";
+import { uploadR2Image } from "@/util/md-editor-v3.ts";
 
 const { globalProperties } = useCurrentInstance();
 
