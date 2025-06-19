@@ -2,7 +2,6 @@
 import httpRequest from "@/apis/axios-api";
 
 import type { Discuss, DiscussView, DiscussCreateRequest, DiscussComment, DiscussCommentView } from "@/types/discuss";
-import Vditor from "vditor";
 
 export function ParseDiscuss(item: Discuss): DiscussView {
   const result: DiscussView = {} as DiscussView;

@@ -1,6 +1,7 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 import httpRequestCommon from "@/apis/axios-common";
+import { UploadImageTokenResponse } from "@/util/md-editor-v3.ts";
 
 export function GetWebNotification() {
   return httpRequestCommon({
@@ -10,7 +11,7 @@ export function GetWebNotification() {
   });
 }
 
-export function GetWebAnnouncement(){
+export function GetWebAnnouncement() {
   return httpRequestCommon({
     baseURL: "https://r2-oj.didapipa.com",
     url: "/system/announcement.json" + "?" + Date.now(),
@@ -25,7 +26,7 @@ export function GetSystemStatus() {
   });
 }
 
-export function GetSystemImageToken() {
+export function GetSystemImageToken(): Promise<UploadImageTokenResponse> {
   return httpRequest({
     url: "/system/image/token",
     method: "get",

@@ -1,18 +1,16 @@
 <script setup lang="tsx">
-import { ref, onMounted, nextTick, computed } from "vue";
-import Vditor from "vditor";
+import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetCollection, ParseCollection, PostCollectionJoin, PostCollectionQuit } from "@/apis/collection.ts";
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
-import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import type { CollectionView } from "@/types/collection.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { Problem, ProblemView } from "@/types/problem.ts";
 import { AuthType } from "@/auth";
 import { useUserStore } from "@/stores/user.ts";
 import { ProblemAttemptStatus } from "@/apis/problem.ts";
-import { handleGotoContestProblem, handleGotoProblem, handleOpenProblem } from "@/util/router.ts";
+import { handleOpenProblem } from "@/util/router.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();

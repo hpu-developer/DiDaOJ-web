@@ -2,11 +2,11 @@
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import Vditor from "vditor";
 import { GetProblemDailyEdit, GetProblemDailyImageToken, ParseProblemDaily, PostProblemDailyCreate, PostProblemDailyEdit } from "@/apis/problem.ts";
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
-import { uploadR2Image } from "@/util/md-editor-v3.ts";
+import type { WatchStopHandle } from "vue";
 import type { ProblemDailyView } from "@/types/problem.ts";
+import { HandleR2ImageUpload, UploadImageCallbackUrl } from "@/util/md-editor-v3.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -14,16 +14,16 @@ const { globalProperties } = useCurrentInstance();
 let watchHandle = null as WatchStopHandle | null;
 
 const dailyId = ref("");
-const problemLoading = ref(false);
-let solutionEditor = null as Vditor | null;
-let codeEditor = null as Vditor | null;
-const isEditing = ref(false);
+const problemDailyLoading = ref(false);
+const isSaving = ref(false);
 
 const problemDailyData = ref<ProblemDailyView | null>(null);
 
 const dailyEditForm = ref({
   date: "",
   problemId: "",
+  solution: "",
+  code: "",
 });
 
 const handleClickView = () => {
@@ -35,18 +35,22 @@ const handleClickView = () => {
   });
 };
 
-const handleClickCreate = async () => {
-  if (!solutionEditor || !codeEditor) {
-    return;
-  }
+async function handleUploadImg(files: File[], callback: (urls: UploadImageCallbackUrl[]) => void) {
+  isSaving.value = true;
+  await HandleR2ImageUpload(files, callback, globalProperties, () => {
+    return GetProblemDailyImageToken(dailyId.value);
+  });
+  isSaving.value = false;
+}
 
-  isEditing.value = true;
+const handleClickCreate = async () => {
+  isSaving.value = true;
 
   try {
     const createDailyId = dailyEditForm.value.date;
-    const res = await PostProblemDailyCreate(createDailyId, dailyEditForm.value.problemId, solutionEditor.getValue(), codeEditor.getValue());
+    const res = await PostProblemDailyCreate(createDailyId, dailyEditForm.value.problemId, dailyEditForm.value.solution, dailyEditForm.value.code);
 
-    isEditing.value = true;
+    isSaving.value = true;
 
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
@@ -60,20 +64,16 @@ const handleClickCreate = async () => {
 
     ShowTextTipsSuccess(globalProperties, "创建成功");
   } finally {
-    isEditing.value = false;
+    isSaving.value = false;
   }
 };
 
 const handleClickSave = async () => {
-  if (!solutionEditor || !codeEditor) {
-    return;
-  }
-
-  isEditing.value = true;
+  isSaving.value = true;
 
   try {
-    const res = await PostProblemDailyEdit(dailyId.value, dailyEditForm.value.problemId, solutionEditor.getValue(), codeEditor.getValue());
-    isEditing.value = true;
+    const res = await PostProblemDailyEdit(dailyId.value, dailyEditForm.value.problemId, dailyEditForm.value.solution, dailyEditForm.value.code);
+    isSaving.value = true;
 
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
@@ -89,64 +89,26 @@ const handleClickSave = async () => {
       }
     }
     if (res.data.solution != undefined) {
-      solutionEditor?.setValue(res.data.solution);
+      dailyEditForm.value.solution = res.data.solution;
     }
     if (res.data.code != undefined) {
-      codeEditor?.setValue(res.data.code);
+      dailyEditForm.value.code = res.data.code;
     }
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
   } finally {
-    isEditing.value = false;
+    isSaving.value = false;
   }
 };
 
 const loadSolutionEditor = (description: string) => {
-  const editOptions = {
-    after: () => {
-      solutionEditor?.setValue(description);
-      problemLoading.value = false;
-    },
-    upload: {
-      accept: "image/*,.mp3, .wav, .rar",
-      async handler(files: File[]) {
-        return uploadR2Image(solutionEditor as Vditor, files, globalProperties, () => {
-          return GetProblemDailyImageToken(dailyId.value);
-        });
-      },
-    },
-    preview: {
-      math: {
-        inlineDigit: true,
-        engine: "KaTeX",
-      },
-    },
-  } as IOptions;
-  solutionEditor = new Vditor("problemEditDiv", editOptions);
+  dailyEditForm.value.solution = description;
+  problemDailyLoading.value = false;
 };
 
 const loadCodeEditor = (description: string) => {
-  const codeEditOptions = {
-    after: () => {
-      codeEditor?.setValue(description);
-      problemLoading.value = false;
-    },
-    upload: {
-      accept: "image/*,.mp3, .wav, .rar",
-      async handler(files: File[]) {
-        return uploadR2Image(solutionEditor as Vditor, files, globalProperties, () => {
-          return GetProblemDailyImageToken(dailyId.value);
-        });
-      },
-    },
-    preview: {
-      math: {
-        inlineDigit: true,
-        engine: "KaTeX",
-      },
-    },
-  } as IOptions;
-  codeEditor = new Vditor("codeEditDiv", codeEditOptions);
+  dailyEditForm.value.code = description;
+  problemDailyLoading.value = false;
 };
 
 const loadProblemDaily = async () => {
@@ -179,7 +141,7 @@ onMounted(async () => {
       }
 
       if (dailyId.value) {
-        problemLoading.value = true;
+        problemDailyLoading.value = true;
         dailyEditForm.value.date = dailyId.value;
         await loadProblemDaily();
       } else {
@@ -200,7 +162,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <t-loading :loading="problemLoading">
+  <t-loading :loading="problemDailyLoading">
     <t-row>
       <t-col :span="8">
         <div style="margin: 10px">
@@ -221,11 +183,11 @@ onBeforeUnmount(() => {
         <div style="margin: 12px">
           <div class="dida-edit-container">
             <t-space v-if="dailyId">
-              <t-button @click="handleClickSave" theme="danger" :loading="isEditing">保存</t-button>
+              <t-button @click="handleClickSave" theme="danger" :loading="isSaving">保存</t-button>
               <t-button @click="handleClickView">查看</t-button>
             </t-space>
             <t-space v-else>
-              <t-button @click="handleClickCreate" theme="danger" :loading="isEditing">创建</t-button>
+              <t-button @click="handleClickCreate" theme="danger" :loading="isSaving">创建</t-button>
             </t-space>
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="dailyId">
@@ -239,11 +201,15 @@ onBeforeUnmount(() => {
     </t-row>
     <div>
       <p style="margin-left: 20px">题解：</p>
-      <div id="problemEditDiv" class="dida-description-editor"></div>
+      <t-loading :loading="isSaving">
+        <md-editor-v3 v-model="dailyEditForm.solution" @save="handleClickSave" @onUploadImg="handleUploadImg" previewTheme="cyanosis"></md-editor-v3>
+      </t-loading>
     </div>
     <div>
       <p style="margin-left: 20px">标程：</p>
-      <div id="codeEditDiv" class="dida-description-editor"></div>
+      <t-loading :loading="isSaving">
+        <md-editor-v3 v-model="dailyEditForm.code" @save="handleClickSave" @onUploadImg="handleUploadImg" previewTheme="cyanosis"></md-editor-v3>
+      </t-loading>
     </div>
   </t-loading>
 </template>

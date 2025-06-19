@@ -4,6 +4,7 @@ import httpRequest from "@/apis/axios-api";
 import { GetJudgeTypeStr } from "@/apis/judge.ts";
 
 import type { Problem, ProblemDaily, ProblemDailyView, ProblemTag, ProblemView } from "@/types/problem";
+import { UploadImageTokenResponse } from "@/util/md-editor-v3.ts";
 
 export enum ProblemAttemptStatus {
   None = 0,
@@ -337,7 +338,7 @@ export function GetJudgeDataDownload(id: string, key: string) {
   });
 }
 
-export function GetProblemImageToken(problemId: string) {
+export function GetProblemImageToken(problemId: string): Promise<UploadImageTokenResponse> {
   if (!problemId) {
     problemId = "";
   }
@@ -347,7 +348,7 @@ export function GetProblemImageToken(problemId: string) {
   });
 }
 
-export function GetProblemDailyImageToken(dailyId: string) {
+export function GetProblemDailyImageToken(dailyId: string): Promise<UploadImageTokenResponse> {
   if (!dailyId) {
     dailyId = "";
   }

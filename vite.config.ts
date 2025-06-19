@@ -86,9 +86,6 @@ export default defineConfig({
           if (id.includes("node_modules/highlight.js")) {
             return "highlight.js";
           }
-          if (id.includes("node_modules/vditor")) {
-            return "vditor";
-          }
           if (id.includes("md-editor-v3")) {
             return "md-editor-v3";
           }

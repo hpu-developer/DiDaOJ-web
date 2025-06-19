@@ -1,11 +1,9 @@
 <script setup lang="tsx">
-import { ref, onMounted, nextTick, computed } from "vue";
-import Vditor from "vditor";
+import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetContest, ParseContest, PostContestDolos, PostContestPassword } from "@/apis/contest.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";

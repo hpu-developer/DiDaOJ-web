@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { nextTick, WatchStopHandle } from "vue";
+import { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
@@ -18,9 +18,6 @@ import {
 import { GetJudgeLanguageStr } from "@/apis/language.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
-import Vditor from "vditor";
-import { enhanceCodeCopy } from "@/util/v-copy-code.ts";
-import SecretPanel from "@/components/SecretPanel.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -431,7 +428,8 @@ onBeforeUnmount(() => {
           }
         "
       >
-        {{ showJudgeJob?.id + " - " + GetJudgeLanguageStr(showJudgeJob?.language) }}
+        {{ showJudgeJob?.id + " - " + GetJudgeLanguageStr(showJudgeJob?.language ? showJudgeJob?.language : JudgeLanguage.Unknown)
+        }}
       </t-link>
     </template>
     <t-loading :loading="isCodeLoading">

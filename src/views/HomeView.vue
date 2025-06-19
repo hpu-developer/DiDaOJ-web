@@ -20,6 +20,8 @@ const announcement = ref<Announcement>({
   content: "",
 });
 const problemDailies = ref([] as any[]);
+const ojStaticsLoading = ref(false);
+const problemDailyLoading = ref(false);
 const stateLoading = ref(false);
 
 const handleReloadStatus = async () => {
@@ -30,7 +32,7 @@ const loadWebAnnouncement = async () => {
   try {
     const announcementRes = await GetWebAnnouncement();
     announcement.value.title = announcementRes.title;
-    announcement.value.content = announcementRes.content
+    announcement.value.content = announcementRes.content;
   } catch (e) {
     ShowTextTipsError(globalProperties, "加载公告失败");
     announcement.value = {
@@ -139,17 +141,27 @@ const loadProblemDaily = async () => {
 
 onMounted(async () => {
   stateLoading.value = true;
-  await handleReloadStatus();
-  intervalId = setInterval(() => {
-    handleReloadStatus();
-  }, 30000);
-  await loadWebAnnouncement();
+  ojStaticsLoading.value = true;
+  problemDailyLoading.value = true;
 
-  await loadOjStatics();
+  void (async () => {
+    await handleReloadStatus();
+    intervalId = setInterval(() => {
+      handleReloadStatus();
+    }, 30000);
+    await loadWebAnnouncement();
+    stateLoading.value = false;
+  })();
 
-  await loadProblemDaily();
+  void (async () => {
+    await loadOjStatics();
+    ojStaticsLoading.value = false;
+  })();
 
-  stateLoading.value = false;
+  void (async () => {
+    await loadProblemDaily();
+    problemDailyLoading.value = false;
+  })();
 });
 
 onUnmounted(() => {
@@ -177,7 +189,9 @@ onUnmounted(() => {
             </t-swiper>
           </div>
 
-          <div id="ojStaticsDiv"></div>
+          <t-loading :loading="ojStaticsLoading">
+            <div id="ojStaticsDiv" style="min-height: 200px"></div>
+          </t-loading>
 
           <t-card :title="announcement?.title" style="width: calc(100% - 100px); margin: 0 auto">
             <md-preview :model-value="announcement?.content" previewTheme="cyanosis" />
@@ -194,30 +208,32 @@ onUnmounted(() => {
           <template #actions>
             <t-link @click="$router.push({ name: 'problem-daily-list' })">查看全部</t-link>
           </template>
-          <t-list :split="true" size="small">
-            <t-list-item v-for="item in problemDailies" :key="item.id">
-              <t-list-item-meta style="width: 100px">
-                <template #description>
-                  <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.id } })">
-                    {{ item.problemId }}
-                  </t-link>
-                </template>
-              </t-list-item-meta>
-              <t-list-item-meta style="width: 200px">
-                <template #description>
-                  <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.id } })">
-                    {{ item.title }}
-                  </t-link>
-                </template>
-              </t-list-item-meta>
-              <t-list-item-meta style="width: 135px" :description="item.id" />
-              <t-list-item-meta>
-                <template #description>
-                  <t-tag :theme="item.theme">{{ item.tag }}</t-tag>
-                </template>
-              </t-list-item-meta>
-            </t-list-item>
-          </t-list>
+          <t-loading :loading="problemDailyLoading">
+            <t-list :split="true" size="small" style="min-height: 200px">
+              <t-list-item v-for="item in problemDailies" :key="item.id">
+                <t-list-item-meta style="width: 100px">
+                  <template #description>
+                    <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.id } })">
+                      {{ item.problemId }}
+                    </t-link>
+                  </template>
+                </t-list-item-meta>
+                <t-list-item-meta style="width: 200px">
+                  <template #description>
+                    <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.id } })">
+                      {{ item.title }}
+                    </t-link>
+                  </template>
+                </t-list-item-meta>
+                <t-list-item-meta style="width: 135px" :description="item.id" />
+                <t-list-item-meta>
+                  <template #description>
+                    <t-tag :theme="item.theme">{{ item.tag }}</t-tag>
+                  </template>
+                </t-list-item-meta>
+              </t-list-item>
+            </t-list>
+          </t-loading>
         </t-card>
 
         <t-card style="margin: 10px" :bordered="true">

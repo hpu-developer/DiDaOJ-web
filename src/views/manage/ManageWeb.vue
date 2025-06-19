@@ -1,10 +1,11 @@
 <script setup lang="tsx">
 import { ref, onMounted } from "vue";
-import { GetSystemImageToken, GetWebAnnouncement, GetWebNotification, PostAnnouncementSave, PostNotificationSave } from "@/apis/system.ts";
-import { Notification, Announcement } from "@/types/system.ts";
+import { GetWebAnnouncement, GetWebNotification, PostAnnouncementSave, PostNotificationSave } from "@/apis/system.ts";
+import { GetSystemImageToken } from "@/apis/system.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import Vditor from "vditor";
-import { uploadR2Image } from "@/util/md-editor-v3.ts";
+import { HandleR2ImageUpload } from "@/util/md-editor-v3.ts";
+import type { UploadImageCallbackUrl } from "@/util/md-editor-v3.ts";
+import type { Notification, Announcement } from "@/types/system.ts";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -22,7 +23,12 @@ const stateLoading = ref(false);
 const notificationSaving = ref(false);
 
 const announcementSaving = ref(false);
-let announcementEditor = null as Vditor | null;
+
+async function handleUploadImg(files: File[], callback: (urls: UploadImageCallbackUrl[]) => void) {
+  announcementSaving.value = true;
+  await HandleR2ImageUpload(files, callback, globalProperties, GetSystemImageToken);
+  announcementSaving.value = false;
+}
 
 const handleSaveNotification = async () => {
   notificationSaving.value = true;
@@ -44,17 +50,13 @@ const handleSaveNotification = async () => {
 const handleSaveAnnouncement = async () => {
   announcementSaving.value = true;
   try {
-    if (!announcementEditor) {
-      ShowErrorTips(globalProperties, "编辑器未初始化");
-      return;
-    }
-    const content = announcementEditor.getValue();
+    const content = announcement.value.content;
     const res = await PostAnnouncementSave(announcement.value.title, content);
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
     }
-    announcementEditor.setValue(res.data.content);
+    announcement.value.content = res.data.content;
     ShowTextTipsInfo(globalProperties, "保存成功");
   } catch (e) {
     console.error(e);
@@ -78,31 +80,6 @@ const loadWebAnnouncement = async () => {
       content: "",
     };
   }
-
-  const codeEditOptions = {
-    after: () => {
-      announcementEditor?.setValue(announcement.value.content);
-    },
-    upload: {
-      accept: "image/*,.mp3, .wav, .rar",
-      filename(name) {
-        return name
-          .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")
-          .replace(/[\?\\/:|<>\*\[\]\(\)\$%\{\}@~]/g, "")
-          .replace("/\\s/g", "");
-      },
-      async handler(files: File[]) {
-        return uploadR2Image(announcementEditor as Vditor, files, globalProperties, GetSystemImageToken);
-      },
-    },
-    preview: {
-      math: {
-        inlineDigit: true,
-        engine: "KaTeX",
-      },
-    },
-  } as IOptions;
-  announcementEditor = new Vditor("problemEditDiv", codeEditOptions);
 };
 
 onMounted(async () => {
@@ -153,7 +130,15 @@ onMounted(async () => {
           <t-input v-model="announcement.title" placeholder="请输入描述" />
         </t-form-item>
       </t-form>
-      <div id="problemEditDiv" class="dida-description-editor"></div>
+      <t-loading :loading="announcementSaving">
+        <md-editor-v3
+          v-model="announcement.content"
+          @save="handleSaveAnnouncement"
+          @onUploadImg="handleUploadImg"
+          previewTheme="cyanosis"
+          class="dida-description-editor"
+        ></md-editor-v3>
+      </t-loading>
     </t-card>
   </t-loading>
 </template>
@@ -164,10 +149,7 @@ onMounted(async () => {
 }
 
 .dida-description-editor {
-  margin: 20px;
+  margin: 10px;
   width: 100%;
-  max-width: calc(100vw - 300px);
-  min-height: 500px;
-  z-index: 9999 !important;
 }
 </style>

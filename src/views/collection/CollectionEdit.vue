@@ -2,7 +2,6 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import Vditor from "vditor";
 import { GetCollectionEdit, ParseCollection, PostCollectionCreate, PostCollectionEdit } from "@/apis/collection.ts";
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
@@ -17,8 +16,7 @@ const webStyleStore = useWebStyleStore();
 
 const collectionId = ref("");
 const collectionLoading = ref(false);
-let descriptionEditor = null as Vditor | null;
-const isEditing = ref(false);
+const isSaving = ref(false);
 
 const showDialog = ref(false);
 
@@ -48,19 +46,16 @@ const handleParse = async () => {
 };
 
 const handleClickCreate = async () => {
-  if (!descriptionEditor) {
-    return;
-  }
 
-  isEditing.value = true;
+  isSaving.value = true;
 
   try {
     const postData = {
       title: collectionEditForm.value.title,
-      description: descriptionEditor.getValue(),
       problems: collectionEditForm.value.problems,
       members: collectionEditForm.value.members,
       private: collectionEditForm.value.private,
+      description: collectionEditForm.value.description,
     } as CollectionEditRequest;
     if (collectionEditForm.value.openTime[0]) {
       postData.start_time = new Date(collectionEditForm.value.openTime[0]);
@@ -70,7 +65,7 @@ const handleClickCreate = async () => {
     }
     const res = await PostCollectionCreate(postData);
 
-    isEditing.value = true;
+    isSaving.value = true;
 
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
@@ -86,16 +81,12 @@ const handleClickCreate = async () => {
 
     ShowTextTipsSuccess(globalProperties, "创建成功");
   } finally {
-    isEditing.value = false;
+    isSaving.value = false;
   }
 };
 
 const handleClickSave = async () => {
-  if (!descriptionEditor) {
-    return;
-  }
-
-  isEditing.value = true;
+  isSaving.value = true;
 
   try {
     const postData = {
@@ -104,7 +95,7 @@ const handleClickSave = async () => {
       private: collectionEditForm.value.private,
       problems: collectionEditForm.value.problems,
       members: collectionEditForm.value.members,
-      description: descriptionEditor.getValue(),
+      description: collectionEditForm.value.description,
     } as CollectionEditRequest;
     if (collectionEditForm.value.openTime[0]) {
       postData.start_time = new Date(collectionEditForm.value.openTime[0]);
@@ -114,7 +105,7 @@ const handleClickSave = async () => {
     }
     const res = await PostCollectionEdit(postData);
 
-    isEditing.value = true;
+    isSaving.value = true;
 
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
@@ -129,24 +120,13 @@ const handleClickSave = async () => {
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
   } finally {
-    isEditing.value = false;
+    isSaving.value = false;
   }
 };
 
 const loadDescriptionEditor = (description: string) => {
-  const codeEditOptions = {
-    after: () => {
-      descriptionEditor?.setValue(description);
-      collectionLoading.value = false;
-    },
-    preview: {
-      math: {
-        inlineDigit: true,
-        engine: "KaTeX",
-      },
-    },
-  } as IOptions;
-  descriptionEditor = new Vditor("collectionEditDiv", codeEditOptions);
+  collectionEditForm.value.description = description;
+  collectionLoading.value = false;
 };
 
 const loadCollection = async () => {
@@ -242,10 +222,10 @@ onMounted(async () => {
         <div style="margin: 12px">
           <div class="dida-edit-container">
             <t-space v-if="collectionId">
-              <t-button @click="handleClickSave" theme="danger" :loading="isEditing">保存</t-button>
+              <t-button @click="handleClickSave" theme="danger" :loading="isSaving">保存</t-button>
             </t-space>
             <t-space v-else>
-              <t-button @click="handleClickCreate" theme="danger" :loading="isEditing">创建</t-button>
+              <t-button @click="handleClickCreate" theme="danger" :loading="isSaving">创建</t-button>
             </t-space>
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="collectionId">

@@ -2,7 +2,6 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import Vditor from "vditor";
 import { GetContestEdit, ParseContest, PostContestCreate, PostContestEdit } from "@/apis/contest.ts";
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
@@ -16,10 +15,9 @@ const { globalProperties } = useCurrentInstance();
 
 const webStyleStore = useWebStyleStore();
 
-const contestId = ref("");
+const contestId = ref(0);
 const contestLoading = ref(false);
-let descriptionEditor = null as Vditor | null;
-const isEditing = ref(false);
+const isSaving = ref(false);
 
 const showDialog = ref(false);
 
@@ -54,16 +52,13 @@ const handleParse = async () => {
 };
 
 const handleClickCreate = async () => {
-  if (!descriptionEditor) {
-    return;
-  }
 
-  isEditing.value = true;
+  isSaving.value = true;
 
   try {
     const postData = {
       title: contestEditForm.value.title,
-      description: descriptionEditor.getValue(),
+      description: contestEditForm.value.description,
       notification: contestEditForm.value.notification,
       lock_rank_duration: contestEditForm.value.lockRankDuration,
       always_lock: contestEditForm.value.alwaysLock,
@@ -81,7 +76,7 @@ const handleClickCreate = async () => {
     }
     const res = await PostContestCreate(postData);
 
-    isEditing.value = true;
+    isSaving.value = true;
 
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
@@ -97,22 +92,18 @@ const handleClickCreate = async () => {
 
     ShowTextTipsSuccess(globalProperties, "创建成功");
   } finally {
-    isEditing.value = false;
+    isSaving.value = false;
   }
 };
 
 const handleClickSave = async () => {
-  if (!descriptionEditor) {
-    return;
-  }
 
-  isEditing.value = true;
+  isSaving.value = true;
 
   try {
     const postData = {
       id: Number(contestId.value),
       title: contestEditForm.value.title,
-      description: descriptionEditor.getValue(),
       notification: contestEditForm.value.notification,
       lock_rank_duration: contestEditForm.value.lockRankDuration,
       always_lock: contestEditForm.value.alwaysLock,
@@ -121,6 +112,7 @@ const handleClickSave = async () => {
       private: contestEditForm.value.private,
       password: contestEditForm.value.password,
       submit_anytime: contestEditForm.value.submitAnytime,
+      description: contestEditForm.value.description,
     } as ContestEditRequest;
     if (contestEditForm.value.openTime[0]) {
       postData.start_time = new Date(contestEditForm.value.openTime[0]);
@@ -130,7 +122,7 @@ const handleClickSave = async () => {
     }
     const res = await PostContestEdit(postData);
 
-    isEditing.value = true;
+    isSaving.value = true;
 
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
@@ -145,24 +137,13 @@ const handleClickSave = async () => {
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
   } finally {
-    isEditing.value = false;
+    isSaving.value = false;
   }
 };
 
 const loadDescriptionEditor = (description: string) => {
-  const codeEditOptions = {
-    after: () => {
-      descriptionEditor?.setValue(description);
-      contestLoading.value = false;
-    },
-    preview: {
-      math: {
-        inlineDigit: true,
-        engine: "KaTeX",
-      },
-    },
-  } as IOptions;
-  descriptionEditor = new Vditor("contestEditDiv", codeEditOptions);
+  contestEditForm.value.description = description;
+  contestLoading.value = false;
 };
 
 const loadContest = async () => {
@@ -219,9 +200,9 @@ const loadContest = async () => {
 
 onMounted(async () => {
   if (Array.isArray(route.params.contestId)) {
-    contestId.value = route.params.contestId[0];
+    contestId.value = Number(route.params.contestId[0]);
   } else {
-    contestId.value = route.params.contestId;
+    contestId.value = Number(route.params.contestId);
   }
 
   if (contestId.value) {
@@ -291,10 +272,10 @@ onMounted(async () => {
         <div style="margin: 12px">
           <div class="dida-edit-container">
             <t-space v-if="contestId">
-              <t-button @click="handleClickSave" theme="danger" :loading="isEditing">保存</t-button>
+              <t-button @click="handleClickSave" theme="danger" :loading="isSaving">保存</t-button>
             </t-space>
             <t-space v-else>
-              <t-button @click="handleClickCreate" theme="danger" :loading="isEditing">创建</t-button>
+              <t-button @click="handleClickCreate" theme="danger" :loading="isSaving">创建</t-button>
             </t-space>
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="contestId">

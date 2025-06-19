@@ -2,7 +2,6 @@
 import httpRequest from "@/apis/axios-api";
 
 import type { Contest, ContestView, ContestEditRequest, ContestProblem } from "@/types/contest";
-import Vditor from "vditor";
 import { ProblemView } from "@/types/problem.ts";
 
 export function GetContestProblemIndexStr(index: number): string {
