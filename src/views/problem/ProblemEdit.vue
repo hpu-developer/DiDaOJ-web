@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { ChevronDownIcon } from "tdesign-icons-vue-next";
-import { PostR2Image } from "@/util/md-editor-v3.ts";
+import { HandleR2ImageUpload } from "@/util/md-editor-v3.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import { useCurrentInstance, ShowErrorTips, ShowTextTipsSuccess } from "@/util";
 import { GetProblem, GetProblemTagList, ParseProblem, GetProblemImageToken, PostProblemCreate, PostProblemEdit } from "@/apis/problem.ts";
@@ -109,30 +109,10 @@ const handleClickJudge = () => {
 
 const onUploadImg = async (files: File[], callback: (urls: { url: string; alt: string; title: string }[]) => void) => {
   disabledEdit.value = true;
-  let urls = [] as { url: string; alt: string; title: string }[];
-  try {
-    for (const file of files) {
-      const res = await GetProblemImageToken(problemId.value);
-      if (res.code !== 0) {
-        urls = urls.concat({
-          url: "上传失败",
-          alt: file.name,
-          title: file.name,
-        });
-        continue;
-      }
-      const uploadUrl = res.data.upload_url;
-      await PostR2Image(uploadUrl, file);
-      urls = urls.concat({
-        url: res.data.preview_url,
-        alt: file.name,
-        title: file.name,
-      });
-    }
-  } finally {
-    callback(urls);
-    disabledEdit.value = false;
-  }
+  await HandleR2ImageUpload(files, callback, globalProperties, () => {
+    return GetProblemImageToken(problemId.value);
+  });
+  disabledEdit.value = false;
 };
 
 const handleClickCreate = async () => {

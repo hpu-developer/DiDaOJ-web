@@ -8,6 +8,7 @@ import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { CollectionEditRequest, CollectionView } from "@/types/collection.ts";
 import ParseProblemList from "@/components/problem/ParseProblemList.vue";
 import ParseUserList from "@/components/user/ParseUserList.vue";
+import { HandleR2ImageUpload, type UploadImageCallbackUrl } from "@/util/md-editor-v3.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -46,7 +47,6 @@ const handleParse = async () => {
 };
 
 const handleClickCreate = async () => {
-
   isSaving.value = true;
 
   try {
@@ -64,8 +64,6 @@ const handleClickCreate = async () => {
       postData.end_time = new Date(collectionEditForm.value.openTime[1]);
     }
     const res = await PostCollectionCreate(postData);
-
-    isSaving.value = true;
 
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
@@ -105,8 +103,6 @@ const handleClickSave = async () => {
     }
     const res = await PostCollectionEdit(postData);
 
-    isSaving.value = true;
-
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
@@ -128,6 +124,14 @@ const loadDescriptionEditor = (description: string) => {
   collectionEditForm.value.description = description;
   collectionLoading.value = false;
 };
+
+async function handleUploadImg(files: File[], callback: (urls: UploadImageCallbackUrl[]) => void) {
+  isSaving.value = true;
+  await HandleR2ImageUpload(files, callback, globalProperties, () => {
+    return null;
+  });
+  isSaving.value = false;
+}
 
 const loadCollection = async () => {
   const res = await GetCollectionEdit(collectionId.value);
@@ -236,7 +240,15 @@ onMounted(async () => {
         </div>
       </t-col>
     </t-row>
-    <div id="collectionEditDiv" class="dida-description-editor"></div>
+      <md-editor-v3
+        id="collection-description-editor"
+        v-model="collectionEditForm.description"
+        @save="handleClickSave"
+        @onUploadImg="handleUploadImg"
+        previewTheme="cyanosis"
+        class="dida-description-editor"
+      />
+      <t-loading :loading="isSaving" attach="#collection-description-editor" :z-index="100000"></t-loading>
   </t-loading>
   <t-dialog v-model:visible="showDialog" @confirm="handleParse" :header="parseDialogTitle" :confirm-loading="isParsing">
     <div style="margin-bottom: 10px">
@@ -255,8 +267,5 @@ onMounted(async () => {
 .dida-description-editor {
   margin: 20px;
   width: 100%;
-  max-width: calc(100vw - 300px);
-  min-height: 500px;
-  z-index: 9999 !important;
 }
 </style>
