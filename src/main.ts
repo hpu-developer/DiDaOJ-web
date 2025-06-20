@@ -35,6 +35,16 @@ import shortcodeInlinePlugin from "@/util/shortcode.ts";
 
 config({
   markdownItConfig(mdit) {
+    mdit.use(container, "align-left", {
+      render(tokens: any[], idx: number) {
+        return tokens[idx].nesting === 1 ? '<div class="sh-align-left">\n' : "</div>\n";
+      },
+    });
+    mdit.use(container, "align-center", {
+      render(tokens: any[], idx: number) {
+        return tokens[idx].nesting === 1 ? '<div class="sh-align-center">\n' : "</div>\n";
+      },
+    });
     mdit.use(container, "align-right", {
       render(tokens: any[], idx: number) {
         return tokens[idx].nesting === 1 ? '<div class="sh-align-right">\n' : "</div>\n";

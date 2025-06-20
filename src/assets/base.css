@@ -52,6 +52,14 @@ body {
   pointer-events: auto;
 }
 
+.sh-align-left {
+  text-align: left;
+}
+
+.sh-align-center {
+  text-align: center;
+}
+
 .sh-align-right {
   text-align: right;
 }
