@@ -6,6 +6,7 @@ import { useLoginStore } from "@/stores/login";
 import { useUserStore } from "@/stores/user.ts";
 import { useWebStyleStore } from "@/stores/webStyle";
 import { useSidebarStyleStore } from "@/stores/sidebarStyle";
+import { GetProblemAttemptStatus, ProblemAttemptStatus } from "@/apis/problem.ts";
 
 import HeaderContent from "./components/HeaderContent.vue";
 import SidebarContent from "./components/SidebarContent.vue";
@@ -14,9 +15,8 @@ import FooterContent from "./components/FooterContent.vue";
 import ForceHiddenSidebarButton from "./components/ForceHiddenSidebarButton.vue";
 import View403 from "@/views/View403.vue";
 
-import { ShowErrorTips, useCurrentInstance } from "@/util/";
+import { debounce, ShowErrorTips, useCurrentInstance } from "@/util/";
 import { useRoute } from "vue-router";
-import { GetProblemAtteptStatus } from "@/apis/judge.ts";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -78,27 +78,31 @@ const processProblemTags = async () => {
   if (containers.length === 0) {
     return;
   }
-  let buttonThemes = {};
+  let buttonThemes = {} as { [key: string]: any[] };
   containers.forEach((el) => {
     const id = el.getAttribute("id");
     const mountNode = document.createElement("span");
     mountNode.setAttribute("style", "padding:5px");
     el.replaceWith(mountNode);
-    const theme = ref("primary");
+    const theme = ref("default");
     if (!buttonThemes[id]) {
       buttonThemes[id] = [];
     }
     buttonThemes[id].push(theme);
+    let problemId = id;
+    if (id && !id.includes("-")) {
+      problemId = "DidaOJ-" + id;
+    }
     const app = createApp({
       render: () =>
         h(TButton, {
-          innerHTML: id,
+          innerHTML: problemId,
           onClick: () => {
             window.open(`/problem/${id}`, "_blank");
           },
           size: "small",
           variant: "outline",
-          theme: theme,
+          theme: theme.value,
         }),
     });
     app.mount(mountNode);
@@ -107,8 +111,30 @@ const processProblemTags = async () => {
   for (const id in buttonThemes) {
     problemIds.push(id);
   }
-  const res = await GetProblemAtteptStatus(problemIds);
-  console.log(res);
+  const res = await GetProblemAttemptStatus(problemIds);
+  if (res.code === 0) {
+    for (const id in buttonThemes) {
+      const themes = buttonThemes[id];
+      if (!themes) {
+        continue;
+      }
+      let theme = "primary";
+      const status = res.data[id];
+      if (status) {
+        switch (status) {
+          case ProblemAttemptStatus.Accept:
+            theme = "success";
+            break;
+          case ProblemAttemptStatus.Attempt:
+            theme = "warning";
+            break;
+        }
+      }
+      for (const t of themes) {
+        t.value = theme;
+      }
+    }
+  }
 };
 
 onMounted(() => {
@@ -116,19 +142,14 @@ onMounted(() => {
     // listen to any DOM change and automatically perform spacing via MutationObserver()
 
     const observer = new MutationObserver(() => {
-      processProblemTags();
+      debounce(() => {
+        processProblemTags();
+      }, 1000)();
     });
-    // 获取所有md-editor-preview-wrapper并监听
-    const mdPreviewWrappers = document.querySelectorAll(".md-editor-preview-wrapper");
-    mdPreviewWrappers.forEach((wrapper) => {
-      wrapper.classList.add("sh-md-editor-preview-wrapper");
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
     });
-    for (const wrapper of mdPreviewWrappers) {
-      observer.observe(wrapper, {
-        childList: true,
-        subtree: true,
-      });
-    }
     pangu.autoSpacingPage();
   });
 

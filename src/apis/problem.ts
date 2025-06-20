@@ -244,6 +244,16 @@ export function GetProblemDailyList(startDate: string, endData: string, problemI
   });
 }
 
+export function GetProblemAttemptStatus(problemIds: string[]) {
+  return httpRequest({
+    url: "/problem/attempt/status",
+    method: "get",
+    params: {
+      ids: problemIds.join(","),
+    },
+  });
+}
+
 export function PostProblemCrawl(oj: string, problemId: string) {
   return httpRequest({
     url: "/problem/crawl",

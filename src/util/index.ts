@@ -11,6 +11,17 @@ export function useCurrentInstance() {
   };
 }
 
+export function debounce(fn: (...args: any[]) => void, delay = 300) {
+  let timer: ReturnType<typeof setTimeout> | null;
+
+  return function (...args: any[]) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+}
+
 export function GetCommonErrorCode() {
   return 1000;
 }

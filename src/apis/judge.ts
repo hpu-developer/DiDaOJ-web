@@ -276,16 +276,6 @@ export function GetJudgeStaticsRecently() {
   });
 }
 
-export function GetProblemAtteptStatus(problemIds: string[]) {
-  return httpRequest({
-    url: "/judge/attempt/status",
-    method: "post",
-    data: {
-      problem_ids: problemIds,
-    },
-  });
-}
-
 export function PostRejudgeRecently() {
   return httpRequest({
     url: "/judge/rejudge/recently",

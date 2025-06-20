@@ -45,6 +45,39 @@ function shortcodeInlinePlugin(md: MarkdownIt, options: ShortcodePluginOptions =
     return replaced;
   };
 }
+function shortcodeColorPlugin(md: MarkdownIt, options: {
+  renderers: Record<string, (args: string[], content: string) => string>
+}) {
+  const pattern = /\{\{%\s*(\w+)\s*%\}\}([\s\S]*?)\{\{%\s*\/\1\s*%\}\}/g;
 
-export { shortcodeInlinePlugin };
+  md.core.ruler.push("shortcode_color", (state) => {
+    for (const token of state.tokens) {
+      if (token.type !== "inline") continue;
+
+      let content = token.content;
+      let replaced = false;
+
+      content = content.replace(pattern, (match, tagName, innerContent) => {
+        const renderer = options.renderers?.[tagName];
+        if (renderer) {
+          replaced = true;
+          return renderer([], innerContent.trim());
+        } else {
+          return match; // 未知标签保留原样
+        }
+      });
+
+      if (replaced) {
+        // 替换成功，直接用 HTML 片段替换
+        token.type = "html_inline";
+        token.tag = "";
+        token.attrs = null;
+        token.content = content;
+        token.children = [];
+      }
+    }
+  });
+}
+
+export { shortcodeInlinePlugin, shortcodeColorPlugin };
 export type { ShortcodePluginOptions, ShortcodeRenderer };

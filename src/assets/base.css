@@ -52,6 +52,18 @@ body {
   pointer-events: auto;
 }
 
+.dida-font-red {
+  color: #ff4d4f;
+}
+
+.dida-font-green {
+  color: #52c41a;
+}
+
+.dida-font-blue {
+  color: #1677ff;
+}
+
 .sh-align-left {
   text-align: left;
 }
