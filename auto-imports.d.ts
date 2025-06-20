@@ -7,4 +7,7 @@
 export {}
 declare global {
   const MessagePlugin: typeof import('tdesign-vue-next')['MessagePlugin']
+  const TButton: typeof import('tdesign-vue-next')['Button']
+  const TLink: typeof import('tdesign-vue-next')['Link']
+  const TTag: typeof import('tdesign-vue-next')['Tag']
 }

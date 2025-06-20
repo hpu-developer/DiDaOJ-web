@@ -269,10 +269,20 @@ export function GetJudgeJobList(
   });
 }
 
-export function GetJudgeStaticsRecently(){
+export function GetJudgeStaticsRecently() {
   return httpRequest({
     url: "/judge/statics/recently",
     method: "get",
+  });
+}
+
+export function GetProblemAtteptStatus(problemIds: string[]) {
+  return httpRequest({
+    url: "/judge/attempt/status",
+    method: "post",
+    data: {
+      problem_ids: problemIds,
+    },
   });
 }
 

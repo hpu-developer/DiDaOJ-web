@@ -46,5 +46,5 @@ function shortcodeInlinePlugin(md: MarkdownIt, options: ShortcodePluginOptions =
   };
 }
 
-export default shortcodeInlinePlugin;
+export { shortcodeInlinePlugin };
 export type { ShortcodePluginOptions, ShortcodeRenderer };

@@ -31,7 +31,7 @@ import { config } from "md-editor-v3";
 import LinkAttr from "markdown-it-link-attributes";
 import container from "markdown-it-container";
 
-import shortcodeInlinePlugin from "@/util/shortcode.ts";
+import { shortcodeInlinePlugin } from "@/util/shortcode.ts";
 
 config({
   markdownItConfig(mdit) {
@@ -51,9 +51,12 @@ config({
       },
     });
     mdit.use(shortcodeInlinePlugin, {
+      // renderers: {
+      //   problem: ([id]) =>
+      //     `<a href="/problem/${id}" target="_blank" class="sh-problem-tag t-tag t-tag--default t-tag--dark" data-id="${id}">${id}</a>`,
+      // },
       renderers: {
-        problem: ([id]) =>
-          `<a href="/problem/${id}" target="_blank" class="sh-problem-tag t-tag t-tag--default t-tag--dark" data-id="${id}">${id}</a>`,
+        problem: ([id]) => `<oj-problem id="${id}">${id}</oj-problem>`,
       },
     });
   },

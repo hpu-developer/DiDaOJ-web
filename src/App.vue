@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { createApp, h, ref, onMounted, computed } from "vue";
 import pangu from "pangu";
 import { PostLoginRefresh } from "@/apis/user.ts";
 import { useLoginStore } from "@/stores/login";
@@ -16,6 +16,7 @@ import View403 from "@/views/View403.vue";
 
 import { ShowErrorTips, useCurrentInstance } from "@/util/";
 import { useRoute } from "vue-router";
+import { GetProblemAtteptStatus } from "@/apis/judge.ts";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -72,9 +73,62 @@ function handleError() {
   userStore.clear();
 }
 
+const processProblemTags = async () => {
+  const containers = document.querySelectorAll("oj-problem");
+  if (containers.length === 0) {
+    return;
+  }
+  let buttonThemes = {};
+  containers.forEach((el) => {
+    const id = el.getAttribute("id");
+    const mountNode = document.createElement("span");
+    mountNode.setAttribute("style", "padding:5px");
+    el.replaceWith(mountNode);
+    const theme = ref("primary");
+    if (!buttonThemes[id]) {
+      buttonThemes[id] = [];
+    }
+    buttonThemes[id].push(theme);
+    const app = createApp({
+      render: () =>
+        h(TButton, {
+          innerHTML: id,
+          onClick: () => {
+            window.open(`/problem/${id}`, "_blank");
+          },
+          size: "small",
+          variant: "outline",
+          theme: theme,
+        }),
+    });
+    app.mount(mountNode);
+  });
+  const problemIds = [];
+  for (const id in buttonThemes) {
+    problemIds.push(id);
+  }
+  const res = await GetProblemAtteptStatus(problemIds);
+  console.log(res);
+};
+
 onMounted(() => {
   document.addEventListener("DOMContentLoaded", () => {
     // listen to any DOM change and automatically perform spacing via MutationObserver()
+
+    const observer = new MutationObserver(() => {
+      processProblemTags();
+    });
+    // 获取所有md-editor-preview-wrapper并监听
+    const mdPreviewWrappers = document.querySelectorAll(".md-editor-preview-wrapper");
+    mdPreviewWrappers.forEach((wrapper) => {
+      wrapper.classList.add("sh-md-editor-preview-wrapper");
+    });
+    for (const wrapper of mdPreviewWrappers) {
+      observer.observe(wrapper, {
+        childList: true,
+        subtree: true,
+      });
+    }
     pangu.autoSpacingPage();
   });
 
