@@ -105,13 +105,27 @@ const handleSearchContest = async () => {
   });
 };
 
+const handleResetSearch = async () => {
+  contestSearchForm.value.title = "";
+  contestSearchForm.value.username = "";
+  await router.push({
+    query: {
+      ...route.query,
+      title: "",
+      username: "",
+      page: 1,
+      page_size: pagination.value.defaultPageSize,
+    },
+  });
+};
+
 const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
   }
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetContestList(current, pageSize);
+    const res = await GetContestList(contestSearchForm.value.title, contestSearchForm.value.username, current, pageSize);
     contestViews.value = [];
     if (res.code === 0) {
       const responseList = res.data.list as Contest[];
@@ -192,14 +206,14 @@ onBeforeUnmount(() => {
           :loading="dataLoading"
           table-layout="auto"
           @page-change="onPageChange"
-          style="white-space: nowrap;"
+          style="white-space: nowrap"
         />
       </t-card>
     </t-col>
     <t-col :span="3">
       <div style="margin: 10px">
         <t-card class="sh-card">
-          <t-form :model="contestSearchForm">
+          <t-form :model="contestSearchForm" @submit="handleSearchContest" @reset="handleResetSearch">
             <t-form-item label="标题">
               <t-input v-model="contestSearchForm.title" placeholder="暂不支持模糊查询"></t-input>
             </t-form-item>
@@ -207,7 +221,10 @@ onBeforeUnmount(() => {
               <t-input v-model="contestSearchForm.username" placeholder="仅支持输入完整用户名"></t-input>
             </t-form-item>
             <t-form-item>
-              <t-button theme="primary" @click="handleSearchContest">提交</t-button>
+              <t-space>
+                <t-button theme="primary" type="submit">提交</t-button>
+                <t-button theme="danger" type="reset">重置</t-button>
+              </t-space>
             </t-form-item>
           </t-form>
         </t-card>

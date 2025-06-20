@@ -96,9 +96,22 @@ export function GetContestProblemRealId(contestId: number, problemIndex: number)
   });
 }
 
-export function GetContestList(page: number, pageSize: number) {
+export function GetContestList(title: string, username: string, page: number, pageSize: number) {
+  const params: Record<string, string> = {};
+  if (title) {
+    params["title"] = title;
+  }
+  if (username) {
+    params["username"] = username;
+  }
+  if (page) {
+    params["page"] = String(page);
+  }
+  if (pageSize) {
+    params["page_size"] = String(pageSize);
+  }
   return httpRequest({
-    url: "/contest/list" + "?page=" + page + "&page_size=" + pageSize,
+    url: "/contest/list" + `?${new URLSearchParams(params).toString()}`,
     method: "get",
   });
 }

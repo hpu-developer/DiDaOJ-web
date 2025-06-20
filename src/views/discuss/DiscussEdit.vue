@@ -100,8 +100,8 @@ const handleClickSave = async () => {
     }
 
     if (discussData.value) {
-      if (res.data.update_time != undefined) {
-        discussData.value.updateTime = new Date(res.data.update_time).toLocaleString();
+      if (res.data.modify_time != undefined) {
+        discussData.value.modifyTime = new Date(res.data.modify_time).toLocaleString();
       }
     }
     if (res.data.content != undefined) {
@@ -111,6 +111,14 @@ const handleClickSave = async () => {
     ShowTextTipsSuccess(globalProperties, "保存成功");
   } finally {
     isSaving.value = false;
+  }
+};
+
+const onEditSave = async () => {
+  if (discussId.value) {
+    await handleClickSave();
+  } else {
+    await handleClickCreate();
   }
 };
 
@@ -204,7 +212,7 @@ onBeforeUnmount(() => {
       <md-editor-v3
         id="discuss-editor"
         v-model="discussEditForm.content"
-        @save="handleClickSave"
+        @save="onEditSave"
         @onUploadImg="handleUploadImg"
         previewTheme="cyanosis"
       ></md-editor-v3>
