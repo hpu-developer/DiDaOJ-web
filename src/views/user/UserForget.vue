@@ -194,6 +194,11 @@ onBeforeUnmount(() => {});
       <span>如果您未绑定邮箱或忘记用户名，可联系管理员寻求帮助</span>
       <span>管理员邮箱：BoilTask@qq.com</span>
     </t-alert>
+    <t-alert style="margin-top: 10px">
+      <p>支持原acm.hpu.edu.cn、CodeOJ的用户直接登录</p>
+      <p>原DMOJ、hpuoj.com的用户，用户名为您的邮箱，请先重置密码</p>
+      <p>可尝试学号/邮箱等作为用户名登录，成功后有机会合并账户或修改用户名</p>
+    </t-alert>
     <t-form ref="form" :rules="formRules" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit" class="yj-login-form">
       <t-form-item name="username" label="用户名">
         <t-input v-model="formData.username" clearable placeholder="请输入完整用户名"></t-input>
@@ -201,8 +206,8 @@ onBeforeUnmount(() => {});
       <template v-if="sendToEmail">
         <t-form-item name="email" label="发送邮箱">
           <t-input-adornment :append="confirmEmail">
-            <div style="display: flex; align-items: center;">
-              <span style="color: #409eff;margin-right: 20px">{{ sendToEmail }}</span>
+            <div style="display: flex; align-items: center">
+              <span style="color: #409eff; margin-right: 20px">{{ sendToEmail }}</span>
             </div>
           </t-input-adornment>
         </t-form-item>

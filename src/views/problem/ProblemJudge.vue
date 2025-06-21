@@ -35,7 +35,18 @@ const listColumns = ref([
     colKey: "size",
     width: 150,
     cell: (_: any, data: any) => {
-      return data.row.size.toFixed(0) + " B";
+      let size = data.row.size;
+      let sizeStr;
+      if (size > 10 * 1024) {
+        if (size > 1024 * 1024) {
+          sizeStr = (size / (1024 * 1024)).toFixed(3) + " MB";
+        } else {
+          sizeStr = (size / 1024).toFixed(3) + " KB";
+        }
+      } else {
+        sizeStr = size + " B";
+      }
+      return sizeStr;
     },
   },
   {
