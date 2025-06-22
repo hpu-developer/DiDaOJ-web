@@ -16,7 +16,7 @@ export interface JudgeTaskView {
   status: JudgeStatus; // 评测状态
   time: string; // 所用的时间
   memory: string; // 所用的内存
-  score: number; // 评分
+  score: string; // 评分
   content: string; // 输出内容
   waHint: string; // 错误提示
 }

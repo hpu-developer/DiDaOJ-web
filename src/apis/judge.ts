@@ -235,7 +235,11 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
       } else {
         taskView.memory = "-";
       }
-      taskView.score = task.score;
+      if (task.score) {
+        taskView.score = (task.score / 10).toString();
+      } else {
+        taskView.score = "-";
+      }
       taskView.content = task.content;
       taskView.waHint = task.wa_hint;
       result.task.push(taskView);
