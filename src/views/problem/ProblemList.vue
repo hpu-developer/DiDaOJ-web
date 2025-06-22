@@ -159,6 +159,26 @@ const handleClickSearch = async () => {
   });
 };
 
+const handleClickReset = async () => {
+  searchProblemForm.value.oj = "";
+  searchProblemForm.value.title = "";
+  searchProblemForm.value.tag = "";
+  searchProblemForm.value.private = false;
+
+  // 更新 URL 查询参数
+  await router.push({
+    query: {
+      ...route.query,
+      oj: "",
+      title: "",
+      tag: "",
+      private: "0",
+      page: 1,
+      page_size: pagination.value.defaultPageSize,
+    },
+  });
+};
+
 const handleClickCrawl = async () => {
   try {
     isCrawling.value = true;
@@ -324,7 +344,7 @@ onBeforeUnmount(() => {
           </t-space>
         </div>
         <t-card class="sh-card">
-          <t-form :model="searchProblemForm" @submit="handleClickSearch">
+          <t-form :model="searchProblemForm" @submit="handleClickSearch" @reset="handleClickReset">
             <t-form-item label="OJ">
               <t-select v-model="searchProblemForm.oj" :options="ojOptions" placeholder="请选择OJ" clearable></t-select>
             </t-form-item>
@@ -338,7 +358,10 @@ onBeforeUnmount(() => {
               <t-switch v-model="searchProblemForm.private"></t-switch>
             </t-form-item>
             <t-form-item>
-              <t-button theme="primary" type="submit">搜索</t-button>
+              <t-space>
+                <t-button theme="primary" type="submit">搜索</t-button>
+                <t-button theme="danger" type="reset">重置</t-button>
+              </t-space>
             </t-form-item>
           </t-form>
         </t-card>

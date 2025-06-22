@@ -196,8 +196,8 @@ onBeforeUnmount(() => {});
     </t-alert>
     <t-alert style="margin-top: 10px">
       <p>支持原acm.hpu.edu.cn、CodeOJ的用户直接登录</p>
-      <p>原DMOJ、hpuoj.com的用户，用户名为您的邮箱，请先重置密码</p>
-      <p>可尝试学号/邮箱等作为用户名登录，成功后有机会合并账户或修改用户名</p>
+      <p>原DMOJ、hpuoj.com的用户，请先重置密码</p>
+      <p>可尝试学号/昵称等作为用户名登录，成功后有机会合并账户或修改用户名</p>
     </t-alert>
     <t-form ref="form" :rules="formRules" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit" class="yj-login-form">
       <t-form-item name="username" label="用户名">

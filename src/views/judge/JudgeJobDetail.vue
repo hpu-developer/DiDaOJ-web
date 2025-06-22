@@ -6,6 +6,7 @@ import {
   GetJudgeJob,
   GetJudgeStatusStr,
   GetJudgeStatusTheme,
+  GetJudgeStatusTips,
   IsJudgeStatusRunning,
   JudgeStatus,
   ParseJudgeJob,
@@ -288,7 +289,6 @@ onMounted(async () => {
   }
 
   await fetchData(true);
-
 });
 
 onBeforeUnmount(() => {
@@ -311,10 +311,15 @@ onBeforeUnmount(() => {
       </div>
     </t-col>
     <t-col :span="4">
-      <t-descriptions layout="vertical" :bordered="true" style="margin: 20px">
-        <t-descriptions-item label="判题机">{{ judgerName }}</t-descriptions-item>
-        <t-descriptions-item label="判题时间">{{ judgeJob?.judgeTime }}</t-descriptions-item>
-      </t-descriptions>
+      <div style="margin: 20px">
+        <t-descriptions layout="vertical" :bordered="true">
+          <t-descriptions-item label="判题机">{{ judgerName }}</t-descriptions-item>
+          <t-descriptions-item label="判题时间">{{ judgeJob?.judgeTime }}</t-descriptions-item>
+        </t-descriptions>
+        <t-card class="dida-card-tips">
+          {{ dataLoading ? "数据正在加载，请等待" : GetJudgeStatusTips(judgeJob?.status) }}
+        </t-card>
+      </div>
     </t-col>
   </t-row>
 
@@ -322,8 +327,15 @@ onBeforeUnmount(() => {
 
   <t-collapse v-if="judgeJob?.task && judgeJob?.task.length > 0" class="task-panel">
     <t-collapse-panel v-for="(task, _) in judgeJob?.task" :key="task.taskId" :header="() => taskRender(task)">
-      {{ task.content }}
-      {{ task.waHint }}
+      <t-card>
+        {{ GetJudgeStatusTips(task.status) }}
+      </t-card>
+      <t-card v-if="task.content" class="dida-card-tips">
+        <md-preview :model-value="task.content"></md-preview>
+      </t-card>
+      <t-card v-if="task.waHint" class="dida-card-tips">
+        <md-preview :model-value="task.waHint"></md-preview>
+      </t-card>
     </t-collapse-panel>
   </t-collapse>
   <div class="dida-edit-container" v-if="hasEditAuth">
@@ -357,5 +369,9 @@ onBeforeUnmount(() => {
 .dida-code-container {
   width: 100%;
   margin: 10px;
+}
+
+.dida-card-tips {
+  margin-top: 10px;
 }
 </style>

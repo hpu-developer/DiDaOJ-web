@@ -86,6 +86,50 @@ export const GetJudgeStatusStr = (status: JudgeStatus) => {
   }
 };
 
+export const GetJudgeStatusTips = (status: JudgeStatus | undefined): string => {
+  if (status !== undefined) {
+    switch (status) {
+      case JudgeStatus.Init:
+        return "已经提交到系统，请耐心等待评测结果";
+      case JudgeStatus.Rejudge:
+        return "管理员发起了重新评测，请耐心等待评测结果";
+      case JudgeStatus.Submitting:
+        return "判题机已经接受了本次提交，正在提交到远程判官中";
+      case JudgeStatus.Queuing:
+        return "判题机已经接受了本次提交，正在排队等待评测";
+      case JudgeStatus.Compiling:
+        return "判题机正在编译您的代码，部分语言会在此步检查是否符合语法";
+      case JudgeStatus.Running:
+        return "您的代码正在运行，请等待运行结果";
+      case JudgeStatus.Accept:
+        return "您的代码通过了测试用例，恭喜您！";
+      case JudgeStatus.PE:
+        return "您的代码基本正确，但可能存在空格、空行等格式错误，请认真对比输出要求";
+      case JudgeStatus.WA:
+        return "您的答案与标准答案存在区别，请继续思考有无未考虑的情况";
+      case JudgeStatus.TLE:
+        return "运行您的代码所用的时间超过了题目限制，请思考时间上更优的解法";
+      case JudgeStatus.MLE:
+        return "运行您的代码所用的内存超过了题目限制，请思考空间上更优的解法";
+      case JudgeStatus.OLE:
+        return "您程序的输出内容远远多于了题目要求（一般是数倍于正确输出），请检查相关逻辑";
+      case JudgeStatus.RE:
+        return "在运行您程序的过程中发生了异常，可能是除零、数组越界等问题，请检查相关逻辑";
+      case JudgeStatus.CE:
+        return "您的代码在编译阶段发生了错误，可能是语法错误或其他编译问题，请检查相关逻辑";
+      case JudgeStatus.CLE:
+        return "在编译您代码的过程中，所占用的资源远远超过了要求，请检查相关逻辑";
+      case JudgeStatus.JudgeFail:
+        return "评测过程中发生了异常，一般是判题机或远程判官的问题，可尝试联系管理员处理";
+      case JudgeStatus.SubmitFail:
+        return "在将您的代码提交到远程判官的过程中发生了错误，一般是判题机或远程判官的问题，可联系管理员处理";
+      case JudgeStatus.Unknown:
+        return "您的代码状态未知，有可能是您不具有权限，或者该代码状态被隐藏";
+    }
+  }
+  return "暂时无提示信息";
+};
+
 export const GetJudgeStatusTheme = (status: JudgeStatus): ButtonProps["theme"] => {
   switch (status) {
     case JudgeStatus.Init:
@@ -143,7 +187,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   if (IsJudgeStatusRunning(item.status) || !IsJudgeStatusValid(item.status)) {
     result.score = "-";
   } else {
-    result.score = item.score.toString();
+    result.score = (item.score / 10).toString();
   }
   if (item.time) {
     // 保留到整数，向上取整
@@ -194,9 +238,6 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
       taskView.score = task.score;
       taskView.content = task.content;
       taskView.waHint = task.wa_hint;
-      if (!taskView.content && !taskView.waHint) {
-        taskView.content = "无提示信息";
-      }
       result.task.push(taskView);
     }
   }
