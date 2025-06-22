@@ -66,20 +66,6 @@ const hasEditDiscussAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageDiscuss) || (discussData.value && userStore.getUserId == discussData.value.authorId);
 });
 
-const handleClickTag = (tag: DiscussTag) => {
-  if (!tag) {
-    return;
-  }
-  router.push({
-    name: "discuss-list",
-    query: {
-      ...route.query,
-      title: "",
-      tag: tag.name,
-    },
-  });
-};
-
 const handleClickEdit = () => {
   router.push({
     name: "discuss-edit",
@@ -319,7 +305,7 @@ onBeforeUnmount(() => {
         </div>
 
         <t-card style="margin: 10px" :header="discussData?.title" :header-bordered="true">
-          <md-preview :model-value="discussContent" previewTheme="cyanosis" />
+          <md-preview :model-value="discussContent" previewTheme="cyanosis"></md-preview>
         </t-card>
         <t-divider id="comment-divider"></t-divider>
         <t-card v-for="(comment, index) in discussCommentList" :key="index" style="margin: 10px" header-bordered>
