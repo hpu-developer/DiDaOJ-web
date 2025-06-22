@@ -2,9 +2,16 @@
 import { ref, computed, onMounted, watch, onBeforeUnmount, type WatchStopHandle } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsError, useCurrentInstance } from "@/util";
-import { GetDiscuss, ParseDiscuss, GetDiscussCommentList, ParseDiscussComment } from "@/apis/discuss.ts";
-import { DiscussComment, DiscussCommentView, DiscussTag, DiscussView } from "@/types/discuss.ts";
+import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import {
+  GetDiscuss,
+  ParseDiscuss,
+  GetDiscussCommentList,
+  ParseDiscussComment,
+  GetDiscussCommentImageToken,
+  PostDiscussCommentCreate, PostDiscussCommentEdit,
+} from "@/apis/discuss.ts";
+import type { DiscussComment, DiscussCommentEditRequest, DiscussCommentView, DiscussTag, DiscussView } from "@/types/discuss.ts";
 import { handleGotoUsername } from "@/util/router.ts";
 
 import { useWebStyleStore } from "@/stores/webStyle.ts";
@@ -12,6 +19,7 @@ import { useWebStyleStore } from "@/stores/webStyle.ts";
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
+import { HandleR2ImageUpload, UploadImageCallbackUrl } from "@/util/md-editor-v3.ts";
 
 const props = defineProps<{ discussId?: string }>();
 
@@ -25,13 +33,15 @@ const webStyleStore = useWebStyleStore();
 const userStore = useUserStore();
 
 let discussContent = ref("");
-const discussId = ref("");
+const discussId = ref(0);
 const discussLoading = ref(false);
 const discussData = ref<DiscussView | null>(null);
 
-let discussComment = ref("");
-
 const dataLoading = ref(false);
+
+const commentSubmitting = ref(false);
+const editCommentId = ref(0);
+const editCommentContent = ref("");
 
 let currentPage = 1;
 let currentPageSize = 20;
@@ -46,8 +56,6 @@ const pagination = ref({
 });
 
 const discussCommentList = ref([] as DiscussCommentView[]);
-
-const tagsMap = {} as { [key: number]: DiscussTag };
 
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageDiscuss) || (discussData.value && userStore.getUserId == discussData.value.authorId);
@@ -80,7 +88,83 @@ const renderCommentTotalContent = () => {
   return <div class="t-pagination__total">{`共 ${pagination.value.total} 条回复`}</div>;
 };
 
-const handleSaveReply = () => {};
+const handleSaveReply = async () => {
+  commentSubmitting.value = true;
+
+  try {
+    let res;
+    if (editCommentId.value) {
+      const postData = {
+        id: editCommentId.value,
+        discuss_id: discussId.value,
+        content: editCommentContent.value,
+      } as DiscussCommentEditRequest;
+      res = await PostDiscussCommentEdit(postData);
+      if (res.code !== 0) {
+        ShowErrorTips(globalProperties, res.code);
+        return;
+      }
+
+      ShowTextTipsSuccess(globalProperties, "编辑成功");
+
+      editCommentId.value = 0;
+      editCommentContent.value = "";
+
+      if (currentPage === 1) {
+        await fetchCommentList({ current: 1, pageSize: currentPageSize }, true);
+      } else {
+        await router.push({
+          query: {
+            current: 1,
+          },
+        });
+      }
+      const commentDivider = document.getElementById("comment-divider");
+      if (commentDivider) {
+        commentDivider.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      const postData = {
+        discuss_id: discussId.value,
+        content: editCommentContent.value,
+      } as DiscussCommentEditRequest;
+      res = await PostDiscussCommentCreate(postData);
+      if (res.code !== 0) {
+        ShowErrorTips(globalProperties, res.code);
+        return;
+      }
+
+      ShowTextTipsSuccess(globalProperties, "编辑成功");
+
+      editCommentId.value = 0;
+      editCommentContent.value = "";
+
+      if (currentPage === 1) {
+        await fetchCommentList({ current: 1, pageSize: currentPageSize }, true);
+      } else {
+        await router.push({
+          query: {
+            current: 1,
+          },
+        });
+      }
+      const commentDivider = document.getElementById("comment-divider");
+      if (commentDivider) {
+        commentDivider.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  } finally {
+    commentSubmitting.value = false;
+  }
+};
+
+const handleUploadImg = async (files: File[], callback: (urls: UploadImageCallbackUrl[]) => void) => {
+  commentSubmitting.value = true;
+  await HandleR2ImageUpload(files, callback, globalProperties, () => {
+    return GetDiscussCommentImageToken(discussId.value, editCommentId.value);
+  });
+  commentSubmitting.value = false;
+};
 
 const fetchCommentList = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
   if (needLoading) {
@@ -127,12 +211,12 @@ const onPageChange = async (pageInfo: { current: number; pageSize: number }) => 
 onMounted(async () => {
   viewActive = true;
 
-  discussId.value = props.discussId;
+  discussId.value = Number(props.discussId);
   if (!discussId.value) {
     if (Array.isArray(route.params.discussId)) {
-      discussId.value = route.params.discussId[0];
+      discussId.value = Number(route.params.discussId[0]);
     } else {
-      discussId.value = route.params.discussId;
+      discussId.value = Number(route.params.discussId);
     }
   }
   if (!discussId.value) {
@@ -151,13 +235,7 @@ onMounted(async () => {
     return;
   }
 
-  if (res.data.tags) {
-    res.data.tags.forEach((tag: DiscussTag) => {
-      tagsMap[tag.id] = tag;
-    });
-  }
-
-  discussData.value = ParseDiscuss(res.data.discuss, tagsMap);
+  discussData.value = ParseDiscuss(res.data.discuss);
 
   webStyleStore.setTitle(discussData.value.title + " - " + webStyleStore.getTitle);
 
@@ -168,6 +246,9 @@ onMounted(async () => {
   watchHandle = watch(
     () => route.query,
     (newQuery) => {
+      if (!viewActive) {
+        return;
+      }
       const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
       const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
       currentPage = queryPage;
@@ -217,6 +298,7 @@ onBeforeUnmount(() => {
         <t-card style="margin: 10px" :header="discussData?.title" :header-bordered="true">
           <md-preview :model-value="discussContent" previewTheme="cyanosis" />
         </t-card>
+        <t-divider id="comment-divider"></t-divider>
         <t-card v-for="(comment, index) in discussCommentList" :key="index" style="margin: 10px" header-bordered>
           <template #header>
             <t-space>
@@ -237,19 +319,22 @@ onBeforeUnmount(() => {
             @change="onPageChange"
           />
         </div>
-
+        <t-divider></t-divider>
         <div style="margin: 10px">
-          <md-editor-v3
-            id="discuss-comment-editor"
-            v-model="discussComment"
-            previewTheme="cyanosis"
-          ></md-editor-v3>
-          <t-loading :loading="false" attach="#discuss-comment-editor" :z-index="100000"></t-loading>
           <div style="margin: 10px; text-align: right">
+            <t-tag style="margin: 10px">{{ editCommentId ? "编辑回复" : "发表回复" }}</t-tag>
             <t-space>
-              <t-button theme="primary" @click="handleSaveReply">提交</t-button>
+              <t-button theme="primary" @click="handleSaveReply" :loading="commentSubmitting">提交</t-button>
             </t-space>
           </div>
+          <md-editor-v3
+            id="discuss-comment-editor"
+            v-model="editCommentContent"
+            previewTheme="cyanosis"
+            @save="handleSaveReply"
+            @onUploadImg="handleUploadImg"
+          ></md-editor-v3>
+          <t-loading :loading="commentSubmitting" attach="#discuss-comment-editor" :z-index="100000"></t-loading>
         </div>
       </t-col>
       <t-col :span="4">
@@ -267,11 +352,6 @@ onBeforeUnmount(() => {
               </t-button>
             </t-descriptions-item>
             <t-descriptions-item label="标签">
-              <t-space>
-                <t-button v-for="tag in discussData?.tags" :key="tag.id" variant="dashed" @click="() => handleClickTag(tag)">
-                  {{ tag.name }}
-                </t-button>
-              </t-space>
             </t-descriptions-item>
           </t-descriptions>
         </div>
@@ -288,9 +368,5 @@ onBeforeUnmount(() => {
 .dida-edit-container {
   margin: 10px 0;
   text-align: right;
-}
-
-.dida-comment-editor {
-  min-height: 300px;
 }
 </style>

@@ -1,7 +1,7 @@
 ﻿import type { Router } from "vue-router";
 import router from "@/router";
 
-export const handleGotoUsername = async (router: Router, username: string) => {
+export const handleGotoUsername = async (router: Router, username: string | undefined) => {
   if (!username) {
     return;
   }

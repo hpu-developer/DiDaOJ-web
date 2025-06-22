@@ -1,7 +1,14 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import type { Discuss, DiscussView, DiscussEditRequest, DiscussComment, DiscussCommentView } from "@/types/discuss";
+import {
+  Discuss,
+  DiscussView,
+  DiscussEditRequest,
+  DiscussComment,
+  DiscussCommentView,
+  DiscussCommentEditRequest,
+} from "@/types/discuss";
 
 export function ParseDiscuss(item: Discuss): DiscussView {
   const result: DiscussView = {} as DiscussView;
@@ -115,6 +122,19 @@ export function GetDiscussImageToken(discussId: number) {
   });
 }
 
+export function GetDiscussCommentImageToken(discussId: number, commentId: number) {
+  if (!discussId) {
+    discussId = 0;
+  }
+  if (!commentId) {
+    commentId = 0;
+  }
+  return httpRequest({
+    url: "/discuss/comment/image/token" + "?id=" + discussId + "&comment_id=" + commentId,
+    method: "get",
+  });
+}
+
 export function GetDiscussCommentList(discussId: number, page: number, pageSize: number) {
   return httpRequest({
     url: "/discuss/comment/list" + "?id=" + discussId + "&page=" + page + "&page_size=" + pageSize,
@@ -133,6 +153,22 @@ export function PostDiscussCreate(request: DiscussEditRequest) {
 export function PostDiscussEdit(request: DiscussEditRequest) {
   return httpRequest({
     url: "/discuss/edit",
+    method: "post",
+    data: request,
+  });
+}
+
+export function PostDiscussCommentCreate(request: DiscussCommentEditRequest) {
+  return httpRequest({
+    url: "/discuss/comment/create",
+    method: "post",
+    data: request,
+  });
+}
+
+export function PostDiscussCommentEdit(request: DiscussCommentEditRequest) {
+  return httpRequest({
+    url: "/discuss/comment/edit",
     method: "post",
     data: request,
   });

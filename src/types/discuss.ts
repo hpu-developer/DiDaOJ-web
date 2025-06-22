@@ -67,3 +67,9 @@ export interface DiscussEditRequest {
   content: string;
   problem_id?: string;
 }
+
+export interface DiscussCommentEditRequest {
+  id?: number;
+  discuss_id: number;
+  content: string;
+}
