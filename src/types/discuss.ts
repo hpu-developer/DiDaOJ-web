@@ -4,7 +4,7 @@ export interface DiscussTag {
 }
 
 export interface Discuss {
-  id: string;
+  id: number;
   title: string;
   content: string;
   author_id: number;
@@ -22,7 +22,7 @@ export interface Discuss {
 }
 
 export interface DiscussView {
-  id: string;
+  id: number;
   title: string;
   content: string;
   authorId: number;
@@ -40,7 +40,7 @@ export interface DiscussView {
 }
 
 export interface DiscussComment {
-  id: string;
+  id: number;
   content: string;
   author_id: string;
   author_username: string;
@@ -51,9 +51,9 @@ export interface DiscussComment {
 }
 
 export interface DiscussCommentView {
-  id: string;
+  id: number;
   content: string;
-  authorId: string;
+  authorId: number;
   authorUsername: string;
   authorNickname: string;
   insertTime: string;

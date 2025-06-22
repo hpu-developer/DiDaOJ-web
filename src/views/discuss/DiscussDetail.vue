@@ -9,7 +9,8 @@ import {
   GetDiscussCommentList,
   ParseDiscussComment,
   GetDiscussCommentImageToken,
-  PostDiscussCommentCreate, PostDiscussCommentEdit,
+  PostDiscussCommentCreate,
+  PostDiscussCommentEdit,
 } from "@/apis/discuss.ts";
 import type { DiscussComment, DiscussCommentEditRequest, DiscussCommentView, DiscussTag, DiscussView } from "@/types/discuss.ts";
 import { handleGotoUsername } from "@/util/router.ts";
@@ -57,7 +58,11 @@ const pagination = ref({
 
 const discussCommentList = ref([] as DiscussCommentView[]);
 
-const hasEditAuth = computed(() => {
+const hasManageDiscussAuth = computed(() => {
+  return userStore.hasAuth(AuthType.ManageDiscuss);
+});
+
+const hasEditDiscussAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageDiscuss) || (discussData.value && userStore.getUserId == discussData.value.authorId);
 });
 
@@ -86,6 +91,24 @@ const handleClickEdit = () => {
 
 const renderCommentTotalContent = () => {
   return <div class="t-pagination__total">{`共 ${pagination.value.total} 条回复`}</div>;
+};
+
+const handleGotoEditComment = (id: number, content: string) => {
+  editCommentId.value = id;
+  editCommentContent.value = content;
+  const discussEditor = document.getElementById("discuss-comment-editor");
+  if (discussEditor) {
+    discussEditor.scrollIntoView({ behavior: "smooth" });
+  }
+};
+
+const handleClickClear = () => {
+  editCommentId.value = 0;
+  editCommentContent.value = "";
+  const discussEditor = document.getElementById("discuss-comment-editor");
+  if (discussEditor) {
+    discussEditor.scrollIntoView({ behavior: "smooth" });
+  }
 };
 
 const handleSaveReply = async () => {
@@ -301,10 +324,26 @@ onBeforeUnmount(() => {
         <t-divider id="comment-divider"></t-divider>
         <t-card v-for="(comment, index) in discussCommentList" :key="index" style="margin: 10px" header-bordered>
           <template #header>
-            <t-space>
-              <span>{{ comment.authorNickname }}</span>
-              <span>{{ comment.insertTime }}</span>
-            </t-space>
+            <div class="dida-operation-container">
+              <t-space>
+                <span>{{ comment.authorNickname }}</span>
+                <span>{{ comment.insertTime }}</span>
+              </t-space>
+            </div>
+            <div class="dida-operation-container">
+              <t-space>
+                <t-button
+                  v-if="hasManageDiscussAuth || userStore.getUserId === comment.authorId"
+                  @click="
+                    () => {
+                      handleGotoEditComment(comment.id, comment.content);
+                    }
+                  "
+                >
+                  编辑
+                </t-button>
+              </t-space>
+            </div>
           </template>
           <md-preview :model-value="comment.content" previewTheme="cyanosis" />
         </t-card>
@@ -321,9 +360,10 @@ onBeforeUnmount(() => {
         </div>
         <t-divider></t-divider>
         <div style="margin: 10px">
-          <div style="margin: 10px; text-align: right">
+          <div style="margin: 10px" class="dida-operation-container">
             <t-tag style="margin: 10px">{{ editCommentId ? "编辑回复" : "发表回复" }}</t-tag>
             <t-space>
+              <t-button theme="danger" @click="handleClickClear">清除</t-button>
               <t-button theme="primary" @click="handleSaveReply" :loading="commentSubmitting">提交</t-button>
             </t-space>
           </div>
@@ -339,7 +379,7 @@ onBeforeUnmount(() => {
       </t-col>
       <t-col :span="4">
         <div style="margin: 12px">
-          <div v-if="hasEditAuth" class="dida-edit-container">
+          <div v-if="hasEditDiscussAuth" class="dida-edit-container">
             <t-button @click="handleClickEdit">编辑</t-button>
           </div>
           <t-descriptions layout="vertical" :bordered="true">
@@ -351,8 +391,7 @@ onBeforeUnmount(() => {
                 {{ discussData?.authorNickname }}
               </t-button>
             </t-descriptions-item>
-            <t-descriptions-item label="标签">
-            </t-descriptions-item>
+            <t-descriptions-item label="标签"></t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>
@@ -363,6 +402,12 @@ onBeforeUnmount(() => {
 <style scoped>
 .dida-main-content {
   min-height: 800px;
+}
+
+.dida-operation-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .dida-edit-container {
