@@ -307,7 +307,7 @@ onBeforeUnmount(() => {
         <t-card style="margin: 10px" :header="discussData?.title" :header-bordered="true">
           <md-preview :model-value="discussContent" previewTheme="cyanosis"></md-preview>
         </t-card>
-        <t-divider id="comment-divider"></t-divider>
+        <t-divider id="comment-divider">评论区</t-divider>
         <t-card v-for="(comment, index) in discussCommentList" :key="index" style="margin: 10px" header-bordered>
           <template #header>
             <div class="dida-operation-container">

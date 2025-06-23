@@ -274,9 +274,15 @@ export function PostJudgeJob(problemId: string, contestId: number, problemIndex:
   });
 }
 
-export function GetJudgeJob(judgeId: number) {
+export function GetJudgeJob(judgeId: number, contestId: number) {
+  let params = {
+    id: judgeId,
+  } as any;
+  if (contestId) {
+    params["contest_id"] = contestId;
+  }
   return httpRequest({
-    url: "/judge" + "?id=" + judgeId,
+    url: "/judge" + "?" + new URLSearchParams(params).toString(),
     method: "get",
   });
 }

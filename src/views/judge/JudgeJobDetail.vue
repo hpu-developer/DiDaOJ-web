@@ -196,7 +196,7 @@ const fetchData = async (needLoading: boolean) => {
   }
   let needRefresh = false;
   try {
-    const res = await GetJudgeJob(judgeId);
+    const res = await GetJudgeJob(judgeId, contestId);
     judgeJobViews.value = [];
     if (res.code === 0) {
       const response = res.data as JudgeJob;
