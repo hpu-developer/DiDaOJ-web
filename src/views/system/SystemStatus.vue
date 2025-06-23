@@ -8,6 +8,8 @@ const { globalProperties } = useCurrentInstance();
 const weberList = ref([]);
 const judgerList = ref([]);
 const weberLoading = ref(false);
+const lastJudgeJobCount = ref(0);
+const judgeJobCount = ref(0);
 let intervalId: number;
 
 const handleRenderStatusHeader = (judger) => {
@@ -49,12 +51,12 @@ const handleReloadWeberStatus = async () => {
   const oldWebers = {};
   for (let i = 0; i < weberList.value.length; i++) {
     const web = weberList.value[i];
-    oldWebers[web.key] = {...web };
+    oldWebers[web.key] = { ...web };
   }
   const oldJudgers = {};
   for (let i = 0; i < judgerList.value.length; i++) {
     const judger = judgerList.value[i];
-    oldJudgers[judger.key] = {...judger };;
+    oldJudgers[judger.key] = { ...judger };
   }
   const webers = [];
   const judgers = [];
@@ -175,6 +177,9 @@ const handleReloadWeberStatus = async () => {
   }
 
   judgerList.value = judgers;
+
+  lastJudgeJobCount.value = judgeJobCount.value;
+  judgeJobCount.value = res.data.judge_job;
 };
 
 const handleReloadStatus = async () => {
@@ -255,6 +260,17 @@ onBeforeUnmount(() => {
       </div>
     </t-card>
     <t-card title="判题机状态" class="judger-status">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <t-statistic
+          title="未完成的评测数量"
+          :value="judgeJobCount"
+          :animation="{
+            valueFrom: lastJudgeJobCount,
+            duration: 4000,
+          }"
+          :animation-start="true"
+        ></t-statistic>
+      </div>
       <div class="judger-status-panel">
         <t-card v-for="judger in judgerList" :key="judger.key" :header="() => handleRenderStatusHeader(judger)" class="judge-status-judger">
           <t-space class="judge-status-judger">
