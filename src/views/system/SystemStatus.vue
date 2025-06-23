@@ -143,6 +143,11 @@ const handleReloadWeberStatus = async () => {
     } else {
       judgerView.updateTime = "-";
     }
+    if (judger.max_job) {
+      judgerView.maxJob = Number(judger.max_job);
+    } else {
+      judgerView.maxJob = 0;
+    }
     if (judger.cpu_usage) {
       judgerView.cpuUsage = Number(judger.cpu_usage);
     } else {
@@ -167,11 +172,13 @@ const handleReloadWeberStatus = async () => {
     judgerView.avgMessage = judger.avg_message;
 
     if (oldJudgers[judger.key]) {
+      judgerView.maxJobFrom = oldJudgers[judger.key].maxJob;
       judgerView.cpuUsageFrom = oldJudgers[judger.key].cpuUsage;
       judgerView.memPercentFrom = oldJudgers[judger.key].memPercent;
       judgerView.memUsageFrom = oldJudgers[judger.key].memUsage;
       judgerView.memTotalFrom = oldJudgers[judger.key].memTotal;
     } else {
+      judgerView.maxJobFrom = 0;
       judgerView.cpuUsageFrom = 0;
       judgerView.memPercentFrom = 0;
       judgerView.memUsageFrom = 0;
@@ -194,9 +201,8 @@ const handleReloadWeberStatus = async () => {
     judgeSpeed.value = 0;
     lastJudgeSpeed.value = 0;
   } else {
-    judgeSpeed.value = Number(
-      (((judgeJobCount.value - judgeSpeedStartCount.value) / ((new Date().getTime() - judgeSpeedStartTime.value.getTime()) / 1000)) * 60).toFixed(2)
-    );
+    judgeSpeed.value =
+      ((judgeJobCount.value - judgeSpeedStartCount.value) / ((new Date().getTime() - judgeSpeedStartTime.value.getTime()) / 1000)) * 60;
   }
 
   // 如果一直没有评测任务，则认为样本过少，重置时间
@@ -312,6 +318,7 @@ onBeforeUnmount(() => {
               duration: 4000,
             }"
             :animation-start="true"
+            :decimalPlaces="2"
             unit="/分钟"
           ></t-statistic>
           <t-statistic
@@ -328,6 +335,15 @@ onBeforeUnmount(() => {
       <div class="judger-status-panel">
         <t-card v-for="judger in judgerList" :key="judger.key" :header="() => handleRenderStatusHeader(judger)" class="judge-status-judger">
           <t-space class="judge-status-judger">
+            <t-statistic
+              title="并发"
+              :value="judger.maxJob"
+              :animation="{
+                valueFrom: judger.maxJob,
+                duration: 2000,
+              }"
+              :animation-start="true"
+            ></t-statistic>
             <t-statistic
               title="CPU使用率"
               :value="judger.cpuUsage"
