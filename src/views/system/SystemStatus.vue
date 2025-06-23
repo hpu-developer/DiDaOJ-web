@@ -10,6 +10,11 @@ const judgerList = ref([]);
 const weberLoading = ref(false);
 const lastJudgeJobCount = ref(0);
 const judgeJobCount = ref(0);
+const judgeSpeedStartTime = ref<Date | null>(null);
+const judgeSpeedStartCount = ref(0);
+const judgeSpeed = ref(0);
+const lastJudgeSpeed = ref(0);
+let speedTimer = -1;
 let intervalId: number;
 
 const handleRenderStatusHeader = (judger) => {
@@ -180,6 +185,33 @@ const handleReloadWeberStatus = async () => {
 
   lastJudgeJobCount.value = judgeJobCount.value;
   judgeJobCount.value = res.data.judge_job;
+
+  lastJudgeSpeed.value = judgeSpeed.value;
+
+  if (!judgeSpeedStartTime.value) {
+    judgeSpeedStartTime.value = new Date();
+    judgeSpeedStartCount.value = judgeJobCount.value;
+    judgeSpeed.value = 0;
+    lastJudgeSpeed.value = 0;
+  } else {
+    judgeSpeed.value = Number(
+      (((judgeJobCount.value - judgeSpeedStartCount.value) / ((new Date().getTime() - judgeSpeedStartTime.value.getTime()) / 1000)) * 60).toFixed(2)
+    );
+  }
+
+  // 如果一直没有评测任务，则认为样本过少，重置时间
+  if (judgeJobCount.value) {
+    clearTimeout(speedTimer);
+    speedTimer = -1;
+  } else {
+    // 十秒后清理
+    if (speedTimer < 0) {
+      speedTimer = setTimeout(() => {
+        judgeSpeedStartTime.value = null;
+        judgeSpeedStartCount.value = 0;
+      }, 10000);
+    }
+  }
 };
 
 const handleReloadStatus = async () => {
@@ -260,16 +292,38 @@ onBeforeUnmount(() => {
       </div>
     </t-card>
     <t-card title="判题机状态" class="judger-status">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <t-statistic
-          title="未完成的评测数量"
-          :value="judgeJobCount"
-          :animation="{
-            valueFrom: lastJudgeJobCount,
-            duration: 4000,
-          }"
-          :animation-start="true"
-        ></t-statistic>
+      <div style="text-align: center; margin-bottom: 20px">
+        <t-space>
+          <t-statistic
+            title="未完成的评测数量"
+            :value="judgeJobCount"
+            :animation="{
+              valueFrom: lastJudgeJobCount,
+              duration: 4000,
+            }"
+            :animation-start="true"
+          ></t-statistic>
+          <t-statistic
+            v-if="judgeSpeedStartTime"
+            title="评测数量趋势"
+            :value="judgeSpeed"
+            :animation="{
+              valueFrom: lastJudgeSpeed,
+              duration: 4000,
+            }"
+            :animation-start="true"
+            unit="/分钟"
+          ></t-statistic>
+          <t-statistic
+            v-else
+            title="评测数量趋势"
+            :format="
+              () => {
+                return '样本较少';
+              }
+            "
+          ></t-statistic>
+        </t-space>
       </div>
       <div class="judger-status-panel">
         <t-card v-for="judger in judgerList" :key="judger.key" :header="() => handleRenderStatusHeader(judger)" class="judge-status-judger">
