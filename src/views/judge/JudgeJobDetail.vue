@@ -17,6 +17,8 @@ import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import type { ButtonProps } from "tdesign-vue-next";
 import { AuthType } from "@/auth";
 import { useUserStore } from "@/stores/user.ts";
+import { GetContestProblemIndexStr } from "@/apis/contest.ts";
+import { handleGotoContestProblem } from "@/util/router.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -46,6 +48,13 @@ const ListColumns = ref([
     title: "问题",
     colKey: "problemId",
     cell: (_: any, data: any) => {
+      if (contestId) {
+        return (
+          <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.contestProblemIndex)}>
+            {GetContestProblemIndexStr(data.row.contestProblemIndex)}
+          </t-button>
+        );
+      }
       return (
         <t-button variant="text" onClick={() => handleGotoProblem(data.row.problemId)}>
           {data.row.problemId}

@@ -15,6 +15,7 @@ import {
   GetJudgeStatusTheme,
   IsJudgeStatusValid,
 } from "@/apis/judge.ts";
+import { handleGotoContestProblem } from "@/util/router.ts";
 import { GetJudgeLanguageStr } from "@/apis/language.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
@@ -193,10 +194,6 @@ const handleGotoProblem = (id: string) => {
     return;
   }
   router.push({ path: "/problem/" + id });
-};
-
-const handleGotoContestProblem = (contestId: number, problemIndex: string) => {
-  router.push({ name: "contest-problem-detail", params: { contestId: contestId, problemIndex: problemIndex } });
 };
 
 const handleGotoJudgeJob = (id: string | undefined) => {
@@ -428,8 +425,7 @@ onBeforeUnmount(() => {
           }
         "
       >
-        {{ showJudgeJob?.id + " - " + GetJudgeLanguageStr(showJudgeJob?.language ? showJudgeJob?.language : JudgeLanguage.Unknown)
-        }}
+        {{ showJudgeJob?.id + " - " + GetJudgeLanguageStr(showJudgeJob?.language ? showJudgeJob?.language : JudgeLanguage.Unknown) }}
       </t-link>
     </template>
     <t-loading :loading="isCodeLoading">

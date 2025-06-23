@@ -99,7 +99,6 @@ onMounted(() => {
 
 <style scoped>
 .sh-menu {
-  z-index: 1000000;
 }
 
 .sh-logo {
