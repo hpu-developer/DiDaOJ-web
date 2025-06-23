@@ -57,6 +57,42 @@ export function ShowErrorTips(properties: ComponentCustomProperties & Record<str
   });
 }
 
+export function ShowErrorParamTips(
+  properties: ComponentCustomProperties & Record<string, any>,
+  tips: number | string,
+  params: Record<string, string> | null = null,
+  duration = 3000,
+) {
+  let message = "";
+  const [found, realTips] = GetText(tips);
+  if (found) {
+    if (params) {
+      message = realTips.replace(/\{(\w+)\}/g, (match, key) => {
+        const value = params[key];
+        if (value) {
+          const [foundValue, realValue] = GetText(value);
+          return foundValue ? realValue : value; // 如果找不到对应的文本，直接返回原值
+        }
+        return match;
+      });
+    } else {
+      message = realTips;
+    }
+  } else {
+    // 判断realTips能不能转为Number
+    const realTipsNumber = Number(realTips);
+    if (!isNaN(realTipsNumber)) {
+      message = `系统错误，错误码[${realTipsNumber}]`;
+    } else {
+      message = `${realTips}`;
+    }
+  }
+  return properties.$message.error({
+    duration,
+    content: message,
+  });
+}
+
 export function CloseTips(properties: ComponentCustomProperties & Record<string, any>, tip: any) {
   if (properties.$message) {
     properties.$message.close(tip);

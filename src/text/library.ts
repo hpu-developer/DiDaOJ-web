@@ -143,6 +143,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100030": {
         zh: "暂未开放该问题所使用的远程 OJ 的提交",
       },
+      "100031": {
+        zh: "压缩包大小限制超过了限制，当前不可超过{max_size}，可联系管理员",
+      },
     });
   });
 }

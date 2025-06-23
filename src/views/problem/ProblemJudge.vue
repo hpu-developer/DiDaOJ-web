@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetJudgeDataDownload, GetProblemJudge, ParseProblem, PostJudgeData } from "@/apis/problem.ts";
-import { ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { ShowErrorParamTips, ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import { ProblemJudgeData, ProblemView } from "@/types/problem.ts";
 
@@ -135,14 +135,14 @@ const handleClickSave = async () => {
 
         await loadProblem();
       } else {
-        ShowErrorTips(globalProperties, res.code);
+        ShowErrorParamTips(globalProperties, res.code, res.data);
       }
     })
     .catch((err) => {
       console.log(err);
       globalProperties.$message.error({
         duration: 3000,
-        content: "申请失败",
+        content: "上传失败",
       });
     })
     .finally(() => {
@@ -209,6 +209,13 @@ const loadProblem = async () => {
         size: judge.size,
         lastModified: judge.last_modified,
       });
+    });
+    fileViews.value.sort((a, b) => {
+      if (a.file.endsWith(".zip") && !b.file.endsWith(".zip")) return -1;
+      if (!a.file.endsWith(".zip") && b.file.endsWith(".zip")) return 1;
+      if (a.file.endsWith(".yaml") && !b.file.endsWith(".yaml")) return -1;
+      if (!a.file.endsWith(".yaml") && b.file.endsWith(".yaml")) return 1;
+      return 0;
     });
   } else {
     ShowTextTipsError(globalProperties, "评测数据不存在");
