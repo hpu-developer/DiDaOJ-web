@@ -68,6 +68,14 @@ const getDurationText = (duration: number) => {
 };
 
 const progressMarks = ref({} as Record<number, string | JSX.Element>);
+type ProblemFirstAcRecord = {
+  userId: number;
+  ac: number;
+};
+let problemFirstAcRecords = {
+  userId: 0,
+  ac: -1,
+} as Record<number, ProblemFirstAcRecord>;
 
 const listColumns1 = [
   {
@@ -272,6 +280,10 @@ const handleSwitchOnlyStar = () => {
 const loadProgress = () => {
   contestRankViews.value = [];
   let results = [];
+
+  // 计算每一题的最早的ac记录
+  problemFirstAcRecords = {};
+
   for (let i = 0; i < fetchRankViews.length; i++) {
     const item = fetchRankViews[i];
     let result = {
@@ -293,6 +305,16 @@ const loadProgress = () => {
         penalty += acDuration;
         // 每一次尝试罚时20分钟
         penalty += problem.attempt * 20 * 60;
+
+        if (problemFirstAcRecords[problem.index] === undefined) {
+          problemFirstAcRecords[problem.index] = {
+            userId: item.author_id,
+            ac: acDuration,
+          };
+        } else if (problemFirstAcRecords[problem.index].ac > acDuration) {
+          problemFirstAcRecords[problem.index].userId = item.author_id;
+          problemFirstAcRecords[problem.index].ac = acDuration;
+        }
       }
       if (lockCount > 0 && lockRankDurationSeconds > 0) {
         const lockTimeSeconds = progressMax.value - lockRankDurationSeconds;
@@ -476,6 +498,17 @@ const fetchData = async (needLoading: boolean) => {
               return {};
             }
             if (problem.acDuration >= 0) {
+              const firstAcRecord = problemFirstAcRecords[problemIndex];
+              if (firstAcRecord !== undefined) {
+                const userId = data.row.userId as number;
+                if (firstAcRecord.userId === userId) {
+                  return {
+                    style: {
+                      backgroundColor: "rgba(65,155,5,0.5)",
+                    },
+                  };
+                }
+              }
               return {
                 style: {
                   backgroundColor: "rgba(130,255,30,0.5)",

@@ -88,6 +88,5 @@ body {
 }
 
 .md-editor-code-head {
-  top: 56px !important;
   z-index: 999 !important;;
 }
