@@ -16,7 +16,7 @@ const { globalProperties } = useCurrentInstance();
 const webStyleStore = useWebStyleStore();
 const userStore = useUserStore();
 
-let username = "";
+let currentUsername = "";
 
 const userLoading = ref(false);
 const userData = ref<UserInfoView | null>(null);
@@ -28,6 +28,9 @@ const vjudgeAcProblems = ref([]);
 const vjudgeFailProblems = ref([]);
 
 const getProblemTheme = (problemId: string) => {
+  if (userStore.getUsername === currentUsername) {
+    return "success";
+  }
   let theme = "primary";
   if (!problemAttemptStatus) {
     return theme;
@@ -50,6 +53,10 @@ const loadProblemAttemptStatus = async () => {
   if (!userStore.isLogin()) {
     return;
   }
+  if (userStore.getUsername === currentUsername) {
+    return;
+  }
+
   problemAttemptStatus = {};
   const res = await GetProblemAttemptStatus(problemsAc.value);
   if (res.code === 0) {
@@ -116,29 +123,29 @@ const loadUserInfo = async (username: string) => {
 
 onBeforeRouteUpdate(async (to: any, from: any, next: any) => {
   if (Array.isArray(to.params.username)) {
-    username = to.params.username[0];
+    currentUsername = to.params.username[0];
   } else {
-    username = to.params.username;
+    currentUsername = to.params.username;
   }
-  if (!username) {
+  if (!currentUsername) {
     await router.push({ name: "home" });
     return;
   }
-  await loadUserInfo(username);
+  await loadUserInfo(currentUsername);
   next();
 });
 
 onMounted(async () => {
   if (Array.isArray(route.params.username)) {
-    username = route.params.username[0];
+    currentUsername = route.params.username[0];
   } else {
-    username = route.params.username;
+    currentUsername = route.params.username;
   }
-  if (!username) {
+  if (!currentUsername) {
     await router.push({ name: "home" });
     return;
   }
-  await loadUserInfo(username);
+  await loadUserInfo(currentUsername);
 });
 </script>
 

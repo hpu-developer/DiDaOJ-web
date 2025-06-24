@@ -160,6 +160,8 @@ const pagination = ref({
   defaultPageSize: currentPageSize,
   total: 0,
   pageSizeOptions: [50, 100],
+  totalContent: false,
+  showPageNumber: false,
 });
 
 const judgeJobViews = ref<JudgeJobView[]>();
@@ -293,7 +295,11 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
             needRefresh = true;
           }
         });
-        pagination.value = { ...pagination.value, total: res.data.total_count };
+        if (res.data.list.length === pagination.value.pageSize) {
+          pagination.value = { ...pagination.value, total: pagination.value.current * pagination.value.pageSize + 1 };
+        } else {
+          pagination.value = { ...pagination.value, total: pagination.value.current * pagination.value.pageSize };
+        }
       } else {
         ShowTextTipsInfo(globalProperties, "未找到记录");
         pagination.value = { ...pagination.value, total: 0 };

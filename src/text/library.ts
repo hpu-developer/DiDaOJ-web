@@ -146,6 +146,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100031": {
         zh: "压缩包大小限制超过了限制，当前不可超过{max_size}，可联系管理员",
       },
+      "100032": {
+        zh: "暂不支持更后面的页面，可调整筛选参数更精确的查找",
+      },
     });
   });
 }

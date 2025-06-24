@@ -194,19 +194,17 @@ const handleReloadWeberStatus = async () => {
   judgeJobCount.value = res.data.judge_job;
 
   lastJudgeSpeed.value = judgeSpeed.value;
+  if (judgeJobCount.value > 0) {
+    if (!judgeSpeedStartTime.value) {
+      judgeSpeedStartTime.value = new Date();
+      judgeSpeedStartCount.value = judgeJobCount.value;
+      judgeSpeed.value = 0;
+      lastJudgeSpeed.value = 0;
+    } else {
+      judgeSpeed.value =
+        ((judgeJobCount.value - judgeSpeedStartCount.value) / ((new Date().getTime() - judgeSpeedStartTime.value.getTime()) / 1000)) * 60;
+    }
 
-  if (!judgeSpeedStartTime.value) {
-    judgeSpeedStartTime.value = new Date();
-    judgeSpeedStartCount.value = judgeJobCount.value;
-    judgeSpeed.value = 0;
-    lastJudgeSpeed.value = 0;
-  } else {
-    judgeSpeed.value =
-      ((judgeJobCount.value - judgeSpeedStartCount.value) / ((new Date().getTime() - judgeSpeedStartTime.value.getTime()) / 1000)) * 60;
-  }
-
-  // 如果一直没有评测任务，则认为样本过少，重置时间
-  if (judgeJobCount.value) {
     clearTimeout(speedTimer);
     speedTimer = -1;
   } else {
