@@ -10,6 +10,7 @@ import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/c
 import { GetSecondFromDuration, GetTimeStringBySeconds } from "@/time/library.ts";
 import { StarIcon, StarFilledIcon } from "tdesign-icons-vue-next";
 import { useContestStore } from "@/stores/contest.ts";
+import { TNode } from "tdesign-vue-next/es/common";
 
 const route = useRoute();
 const router = useRouter();
@@ -67,7 +68,7 @@ const getDurationText = (duration: number) => {
   return `${hours}:${minutes}:${seconds}`;
 };
 
-const progressMarks = ref({} as Record<number, string | JSX.Element>);
+const progressMarks = ref({} as Record<number, string | TNode<{ value: number }>>);
 type ProblemFirstAcRecord = {
   userId: number;
   ac: number;
@@ -111,9 +112,10 @@ const listColumns1 = [
               contestStore.removeStarMember(contestId, data.row.userId);
               loadProgress();
             }}
-          >
-            <StarFilledIcon slot="icon" />
-          </t-button>
+            v-slots={{
+              icon: () => <StarFilledIcon />,
+            }}
+          />
         );
       } else {
         starButton = (
@@ -125,9 +127,10 @@ const listColumns1 = [
               contestStore.addStarMember(contestId, data.row.userId);
               loadProgress();
             }}
-          >
-            <StarIcon slot="icon" />
-          </t-button>
+            v-slots={{
+              icon: () => <StarIcon />,
+            }}
+          ></t-button>
         );
       }
       return (
@@ -244,6 +247,9 @@ const createProgressTimer = () => {
     if (!viewActive) {
       return;
     }
+    if (!contestStartTime) {
+      return;
+    }
     progressValue.value = (new Date().getTime() - contestStartTime.getTime()) / 1000;
     const progressValueRealMax = Math.min(progressValue.value, progressMax.value);
     progressValue.value = Math.min(progressValue.value, progressValueRealMax);
@@ -284,6 +290,10 @@ const loadProgress = () => {
   // 计算每一题的最早的ac记录
   problemFirstAcRecords = {};
 
+  if (!contestStartTime) {
+    return;
+  }
+
   for (let i = 0; i < fetchRankViews.length; i++) {
     const item = fetchRankViews[i];
     let result = {
@@ -297,7 +307,11 @@ const loadProgress = () => {
       let acDuration = -1;
       let lockCount = problem.lock || 0;
       if (problem.ac) {
-        acDuration = (new Date(problem.ac).getTime() - contestStartTime?.getTime()) / 1000; // 转换为秒
+        let contestStartTimeGetTime = 0;
+        if (contestStartTime) {
+          contestStartTimeGetTime = contestStartTime.getTime();
+        }
+        acDuration = (new Date(problem.ac).getTime() - contestStartTimeGetTime) / 1000; // 转换为秒
         if (acDuration > progressValue.value) {
           return;
         }
@@ -426,6 +440,9 @@ const loadProgress = () => {
 
 const handleProgressChange = (value: number) => {
   handleSwitchAutoRefresh(false);
+  if (!contestStartTime) {
+    return;
+  }
   progressValue.value = value;
   const progressValueRealMax = Math.min(progressMax.value, (new Date().getTime() - contestStartTime?.getTime()) / 1000);
   progressValue.value = Math.min(progressValue.value, progressValueRealMax);
@@ -616,6 +633,7 @@ onBeforeUnmount(() => {
   <t-row>
     <t-card style="margin: 10px; width: 100%">
       <div style="margin: 10px 10px 40px">
+        榜单时间 {{ GetTimeStringBySeconds(progressValue) }}
         <div style="text-align: right; margin-bottom: 10px">
           <t-space>
             <t-switch size="large" v-model="onlyShowStarMembers" @change="handleSwitchOnlyStar">
@@ -635,7 +653,6 @@ onBeforeUnmount(() => {
           :max="progressMax"
           :label="progressLabelRender"
           :tooltip-props="{ placement: 'top' }"
-          :input-number-props="{ theme: 'column', autoWidth: true, format: GetTimeStringBySeconds, onChange: handleProgressChange }"
           @change-end="handleProgressChange"
         />
       </div>
