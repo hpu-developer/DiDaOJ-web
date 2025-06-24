@@ -158,10 +158,12 @@ const pagination = ref({
   pageSize: currentPageSize,
   defaultCurrent: currentPage,
   defaultPageSize: currentPageSize,
-  total: 0,
+  total: 500,
   pageSizeOptions: [50, 100],
-  totalContent: false,
-  showPageNumber: false,
+  showPageSize: false,
+  totalContent: (h, value) => {
+    return <div><t-tag>目前仅支持获取前10页数据</t-tag></div>;
+  },
 });
 
 const judgeJobViews = ref<JudgeJobView[]>();
@@ -295,14 +297,8 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
             needRefresh = true;
           }
         });
-        if (res.data.list.length === pagination.value.pageSize) {
-          pagination.value = { ...pagination.value, total: pagination.value.current * pagination.value.pageSize + 1 };
-        } else {
-          pagination.value = { ...pagination.value, total: pagination.value.current * pagination.value.pageSize };
-        }
       } else {
         ShowTextTipsInfo(globalProperties, "未找到记录");
-        pagination.value = { ...pagination.value, total: 0 };
       }
     } else {
       if (needLoading) {
@@ -329,7 +325,7 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
 const onPageChange = async (pageInfo: { current: number; pageSize: number }) => {
   // 更新 URL 查询参数
   await router.push({
-    query: { ...route.query, page: pageInfo.current, page_size: pageInfo.pageSize },
+    query: { ...route.query, page: pageInfo.current },
   });
 };
 

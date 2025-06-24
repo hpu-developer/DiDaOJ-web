@@ -9,7 +9,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     BreadcrumbContent: typeof import('./src/components/BreadcrumbContent.vue')['default']
     Countdown: typeof import('./src/components/count-down/Countdown.vue')['default']
-    CountDown: typeof import('./src/components/count-down/count-down.vue')['default']
     FooterContent: typeof import('./src/components/FooterContent.vue')['default']
     ForceHiddenSidebarButton: typeof import('./src/components/ForceHiddenSidebarButton.vue')['default']
     HeaderContent: typeof import('./src/components/HeaderContent.vue')['default']
