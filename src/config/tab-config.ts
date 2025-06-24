@@ -130,7 +130,6 @@ const tabsConfig: Tab[] = [
     path: "/user/:username+",
     title: "用户",
     showSidebar: false,
-    needLogin: true,
     disableGenerateTab: true,
     component: UserView,
   },

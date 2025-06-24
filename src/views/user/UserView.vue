@@ -7,11 +7,14 @@ import { ShowErrorTips, ShowTextTipsError, useCurrentInstance } from "@/util";
 import { UserInfoView } from "@/types/user.ts";
 
 import { useWebStyleStore } from "@/stores/webStyle.ts";
+import { GetProblemAttemptStatus, ProblemAttemptStatus } from "@/apis/problem.ts";
+import { useUserStore } from "@/stores/user.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
 
 const webStyleStore = useWebStyleStore();
+const userStore = useUserStore();
 
 let username = "";
 
@@ -19,10 +22,42 @@ const userLoading = ref(false);
 const userData = ref<UserInfoView | null>(null);
 
 const problemsAc = ref([] as string[]);
+let problemAttemptStatus = null as Record<string, ProblemAttemptStatus> | null;
 
 const vjudgeAcProblems = ref([]);
 const vjudgeFailProblems = ref([]);
 
+const getProblemTheme = (problemId: string) => {
+  let theme = "primary";
+  if (!problemAttemptStatus) {
+    return theme;
+  }
+  const status = problemAttemptStatus[problemId];
+  if (status) {
+    switch (status) {
+      case ProblemAttemptStatus.Accept:
+        theme = "success";
+        break;
+      case ProblemAttemptStatus.Attempt:
+        theme = "warning";
+        break;
+    }
+  }
+  return theme;
+};
+
+const loadProblemAttemptStatus = async () => {
+  if (!userStore.isLogin()) {
+    return;
+  }
+  problemAttemptStatus = {};
+  const res = await GetProblemAttemptStatus(problemsAc.value);
+  if (res.code === 0) {
+    problemAttemptStatus = res.data;
+  } else {
+    ShowErrorTips(globalProperties, res.code, res.data);
+  }
+};
 const loadUserInfo = async (username: string) => {
   userLoading.value = true;
   try {
@@ -62,6 +97,8 @@ const loadUserInfo = async (username: string) => {
         });
       }
     }
+
+    await loadProblemAttemptStatus();
   } catch (e) {
     ShowTextTipsError(globalProperties, "获取用户信息失败");
     await router.push({ name: "home" });
@@ -108,6 +145,7 @@ onMounted(async () => {
               v-for="problem in problemsAc"
               :key="problem"
               size="small"
+              :theme="getProblemTheme(problem)"
               @click="() => router.push({ name: 'problem-detail', params: { problemId: problem } })"
             >
               {{ problem }}
@@ -116,7 +154,7 @@ onMounted(async () => {
         </t-card>
         <t-card style="margin: 10px" title="vjudge.net" v-if="userData?.vjudgeId">
           <template #actions>
-            <t-link :href="'https://vjudge.net/user/' + userData?.vjudgeId" target="_blank">@{{ userData?.vjudgeId }}</t-link>
+            <t-link :href="'https://vjudge.net/user/' + userData?.vjudgeId" target="_blank">@{{ userData?.vjudgeId }} </t-link>
           </template>
           <div style="margin: 10px" v-if="vjudgeAcProblems && Object.keys(vjudgeAcProblems).length > 0">
             <div style="margin: 5px">
