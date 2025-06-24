@@ -1,6 +1,7 @@
 import { Tab } from "@/types/webStyle.ts";
 
 import HomeView from "@/views/HomeView.vue";
+import StudyView from "@/views/extra/StudyView.vue";
 import View404 from "@/views/View404.vue";
 import LoginView from "@/views/user/LoginView.vue";
 import RegisterView from "@/views/user/RegisterView.vue";
@@ -82,7 +83,14 @@ const tabsConfig: Tab[] = [
     showSidebar: true,
     redirect: "rank-ac-all",
   },
-
+  {
+    name: "study",
+    path: "/study",
+    title: "研习",
+    icon: "book-open",
+    showSidebar: false,
+    component: StudyView,
+  },
   {
     name: "system",
     path: "/system",
