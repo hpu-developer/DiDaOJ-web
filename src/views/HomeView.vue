@@ -242,6 +242,9 @@ onUnmounted(() => {
           </template>
           <t-list>
             <t-list-item>
+              <t-link href="https://oi-wiki.org/" target="_blank">OI Wiki</t-link>
+            </t-list-item>
+            <t-list-item>
               <t-link href="https://boiltask.com" target="_blank">BoilTask Blog</t-link>
             </t-list-item>
           </t-list>
