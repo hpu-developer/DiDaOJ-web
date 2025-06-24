@@ -32,7 +32,7 @@ export interface Contest {
 export interface ContestView {
   id: string;
   title: string;
-  ownerId: string;
+  ownerId: number;
   ownerUsername?: string;
   ownerNickname?: string;
   createTime: string;

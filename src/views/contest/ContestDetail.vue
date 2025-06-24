@@ -11,6 +11,7 @@ import { handleGotoContestProblem } from "@/util/router.ts";
 import type { ContestView } from "@/types/contest.ts";
 import type { ProblemView } from "@/types/problem.ts";
 import { ProblemAttemptStatus } from "@/apis/problem.ts";
+import Countdown from "@/components/count-down/Countdown.vue";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -26,9 +27,10 @@ const contestData = ref<ContestView | null>(null);
 const hasContestViewAuth = ref(false);
 const needContestPassword = ref(false);
 const contestPassword = ref("");
+const contestCountdownTarget = ref(null as Date | null);
 
 const hasEditAuth = computed(() => {
-  return userStore.hasAuth(AuthType.ManageContest) || (contestData.value && userStore.getUserId == contestData.value.ownerId);
+  return userStore.hasAuth(AuthType.ManageContest) || (contestData.value && userStore?.getUserId === contestData.value.ownerId);
 });
 
 const getProblemIdTheme = (id: number) => {
@@ -91,6 +93,10 @@ const problemViews = ref<ProblemView[]>([]);
 let problemAttemptStatus = {} as { [key: number]: ProblemAttemptStatus };
 let passwordSubmitting = ref(false);
 
+const handleContestCountdownEnd = async () => {
+  await fetchContestData();
+};
+
 const handleClickEdit = () => {
   router.push({ name: "contest-edit", params: { contestId: contestId } });
 };
@@ -111,7 +117,7 @@ const handleClickDolos = async () => {
   }
 };
 
-const handlePostContestPassword = async (e: any) => {
+const handlePostContestPassword = async () => {
   if (!userStore.isLogin()) {
     await router.push({ name: "login" });
     return;
@@ -151,6 +157,13 @@ const fetchContestData = async () => {
   hasContestViewAuth.value = res.data.has_auth;
   needContestPassword.value = res.data.need_password;
 
+  contestCountdownTarget.value = null;
+  const serverNow = new Date(res.data.now);
+  if (serverNow < new Date(res.data.contest.start_time)) {
+    const offset = new Date().getTime() - serverNow.getTime();
+    contestCountdownTarget.value = new Date(new Date(res.data.contest.start_time).getTime() + offset);
+  }
+
   contestData.value = ParseContest(res.data.contest);
   problemViews.value = contestData.value.problems;
 
@@ -186,7 +199,11 @@ onMounted(async () => {
         </div>
         <div style="margin: 10px">
           <t-card v-if="hasContestViewAuth">
-            <t-table :data="problemViews" :columns="listColumns" row-key="id" table-layout="auto" vertical-align="top" :hover="true" />
+            <div class="dida-countdown-div" v-if="contestCountdownTarget">
+              <p class="dida-countdown-head">比赛开启倒计时</p>
+              <Countdown class="dida-countdown-content" :target="contestCountdownTarget" @on-end="handleContestCountdownEnd"></Countdown>
+            </div>
+            <t-table v-else :data="problemViews" :columns="listColumns" row-key="id" table-layout="auto" vertical-align="top" :hover="true" />
           </t-card>
           <t-card v-else>
             <div style="text-align: center; align-content: center; padding: 20px; height: 500px">
@@ -244,5 +261,20 @@ onMounted(async () => {
 .dida-operation-container {
   margin: 20px 12px 20px;
   text-align: right;
+}
+
+.dida-countdown-div {
+  text-align: center;
+  align-content: center;
+  margin: 20px auto;
+  height: 300px;
+}
+
+.dida-countdown-head {
+  font-size: 32px;
+}
+
+.dida-countdown-content {
+  font-size: 24px;
 }
 </style>

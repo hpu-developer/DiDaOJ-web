@@ -8,6 +8,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BreadcrumbContent: typeof import('./src/components/BreadcrumbContent.vue')['default']
+    Countdown: typeof import('./src/components/count-down/Countdown.vue')['default']
+    CountDown: typeof import('./src/components/count-down/count-down.vue')['default']
     FooterContent: typeof import('./src/components/FooterContent.vue')['default']
     ForceHiddenSidebarButton: typeof import('./src/components/ForceHiddenSidebarButton.vue')['default']
     HeaderContent: typeof import('./src/components/HeaderContent.vue')['default']
@@ -18,7 +20,6 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SecretPanel: typeof import('./src/components/SecretPanel.vue')['default']
     SidebarContent: typeof import('./src/components/SidebarContent.vue')['default']
-    TAffix: typeof import('tdesign-vue-next')['Affix']
     TAlert: typeof import('tdesign-vue-next')['Alert']
     TAside: typeof import('tdesign-vue-next')['Aside']
     TAvatar: typeof import('tdesign-vue-next')['Avatar']
@@ -57,7 +58,6 @@ declare module 'vue' {
     TMenuItem: typeof import('tdesign-vue-next')['MenuItem']
     TOption: typeof import('tdesign-vue-next')['Option']
     TPagination: typeof import('tdesign-vue-next')['Pagination']
-    TPix: typeof import('tdesign-vue-next')['Pix']
     TProgress: typeof import('tdesign-vue-next')['Progress']
     TRow: typeof import('tdesign-vue-next')['Row']
     TSelect: typeof import('tdesign-vue-next')['Select']

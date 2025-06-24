@@ -72,7 +72,14 @@ const loadUserInfo = async (username: string) => {
 
     userData.value = ParseUser(res.data.user);
 
-    problemsAc.value = res.data.problems_ac;
+    const acProblems = res.data.problems_ac;
+    acProblems.sort((a: string, b: string) => {
+      if (a.length === b.length) {
+        return a.localeCompare(b);
+      }
+      return a.length - b.length;
+    });
+    problemsAc.value = acProblems;
 
     webStyleStore.setTitle(userData.value.nickname + " - " + webStyleStore.getTitle);
 
