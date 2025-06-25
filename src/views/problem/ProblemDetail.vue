@@ -350,8 +350,8 @@ const loadDailyData = async () => {
   serverTimeOffset = serverTime.getTime() - new Date().getTime();
   const localTime = new Date(serverTime.getTime());
   const year = localTime.getFullYear();
-  const month = String(localTime.getMonth() + 1).padStart(2, '0');
-  const day = String(localTime.getDate()).padStart(2, '0');
+  const month = String(localTime.getMonth() + 1).padStart(2, "0");
+  const day = String(localTime.getDate()).padStart(2, "0");
   const timeId = `${year}-${month}-${day}`;
   if (dailyId === timeId) {
     // 如果是当日的每日一题，则获取距离18点的倒计时
@@ -379,40 +379,43 @@ onMounted(async () => {
       } else {
         problemId = route.params.problemId;
       }
-      if (!problemId) {
-        if (Array.isArray(route.params.dailyId)) {
-          dailyId = route.params.dailyId[0];
-        } else {
-          dailyId = route.params.dailyId;
-        }
+      if (Array.isArray(route.params.dailyId)) {
+        dailyId = route.params.dailyId[0];
+      } else {
+        dailyId = route.params.dailyId;
+      }
+      if (Array.isArray(route.params.contestId)) {
+        contestId = Number(route.params.contestId[0]);
+      } else {
+        contestId = Number(route.params.contestId);
+      }
+      if (!problemId && dailyId) {
         problemLoading.value = true;
         await loadDailyData();
         problemLoading.value = false;
       }
       if (!problemId) {
-        if (Array.isArray(route.params.contestId)) {
-          contestId = Number(route.params.contestId[0]);
+        if (contestId) {
+          if (Array.isArray(route.params.problemIndex)) {
+            problemIndex.value = parseInt(route.params.problemIndex[0]);
+          } else {
+            problemIndex.value = parseInt(route.params.problemIndex);
+          }
+          if (!problemIndex.value) {
+            ShowTextTipsError(globalProperties, "题目不存在");
+            await router.push({
+              name: "contest-detail",
+              params: { contestId: contestId },
+            });
+            return;
+          }
         } else {
-          contestId = Number(route.params.contestId);
-        }
-        if (!contestId) {
           ShowTextTipsError(globalProperties, "题目不存在");
           if (dailyId) {
             await router.push({ name: "problem-daily-list" });
           } else {
             await router.push({ name: "problem" });
           }
-          return;
-        }
-        if (Array.isArray(route.params.problemIndex)) {
-          problemIndex.value = parseInt(route.params.problemIndex[0]);
-        } else {
-          problemIndex.value = parseInt(route.params.problemIndex);
-        }
-        if (!problemIndex.value) {
-          ShowTextTipsError(globalProperties, "题目不存在");
-          await router.push({ name: "problem" });
-          return;
         }
       }
       isContestProblem.value = !!contestId;
