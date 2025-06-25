@@ -116,7 +116,7 @@ const loadProblemDaily = async () => {
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
     console.error("problem get failed", res.code);
-    await router.push({ name: "problem" });
+    await router.push({ name: "problem-daily-list" });
     return;
   }
 

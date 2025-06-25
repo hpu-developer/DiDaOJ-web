@@ -536,11 +536,9 @@ onBeforeUnmount(() => {
               </t-link>
             </t-descriptions-item>
             <t-descriptions-item label="标签" v-if="problemId">
-              <t-space>
-                <t-button v-for="tag in problemData?.tags" :key="tag.id" variant="dashed" @click="() => handleClickTag(tag)">
-                  {{ tag.name }}
-                </t-button>
-              </t-space>
+              <t-button class="dida-tag-button" v-for="tag in problemData?.tags" :key="tag.id" variant="dashed" size="small" @click="() => handleClickTag(tag)">
+                {{ tag.name }}
+              </t-button>
             </t-descriptions-item>
           </t-descriptions>
 

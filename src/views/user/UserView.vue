@@ -154,17 +154,16 @@ onMounted(async () => {
     <t-row class="dida-main-content">
       <t-col :span="8">
         <t-card style="margin: 10px" title="AC题目">
-          <t-space style="flex-wrap: wrap">
-            <t-button
-              v-for="problem in problemsAc"
-              :key="problem"
-              size="small"
-              :theme="getProblemTheme(problem)"
-              @click="() => router.push({ name: 'problem-detail', params: { problemId: problem } })"
-            >
-              {{ problem }}
-            </t-button>
-          </t-space>
+          <t-button
+            class="dida-tag-button"
+            v-for="problem in problemsAc"
+            :key="problem"
+            size="small"
+            :theme="getProblemTheme(problem)"
+            @click="() => router.push({ name: 'problem-detail', params: { problemId: problem } })"
+          >
+            {{ problem }}
+          </t-button>
         </t-card>
         <t-card style="margin: 10px" title="vjudge.net" v-if="userData?.vjudgeId">
           <template #actions>
@@ -176,16 +175,15 @@ onMounted(async () => {
             </div>
             <t-descriptions layout="vertical" :bordered="true">
               <t-descriptions-item v-for="(problems, oj) in vjudgeAcProblems" :key="oj" :label="oj">
-                <t-space style="flex-wrap: wrap">
-                  <t-button
-                    v-for="p in problems"
-                    :key="p"
-                    size="small"
-                    @click="() => router.push({ name: 'problem-detail', params: { problemId: oj + '-' + p } })"
-                  >
-                    {{ p }}
-                  </t-button>
-                </t-space>
+                <t-button
+                  class="dida-tag-button"
+                  v-for="p in problems"
+                  :key="p"
+                  size="small"
+                  @click="() => router.push({ name: 'problem-detail', params: { problemId: oj + '-' + p } })"
+                >
+                  {{ p }}
+                </t-button>
               </t-descriptions-item>
             </t-descriptions>
           </div>
@@ -195,16 +193,15 @@ onMounted(async () => {
             </div>
             <t-descriptions layout="vertical" :bordered="true">
               <t-descriptions-item v-for="(problems, oj) in vjudgeFailProblems" :key="oj" :label="oj">
-                <t-space style="flex-wrap: wrap">
-                  <t-button
-                    v-for="p in problems"
-                    :key="p"
-                    size="small"
-                    @click="() => router.push({ name: 'problem-detail', params: { problemId: oj + '-' + p } })"
-                  >
-                    {{ p }}
-                  </t-button>
-                </t-space>
+                <t-button
+                  class="dida-tag-button"
+                  v-for="p in problems"
+                  :key="p"
+                  size="small"
+                  @click="() => router.push({ name: 'problem-detail', params: { problemId: oj + '-' + p } })"
+                >
+                  {{ p }}
+                </t-button>
               </t-descriptions-item>
             </t-descriptions>
           </div>
