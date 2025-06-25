@@ -31,7 +31,7 @@ const getProblemTheme = (problemId: string) => {
   if (userStore.getUsername === currentUsername) {
     return "success";
   }
-  let theme = "primary";
+  let theme = "default";
   if (!problemAttemptStatus) {
     return theme;
   }
@@ -50,14 +50,16 @@ const getProblemTheme = (problemId: string) => {
 };
 
 const loadProblemAttemptStatus = async () => {
+  problemAttemptStatus = {};
   if (!userStore.isLogin()) {
     return;
   }
   if (userStore.getUsername === currentUsername) {
     return;
   }
-
-  problemAttemptStatus = {};
+  if (problemsAc.value.length === 0) {
+    return;
+  }
   const res = await GetProblemAttemptStatus(problemsAc.value);
   if (res.code === 0) {
     problemAttemptStatus = res.data;
@@ -154,16 +156,22 @@ onMounted(async () => {
     <t-row class="dida-main-content">
       <t-col :span="8">
         <t-card style="margin: 10px" title="AC题目">
-          <t-button
-            class="dida-tag-button"
-            v-for="problem in problemsAc"
-            :key="problem"
-            size="small"
-            :theme="getProblemTheme(problem)"
-            @click="() => router.push({ name: 'problem-detail', params: { problemId: problem } })"
-          >
-            {{ problem }}
-          </t-button>
+          <p v-if="problemsAc.length === 0">
+            <span>暂无AC题目</span>
+          </p>
+          <template v-else>
+            <t-button
+              class="dida-tag-button"
+              v-for="problem in problemsAc"
+              :key="problem"
+              size="small"
+              variant="dashed"
+              :theme="getProblemTheme(problem)"
+              @click="() => router.push({ name: 'problem-detail', params: { problemId: problem } })"
+            >
+              {{ problem }}
+            </t-button>
+          </template>
         </t-card>
         <t-card style="margin: 10px" title="vjudge.net" v-if="userData?.vjudgeId">
           <template #actions>
@@ -179,6 +187,7 @@ onMounted(async () => {
                   class="dida-tag-button"
                   v-for="p in problems"
                   :key="p"
+                  variant="dashed"
                   size="small"
                   @click="() => router.push({ name: 'problem-detail', params: { problemId: oj + '-' + p } })"
                 >
@@ -197,6 +206,7 @@ onMounted(async () => {
                   class="dida-tag-button"
                   v-for="p in problems"
                   :key="p"
+                  variant="dashed"
                   size="small"
                   @click="() => router.push({ name: 'problem-detail', params: { problemId: oj + '-' + p } })"
                 >
