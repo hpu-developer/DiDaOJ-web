@@ -510,7 +510,7 @@ onBeforeUnmount(() => {
         </div>
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="ID">{{ problemData?.id }}</t-descriptions-item>
+            <t-descriptions-item label="ID" v-if="problemData?.id">{{ problemData?.id }}</t-descriptions-item>
             <t-descriptions-item label="标题">{{ problemData?.title }}</t-descriptions-item>
             <t-descriptions-item label="时间限制">{{ problemData?.timeLimit }}</t-descriptions-item>
             <t-descriptions-item label="内存限制">{{ problemData?.memoryLimit }}</t-descriptions-item>

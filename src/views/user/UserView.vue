@@ -24,8 +24,8 @@ const userData = ref<UserInfoView | null>(null);
 const problemsAc = ref([] as string[]);
 let problemAttemptStatus = null as Record<string, ProblemAttemptStatus> | null;
 
-const vjudgeAcProblems = ref([]);
-const vjudgeFailProblems = ref([]);
+const vjudgeAcProblems = ref({} as Record<string, string[]>);
+const vjudgeFailProblems = ref({} as Record<string, string[]>);
 
 const getProblemTheme = (problemId: string) => {
   if (userStore.getUsername === currentUsername) {
@@ -47,6 +47,11 @@ const getProblemTheme = (problemId: string) => {
     }
   }
   return theme;
+};
+
+const handleGotoVjudgeProblem = (oj: string, problemId: string) => {
+  const url = `https://vjudge.net/problem/${oj}-${problemId}`;
+  window.open(url, "_blank");
 };
 
 const loadProblemAttemptStatus = async () => {
@@ -189,7 +194,7 @@ onMounted(async () => {
                   :key="p"
                   variant="dashed"
                   size="small"
-                  @click="() => router.push({ name: 'problem-detail', params: { problemId: oj + '-' + p } })"
+                  @click="() => handleGotoVjudgeProblem(oj, p)"
                 >
                   {{ p }}
                 </t-button>
@@ -208,7 +213,7 @@ onMounted(async () => {
                   :key="p"
                   variant="dashed"
                   size="small"
-                  @click="() => router.push({ name: 'problem-detail', params: { problemId: oj + '-' + p } })"
+                  @click="() => handleGotoVjudgeProblem(oj, p)"
                 >
                   {{ p }}
                 </t-button>
