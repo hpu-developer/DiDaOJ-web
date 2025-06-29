@@ -129,7 +129,7 @@ const loadProblemDaily = async () => {
       const title = `${item.title}`;
 
       problemDailies.value.push({
-        id: item.id,
+        key: item.key,
         title: title,
         problemId: item.problem_id,
         theme: theme,
@@ -213,19 +213,19 @@ onUnmounted(() => {
               <t-list-item v-for="item in problemDailies" :key="item.id">
                 <t-list-item-meta style="width: 100px">
                   <template #description>
-                    <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.id } })">
+                    <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.key } })">
                       {{ item.problemId }}
                     </t-link>
                   </template>
                 </t-list-item-meta>
                 <t-list-item-meta style="width: 200px">
                   <template #description>
-                    <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.id } })">
+                    <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.key } })">
                       {{ item.title }}
                     </t-link>
                   </template>
                 </t-list-item-meta>
-                <t-list-item-meta style="width: 135px" :description="item.id" />
+                <t-list-item-meta style="width: 135px" :description="item.key" />
                 <t-list-item-meta>
                   <template #description>
                     <t-tag :theme="item.theme">{{ item.tag }}</t-tag>

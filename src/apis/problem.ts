@@ -206,13 +206,6 @@ export function GetProblemDailyEdit(dailyId: string) {
   });
 }
 
-export function GetProblemIdByDaily(dailyId: string) {
-  return httpRequest({
-    url: "/problem/daily/id" + "?id=" + dailyId,
-    method: "get",
-  });
-}
-
 export function GetProblemDailyRecently() {
   return httpRequest({
     url: "/problem/daily/recently",
