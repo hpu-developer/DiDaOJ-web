@@ -14,7 +14,8 @@ const { globalProperties } = useCurrentInstance();
 
 const webStyleStore = useWebStyleStore();
 
-const problemId = ref("");
+let problemId = 0;
+const problemKey = ref("");
 const problemLoading = ref(false);
 const isSaving = ref(false);
 const disabledEdit = ref(false);
@@ -93,7 +94,7 @@ const handleClickView = () => {
   router.push({
     name: "problem-detail",
     params: {
-      problemId: problemId.value,
+      problemKey: problemKey.value,
     },
   });
 };
@@ -102,7 +103,7 @@ const handleClickJudge = () => {
   router.push({
     name: "manage-problem-judge",
     params: {
-      problemId: problemId.value,
+      problemKey: problemKey.value,
     },
   });
 };
@@ -110,7 +111,7 @@ const handleClickJudge = () => {
 const onUploadImg = async (files: File[], callback: (urls: { url: string; alt: string; title: string }[]) => void) => {
   disabledEdit.value = true;
   await HandleR2ImageUpload(files, callback, globalProperties, () => {
-    return GetProblemImageToken(problemId.value);
+    return GetProblemImageToken(problemId);
   });
   disabledEdit.value = false;
 };
@@ -147,7 +148,7 @@ const handleClickCreate = async () => {
     if (res.data != undefined) {
       await router.push({
         name: "problem-detail",
-        params: { problemId: res.data },
+        params: { problemKey: res.data },
       });
     }
 
@@ -170,7 +171,7 @@ const handleClickSave = async () => {
 
   try {
     const res = await PostProblemEdit(
-      problemId.value,
+      problemId,
       problemEditForm.value.title,
       problemEditForm.value.timeLimit,
       problemEditForm.value.memoryLimit,
@@ -188,8 +189,8 @@ const handleClickSave = async () => {
     }
 
     if (problemData.value) {
-      if (res.data.update_time != undefined) {
-        problemData.value.updateTime = new Date(res.data.update_time).toLocaleString();
+      if (res.data.modify_time != undefined) {
+        problemData.value.modifyTime = new Date(res.data.modify_time).toLocaleString();
       }
     }
     if (res.data.description != undefined) {
@@ -208,7 +209,7 @@ const loadDescriptionEditor = (description: string) => {
 };
 
 const loadProblem = async () => {
-  const res = await GetProblem(problemId.value, undefined, undefined);
+  const res = await GetProblem(problemKey.value, undefined, undefined);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
     console.error("problem get failed", res.code);
@@ -217,6 +218,8 @@ const loadProblem = async () => {
   }
 
   const problem = res.data.problem;
+
+  problemId = problem.id;
 
   problemData.value = ParseProblem(problem, {} as any);
 
@@ -246,13 +249,13 @@ const loadProblem = async () => {
 };
 
 onMounted(async () => {
-  if (Array.isArray(route.params.problemId)) {
-    problemId.value = route.params.problemId[0];
+  if (Array.isArray(route.params.problemKey)) {
+    problemKey.value = route.params.problemKey[0];
   } else {
-    problemId.value = route.params.problemId;
+    problemKey.value = route.params.problemKey;
   }
 
-  if (problemId.value) {
+  if (problemKey.value) {
     problemLoading.value = true;
     GetProblemTagList(-1)
       .then(async (res) => {
@@ -364,9 +367,9 @@ onMounted(async () => {
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="problemId">
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
+            <t-descriptions-item label="更新时间">{{ problemData?.modifyTime }}</t-descriptions-item>
             <t-descriptions-item label="判题方式">{{ problemData?.judgeType }}</t-descriptions-item>
-            <t-descriptions-item label="上传用户">{{ problemData?.creatorNickname }}</t-descriptions-item>
+            <t-descriptions-item label="上传用户">{{ problemData?.inserterNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>

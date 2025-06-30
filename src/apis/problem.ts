@@ -15,6 +15,7 @@ export enum ProblemAttemptStatus {
 export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag }): ProblemView {
   const result: ProblemView = {} as ProblemView;
   result.id = item.id;
+  result.key = item.key;
   result.inserter = item.inserter;
   result.title = item.title;
   result.tags = [];
@@ -50,7 +51,7 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
     result.insertTime = new Date(item.insert_time).toLocaleString();
   }
   if (item.modify_time != undefined) {
-    result.updateTime = new Date(item.modify_time).toLocaleString();
+    result.modifyTime = new Date(item.modify_time).toLocaleString();
   }
   if (item.modifier_nickname != undefined) {
     result.inserterNickname = item.modifier_nickname;
@@ -126,10 +127,10 @@ export function ParseProblemDaily(item: ProblemDaily, tagsMap: { [key: number]: 
   return result;
 }
 
-export function GetProblem(problemId: string, contestId: number | undefined, problemIndex: number | undefined) {
+export function GetProblem(problemKey: string, contestId: number | undefined, problemIndex: number | undefined) {
   const params = {} as any;
-  if (problemId) {
-    params.id = problemId;
+  if (problemKey) {
+    params.key = problemKey;
   } else {
     params.contest_id = contestId;
     params.problem_index = problemIndex;
@@ -283,7 +284,7 @@ export function PostProblemCreate(
 }
 
 export function PostProblemEdit(
-  problemId: string,
+  problemId: number,
   title: string,
   timeLimit: number,
   memoryLimit: number,
@@ -341,9 +342,9 @@ export function GetJudgeDataDownload(id: string, key: string) {
   });
 }
 
-export function GetProblemImageToken(problemId: string): Promise<UploadImageTokenResponse> {
+export function GetProblemImageToken(problemId: number): Promise<UploadImageTokenResponse> {
   if (!problemId) {
-    problemId = "";
+    problemId = 0;
   }
   return httpRequest({
     url: "/problem/image/token" + "?id=" + problemId,

@@ -7,6 +7,7 @@ import { GetProblemList, GetProblemTagList, ParseProblem, ProblemAttemptStatus, 
 import { Problem, ProblemTag, ProblemView } from "@/types/problem.ts";
 import { AuthType } from "@/auth";
 import { useUserStore } from "@/stores/user.ts";
+import { handleGotoProblem } from "@/util/router.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -28,13 +29,13 @@ const hasEditAuth = computed(() => {
 
 const listColumns = ref([
   {
-    title: "ID",
-    colKey: "id",
+    title: "标识",
+    colKey: "key",
     cell: (_: any, data: any) => {
       let theme = getProblemIdTheme(data.row.id);
       return (
-        <t-button variant="dashed" theme={theme} onClick={() => handleGotoProblem(data.row.id)}>
-          {data.row.id}
+        <t-button variant="dashed" theme={theme} onClick={() => handleGotoProblem(data.row.key)}>
+          {data.row.key}
         </t-button>
       );
     },
@@ -44,7 +45,7 @@ const listColumns = ref([
     colKey: "title",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoProblem(data.row.id)}>
+        <t-button variant="text" onClick={() => handleGotoProblem(data.row.key)}>
           {data.row.title}
         </t-button>
       );
@@ -115,13 +116,6 @@ const crawlProblemForm = ref({
   oj: "",
   problem: "",
 });
-
-const handleGotoProblem = (id: string) => {
-  if (!id) {
-    return;
-  }
-  router.push({ path: "/problem/" + id });
-};
 
 const getProblemIdTheme = (id: string) => {
   if (!id) {
@@ -225,9 +219,14 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   }
   try {
     const { current, pageSize } = paginationInfo;
-    const res = await GetProblemList(searchProblemForm.value.oj, searchProblemForm.value.title, searchProblemForm.value.tag,
+    const res = await GetProblemList(
+      searchProblemForm.value.oj,
+      searchProblemForm.value.title,
+      searchProblemForm.value.tag,
       searchProblemForm.value.private,
-      current, pageSize);
+      current,
+      pageSize
+    );
     problemViews.value = [];
     if (res.code === 0) {
       const responseList = res.data.list as Problem[];
@@ -287,6 +286,9 @@ onMounted(async () => {
         watchHandle = watch(
           () => route.query,
           (newQuery) => {
+            if (!viewActive) {
+              return;
+            }
             searchProblemForm.value.oj = (newQuery.oj as string) || "";
             searchProblemForm.value.title = (newQuery.title as string) || "";
             searchProblemForm.value.tag = (newQuery.tag as string) || "";

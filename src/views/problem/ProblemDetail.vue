@@ -29,7 +29,7 @@ const userStore = useUserStore();
 
 let problemDescription = ref("");
 
-let problemId = "";
+let problemKey = "";
 let dailyId = "";
 let contestId = 0;
 let problemIndex = ref(0);
@@ -125,7 +125,7 @@ const handleClickDailyEdit = async () => {
 };
 
 const handleClickEdit = async () => {
-  let realProblemId = problemId;
+  let realProblemId = problemKey;
 
   if (!realProblemId) {
     try {
@@ -150,11 +150,11 @@ const handleClickEdit = async () => {
 };
 
 const handleClickJudgeStatus = () => {
-  if (problemId) {
+  if (problemKey) {
     router.push({
       name: "judge-list",
       query: {
-        problem_id: problemId,
+        problem_id: problemKey,
       },
     });
   } else {
@@ -171,11 +171,11 @@ const handleClickJudgeStatus = () => {
 };
 
 const handleClickDiscuss = () => {
-  if (problemId) {
+  if (problemKey) {
     router.push({
       name: "discuss-list-problem",
       query: {
-        problem_id: problemId,
+        problem_id: problemKey,
       },
     });
   } else {
@@ -195,7 +195,7 @@ const handleClickRecommend = () => {
   router.push({
     name: "problem-recommend",
     params: {
-      problemId: problemId,
+      problemId: problemKey,
     },
   });
 };
@@ -234,7 +234,7 @@ const handleSubmitCode = async () => {
     ShowTextTipsError(globalProperties, "请输入所需提交的代码");
     return;
   }
-  if (!problemId && (!contestId || !problemIndex.value)) {
+  if (!problemKey && (!contestId || !problemIndex.value)) {
     ShowTextTipsError(globalProperties, "问题标识无效");
     return;
   }
@@ -242,7 +242,7 @@ const handleSubmitCode = async () => {
   problemSubmitting.value = true;
 
   try {
-    const res = await PostJudgeJob(problemId, contestId, problemIndex.value, selectValue, code);
+    const res = await PostJudgeJob(problemKey, contestId, problemIndex.value, selectValue, code);
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
@@ -286,7 +286,7 @@ const onSelectLanguageChanged = (value: JudgeLanguage) => {
 const fetchProblemData = async () => {
   contestProblems.value = [];
 
-  let res = await GetProblem(problemId, contestId, problemIndex.value);
+  let res = await GetProblem(problemKey, contestId, problemIndex.value);
 
   if (res.code !== 0) {
     problemLoading.value = false;
@@ -342,7 +342,7 @@ const loadDailyData = async () => {
   }
   isDailyProblem.value = true;
   const daily = res.data.problem_daily;
-  problemId = daily.problem_id;
+  problemKey = daily.problem_id;
   dailySolution.value = daily.solution;
   dailyCode.value = daily.code;
 
@@ -374,10 +374,10 @@ onMounted(async () => {
     () => route.params,
     async () => {
       isDailyProblem.value = false;
-      if (Array.isArray(route.params.problemId)) {
-        problemId = route.params.problemId[0];
+      if (Array.isArray(route.params.problemKey)) {
+        problemKey = route.params.problemKey[0];
       } else {
-        problemId = route.params.problemId;
+        problemKey = route.params.problemKey;
       }
       if (Array.isArray(route.params.dailyId)) {
         dailyId = route.params.dailyId[0];
@@ -389,12 +389,12 @@ onMounted(async () => {
       } else {
         contestId = Number(route.params.contestId);
       }
-      if (!problemId && dailyId) {
+      if (!problemKey && dailyId) {
         problemLoading.value = true;
         await loadDailyData();
         problemLoading.value = false;
       }
-      if (!problemId) {
+      if (!problemKey) {
         if (contestId) {
           if (Array.isArray(route.params.problemIndex)) {
             problemIndex.value = parseInt(route.params.problemIndex[0]);
@@ -510,7 +510,7 @@ onBeforeUnmount(() => {
         </div>
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="ID" v-if="problemData?.id">{{ problemData?.id }}</t-descriptions-item>
+            <t-descriptions-item label="标识" v-if="problemData?.key">{{ problemData?.key }}</t-descriptions-item>
             <t-descriptions-item label="标题">{{ problemData?.title }}</t-descriptions-item>
             <t-descriptions-item label="时间限制">{{ problemData?.timeLimit }}</t-descriptions-item>
             <t-descriptions-item label="内存限制">{{ problemData?.memoryLimit }}</t-descriptions-item>
@@ -518,8 +518,8 @@ onBeforeUnmount(() => {
             <t-descriptions-item label="正确提交" v-if="!isContestProblem">{{ problemData?.accept }} </t-descriptions-item>
             <t-descriptions-item label="提交总数" v-if="!isContestProblem">{{ problemData?.attempt }} </t-descriptions-item>
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
-            <t-descriptions-item label="上传用户">{{ problemData?.creatorNickname }}</t-descriptions-item>
+            <t-descriptions-item label="更新时间">{{ problemData?.modifyTime }}</t-descriptions-item>
+            <t-descriptions-item label="上传用户">{{ problemData?.inserterNickname }}</t-descriptions-item>
             <t-descriptions-item label="题目来源" v-if="!isContestProblem">
               <t-link v-if="problemData?.sourceUrl" :href="problemData?.sourceUrl" target="_blank">
                 {{ problemData?.source }}
@@ -535,7 +535,7 @@ onBeforeUnmount(() => {
                 {{ problemData?.originId }}
               </t-link>
             </t-descriptions-item>
-            <t-descriptions-item label="标签" v-if="problemId">
+            <t-descriptions-item label="标签" v-if="problemKey">
               <t-button class="dida-tag-button" v-for="tag in problemData?.tags" :key="tag.id" variant="dashed" size="small" @click="() => handleClickTag(tag)">
                 {{ tag.name }}
               </t-button>
@@ -546,7 +546,7 @@ onBeforeUnmount(() => {
             <t-space>
               <t-button @click="handleClickJudgeStatus">提交记录</t-button>
               <t-button @click="handleClickDiscuss">题目讨论</t-button>
-              <t-button @click="handleClickRecommend" v-if="problemId">题目推荐</t-button>
+              <t-button @click="handleClickRecommend" v-if="problemKey">题目推荐</t-button>
             </t-space>
           </div>
           <div class="dida-operation-container" v-if="(isDailyProblem && hasEditDailyAuth) || hasEditAuth || problemData?.originId">

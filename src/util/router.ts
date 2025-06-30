@@ -16,10 +16,10 @@ export const handleOpenProblem = (problemId: string) => {
   window.open(routeData.href, '_blank');
 };
 
-export const handleGotoProblem = async (problemId: string) => {
+export const handleGotoProblem = async (problemKey: string) => {
   await router.push({
     name: "problem-detail",
-    params: { problemId: problemId },
+    params: { problemKey: problemKey },
   });
 };
 
