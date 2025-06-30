@@ -51,7 +51,7 @@ const getProblemIdTheme = (id: string) => {
 
 const listColumns = ref([
   {
-    title: "问题ID",
+    title: "问题标识",
     colKey: "id",
     cell: (_: any, data: any) => {
       const theme = getProblemIdTheme(data.row.id);

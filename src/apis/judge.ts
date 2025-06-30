@@ -184,7 +184,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   result.contestProblemIndex = item.contest_problem_index;
   result.status = item.status;
 
-  if (IsJudgeStatusRunning(item.status) || !IsJudgeStatusValid(item.status)) {
+  if (item.score == undefined || (IsJudgeStatusRunning(item.status) || !IsJudgeStatusValid(item.status))) {
     result.score = "-";
   } else {
     result.score = (item.score / 10).toString();
@@ -205,13 +205,13 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   result.language = item.language;
   result.codeLength = item.code_length;
   if (item.insert_time) {
-    result.approveTime = new Date(item.insert_time).toLocaleString();
+    result.insertTime = new Date(item.insert_time).toLocaleString();
   } else {
-    result.approveTime = "-";
+    result.insertTime = "-";
   }
-  result.author = item.author;
-  result.authorUsername = item.inserter_username;
-  result.authorNickname = item.inserter_nickname;
+  result.inserter = item.inserter;
+  result.inserterUsername = item.inserter_username;
+  result.inserterNickname = item.inserter_nickname;
   result.code = item.code;
   result.compileMessage = item.compile_message;
   result.taskCurrent = item.task_current;
@@ -241,7 +241,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
         taskView.score = "-";
       }
       taskView.content = task.content;
-      taskView.waHint = task.wa_hint;
+      taskView.hint = task.hint;
       result.task.push(taskView);
     }
   }

@@ -43,7 +43,7 @@ const handleRejudgeRecently = async () => {
 
 const handleRejudgeSearch = async () => {
   if (!searchForm.value.problemId && !searchForm.value.language && !searchForm.value.status) {
-    ShowErrorTips(globalProperties, "请输入问题Id");
+    ShowErrorTips(globalProperties, "请输入问题标识");
     return;
   }
   rejudgeSearchLoading.value = true;

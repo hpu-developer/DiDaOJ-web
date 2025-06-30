@@ -1,53 +1,67 @@
+import { ParseValidType } from "@/util/parse.ts";
+
 export interface ProblemTag {
   id: number;
   name: string;
 }
 
 export interface Problem {
-  id: string;
+  id: number;
+  key: string; // 对外展示的唯一标识符
   title: string;
-  author: string;
-  tags: number[];
-  private: boolean;
-  accept: number;
-  attempt: number;
+  tags?: number[];
+  private?: boolean;
+  accept?: number;
+  attempt?: number;
   description?: string;
   time_limit?: number;
   memory_limit?: number;
   judge_type?: number;
+  inserter?: string;
+  inserter_nickname?: string;
+  inserter_username?: string;
   insert_time?: string;
-  update_time?: string;
-  creator_nickname?: string;
+  modifier?: string;
+  modifier_nickname?: string;
+  modify_time?: string;
   source?: string;
   judge_md5?: string;
   origin_oj?: string;
   origin_id?: string;
   origin_url?: string;
+
+  valid?: ParseValidType; // 是否有效，true表示有效，false表示无效
 }
 
 export interface ProblemView {
-  index?: number; // 仅限Contest题目
+  id: number;
+  key: string; // 对外展示的唯一标识符
 
-  id: string;
   title: string;
-  author: string;
-  private: boolean;
-  tags: ProblemTag[];
-  accept: number;
-  attempt: number;
+  private?: boolean;
+  tags?: ProblemTag[];
+  accept?: number;
+  attempt?: number;
   description?: string;
   timeLimit?: string;
   memoryLimit?: string;
   judgeType?: string;
   insertTime?: string;
-  updateTime?: string;
-  creatorNickname?: string;
+  inserter?: string;
+  inserterNickname?: string;
+  modifier?: string;
+  modifierNickname?: string;
+  modifyTime?: string;
   source?: string;
   sourceUrl?: string;
   judgeMd5?: string;
   originOj?: string;
   originId?: string;
   originUrl?: string;
+
+  index?: number; // 仅限Contest题目
+
+  valid?: ParseValidType; // 是否有效，true表示有效，false表示无效
 }
 
 export interface ProblemJudgeData {
@@ -66,10 +80,10 @@ export interface ProblemDaily {
   solution?: string;
   code?: string;
 
-  create_time?: string; // 创建时间
-  update_time?: string; // 更新时间
-  creator_nickname?: string; // 创建者昵称
-  updater_nickname?: string; // 更新者昵称
+  insert_time?: string; // 创建时间
+  modify_time?: string; // 更新时间
+  inserter_nickname?: string; // 创建者昵称
+  modifier_nickname?: string; // 更新者昵称
 }
 
 export interface ProblemDailyView {
@@ -82,8 +96,8 @@ export interface ProblemDailyView {
   solution?: string;
   code?: string;
 
-  createTime?: string; // 创建时间
-  updateTime?: string; // 更新时间
-  creatorNickname?: string; // 创建者昵称
-  updaterNickname?: string; // 更新者昵称
+  insertTime?: string; // 创建时间
+  modifyTime?: string; // 更新时间
+  inserterNickname?: string; // 创建者昵称
+  modifierNickname?: string; // 更新者昵称
 }

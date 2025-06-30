@@ -17,15 +17,20 @@ export function GetContestProblemIndexStr(index: number): string {
 export function ParseContest(item: Contest) {
   const result: ContestView = {} as ContestView;
   result.id = item.id;
-  result.ownerId = item.owner_id;
-  result.ownerUsername = item.owner_username;
-  result.ownerNickname = item.owner_nickname;
+
   result.title = item.title;
   result.startTime = new Date(item.start_time).toLocaleString();
   result.endTime = new Date(item.end_time).toLocaleString();
-  result.createTime = new Date(item.create_time).toLocaleString();
-  result.updateTime = new Date(item.update_time).toLocaleString();
   result.private = item.private;
+
+  result.inserter = item.inserter;
+  result.inserterUsername = item.inserter_username;
+  result.inserterNickname = item.inserter_nickname;
+  result.insertTime = new Date(item.insert_time).toLocaleString();
+  result.modifier = item.modifier;
+  result.modifierUsername = item.modifier_username;
+  result.modifierNickname = item.modifier_nickname;
+  result.modifyTime = new Date(item.modify_time).toLocaleString();
 
   result.description = item.description;
 
@@ -38,7 +43,7 @@ export function ParseContest(item: Contest) {
     });
     for (let i = 0; i < item.problems.length; i++) {
       const problem = item.problems[i];
-      let problemView: ProblemView = { accept: 0, attempt: 0, author: "", id: "", private: false, tags: [], title: "" };
+      let problemView: ProblemView = { accept: 0, attempt: 0, inserter: "", id: "", private: false, tags: [], title: "" };
       problemView.index = problem.index;
       problemView.id = GetContestProblemIndexStr(problem.index);
       problemView.title = problem.title;

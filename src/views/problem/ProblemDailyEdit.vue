@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
               <t-form-item label="日期">
                 <t-date-picker v-model="dailyEditForm.date" :disabled="dailyId && true" />
               </t-form-item>
-              <t-form-item label="问题ID">
+              <t-form-item label="问题标识">
                 <t-input v-model="dailyEditForm.problemId" placeholder="问题标题"></t-input>
               </t-form-item>
             </t-form>

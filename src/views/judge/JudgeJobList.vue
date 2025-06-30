@@ -131,19 +131,19 @@ const listColumns = ref([
   },
   {
     title: "作者",
-    colKey: "author",
+    colKey: "inserter",
     width: 200,
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoUser(data.row.authorUsername)}>
-          {data.row.authorNickname}
+        <t-button variant="text" onClick={() => handleGotoUser(data.row.inserterUsername)}>
+          {data.row.inserterNickname}
         </t-button>
       );
     },
   },
   {
     title: "提交时间",
-    colKey: "approveTime",
+    colKey: "insertTime",
     width: 180,
   },
 ]);

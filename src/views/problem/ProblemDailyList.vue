@@ -324,7 +324,7 @@ onBeforeUnmount(() => {
               <t-date-range-picker v-model="searchProblemForm.date" allow-input clearable format="YYYY-MM-DD" />
             </t-form-item>
             <t-form-item label="问题" label-align="top">
-              <t-input v-model="searchProblemForm.problemId" placeholder="请输入问题ID" clearable></t-input>
+              <t-input v-model="searchProblemForm.problemId" placeholder="请输入问题标识" clearable></t-input>
             </t-form-item>
             <t-form-item label-align="top">
               <t-space>

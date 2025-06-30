@@ -8,7 +8,7 @@ export interface JudgeTask {
   memory: number; // 所用的内存
   score: number; // 评分
   content: string; // 输出内容
-  wa_hint: string; // 错误提示
+  hint: string; // 错误提示
 }
 
 export interface JudgeTaskView {
@@ -18,7 +18,7 @@ export interface JudgeTaskView {
   memory: string; // 所用的内存
   score: string; // 评分
   content: string; // 输出内容
-  waHint: string; // 错误提示
+  hint: string; // 错误提示
 }
 
 export interface JudgeJob {
@@ -30,7 +30,7 @@ export interface JudgeJob {
   time: number;
   memory: number;
   code_length: number;
-  author: number;
+  inserter: number;
   inserter_username: string;
   inserter_nickname: string;
   language: JudgeLanguage;
@@ -55,11 +55,11 @@ export interface JudgeJobView {
   time: string;
   memory: string;
   codeLength: number;
-  author: number;
-  authorUsername: string;
-  authorNickname: string;
+  inserter: number;
+  inserterUsername: string;
+  inserterNickname: string;
   language: JudgeLanguage;
-  approveTime: string;
+  insertTime: string;
   code?: string;
   compileMessage?: string;
   taskCurrent: number;

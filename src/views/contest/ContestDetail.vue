@@ -30,7 +30,7 @@ const contestPassword = ref("");
 const contestCountdownTarget = ref(null as Date | null);
 
 const hasEditAuth = computed(() => {
-  return userStore.hasAuth(AuthType.ManageContest) || (contestData.value && userStore?.getUserId === contestData.value.ownerId);
+  return userStore.hasAuth(AuthType.ManageContest) || (contestData.value && userStore?.getUserId === contestData.value.inserter);
 });
 
 const getProblemIdTheme = (id: number) => {
@@ -56,7 +56,7 @@ const getProblemIdTheme = (id: number) => {
 
 const listColumns = ref([
   {
-    title: "问题ID",
+    title: "问题标识",
     colKey: "index",
     cell: (_: any, data: any) => {
       const theme = getProblemIdTheme(data.row.index);
@@ -237,10 +237,10 @@ onMounted(async () => {
         </div>
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="创建时间">{{ contestData?.createTime }}</t-descriptions-item>
+            <t-descriptions-item label="创建时间">{{ contestData?.insertTime }}</t-descriptions-item>
           </t-descriptions>
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="更新时间">{{ contestData?.updateTime }}</t-descriptions-item>
+            <t-descriptions-item label="更新时间">{{ contestData?.modifyTime }}</t-descriptions-item>
           </t-descriptions>
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="开始时间">{{ contestData?.startTime }}</t-descriptions-item>

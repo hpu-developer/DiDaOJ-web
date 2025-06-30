@@ -15,11 +15,14 @@ export interface ContestProblem {
 export interface Contest {
   id: string;
   title: string;
-  owner_id: string;
-  owner_username?: string;
-  owner_nickname?: string;
-  create_time: string;
-  update_time: string;
+  inserter: number;
+  inserter_username?: string;
+  inserter_nickname?: string;
+  insert_time: string;
+  modifier: number;
+  modifier_username?: string;
+  modifier_nickname?: string;
+  modify_time: string;
   start_time: string;
   end_time: string;
   private: boolean;
@@ -32,11 +35,14 @@ export interface Contest {
 export interface ContestView {
   id: string;
   title: string;
-  ownerId: number;
-  ownerUsername?: string;
-  ownerNickname?: string;
-  createTime: string;
-  updateTime: string;
+  inserter: number;
+  inserterUsername?: string;
+  inserterNickname?: string;
+  insertTime: string;
+  modifier: number;
+  modifierUsername?: string;
+  modifierNickname?: string;
+  modifyTime: string;
   startTime: string;
   endTime: string;
   private: boolean;

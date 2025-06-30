@@ -113,7 +113,7 @@ const handleClickTag = (tag: ProblemTag) => {
 
 const handleClickDailyEdit = async () => {
   if (!dailyId) {
-    ShowTextTipsError(globalProperties, "每日问题ID无效");
+    ShowTextTipsError(globalProperties, "每日问题标识无效");
     return;
   }
   await router.push({
@@ -235,7 +235,7 @@ const handleSubmitCode = async () => {
     return;
   }
   if (!problemId && (!contestId || !problemIndex.value)) {
-    ShowTextTipsError(globalProperties, "问题ID无效");
+    ShowTextTipsError(globalProperties, "问题标识无效");
     return;
   }
 

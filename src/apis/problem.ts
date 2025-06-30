@@ -15,7 +15,7 @@ export enum ProblemAttemptStatus {
 export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag }): ProblemView {
   const result: ProblemView = {} as ProblemView;
   result.id = item.id;
-  result.author = item.author;
+  result.inserter = item.inserter;
   result.title = item.title;
   result.tags = [];
   if (item.tags) {
@@ -49,11 +49,11 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
   if (item.insert_time != undefined) {
     result.insertTime = new Date(item.insert_time).toLocaleString();
   }
-  if (item.update_time != undefined) {
-    result.updateTime = new Date(item.update_time).toLocaleString();
+  if (item.modify_time != undefined) {
+    result.updateTime = new Date(item.modify_time).toLocaleString();
   }
-  if (item.creator_nickname != undefined) {
-    result.creatorNickname = item.creator_nickname;
+  if (item.modifier_nickname != undefined) {
+    result.inserterNickname = item.modifier_nickname;
   }
   if (item.source != undefined) {
     // 判断item.source是否符合[]()格式，是否赋值result.sourceUrl
@@ -110,17 +110,17 @@ export function ParseProblemDaily(item: ProblemDaily, tagsMap: { [key: number]: 
   result.solution = item.solution;
   result.code = item.code;
 
-  if (item.create_time != undefined) {
-    result.createTime = new Date(item.create_time).toLocaleString();
+  if (item.insert_time != undefined) {
+    result.insertTime = new Date(item.insert_time).toLocaleString();
   }
-  if (item.update_time != undefined) {
-    result.updateTime = new Date(item.update_time).toLocaleString();
+  if (item.modify_time != undefined) {
+    result.modifyTime = new Date(item.modify_time).toLocaleString();
   }
-  if (item.creator_nickname != undefined) {
-    result.creatorNickname = item.creator_nickname;
+  if (item.inserter_nickname != undefined) {
+    result.inserterNickname = item.inserter_nickname;
   }
-  if (item.updater_nickname != undefined) {
-    result.updaterNickname = item.updater_nickname;
+  if (item.modifier_nickname != undefined) {
+    result.modifierNickname = item.modifier_nickname;
   }
 
   return result;
@@ -376,12 +376,22 @@ export function PostJudgeData(id: string, zip: File) {
   });
 }
 
-export function PostProblemParse(problemIds: string[]) {
+export function PostProblemParseId(problemIds: number[]) {
+  return httpRequest({
+    url: "/problem/parse/id",
+    method: "post",
+    data: {
+      problems: problemIds,
+    },
+  });
+}
+
+export function PostProblemParse(problemKeys: string[]) {
   return httpRequest({
     url: "/problem/parse",
     method: "post",
     data: {
-      problems: problemIds,
+      problems: problemKeys,
     },
   });
 }

@@ -103,19 +103,19 @@ const ListColumns = ref([
   },
   {
     title: "作者",
-    colKey: "author",
+    colKey: "inserter",
     width: 200,
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoUser(data.row.authorUsername)}>
-          {data.row.authorNickname}
+        <t-button variant="text" onClick={() => handleGotoUser(data.row.inserterUsername)}>
+          {data.row.inserterNickname}
         </t-button>
       );
     },
   },
   {
     title: "提交时间",
-    colKey: "approveTime",
+    colKey: "insertTime",
     width: 180,
   },
 ]);
@@ -342,8 +342,8 @@ onBeforeUnmount(() => {
       <t-card v-if="task.content" class="dida-card-tips">
         <md-preview :model-value="task.content"></md-preview>
       </t-card>
-      <t-card v-if="task.waHint" class="dida-card-tips">
-        <md-preview :model-value="task.waHint"></md-preview>
+      <t-card v-if="task.hint" class="dida-card-tips">
+        <md-preview :model-value="task.hint"></md-preview>
       </t-card>
     </t-collapse-panel>
   </t-collapse>

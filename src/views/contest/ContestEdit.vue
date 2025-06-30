@@ -19,6 +19,7 @@ const webStyleStore = useWebStyleStore();
 const contestId = ref(0);
 const contestLoading = ref(false);
 const isSaving = ref(false);
+const editTab = ref("1");
 
 const showDialog = ref(false);
 
@@ -29,7 +30,7 @@ const contestEditForm = ref({
   openTime: [] as (Date | string)[],
   private: true,
   password: "",
-  problems: [] as string[],
+  problems: [] as number[],
   members: [] as number[],
   description: "",
   notification: "",
@@ -141,7 +142,7 @@ const handleClickSave = async () => {
         contestEditForm.value.description = res.data.description;
       }
       if (res.data.update_time != undefined) {
-        contestData.value.updateTime = new Date(res.data.update_time).toLocaleString();
+        contestData.value.modifyTime = new Date(res.data.update_time).toLocaleString();
       }
     }
 
@@ -186,7 +187,7 @@ const loadContest = async () => {
   contestEditForm.value.description = contest.description || "";
   contestEditForm.value.notification = contest.notification || "";
 
-  contestEditForm.value.problems = res.data.problems;
+  contestEditForm.value.problems = contest.problems;
   contestEditForm.value.members = res.data.members;
 
   if (contest.lock_rank_duration) {
@@ -230,51 +231,54 @@ onMounted(async () => {
       <t-col :span="8">
         <div style="margin: 10px">
           <t-card class="sh-card">
-            <t-form :model="contestEditForm" label-width="150px">
-              <t-form-item label="标题">
-                <t-input v-model="contestEditForm.title" placeholder="比赛标题"></t-input>
-              </t-form-item>
-              <t-form-item label="通知">
-                <t-input v-model="contestEditForm.notification" placeholder="会更为醒目地提醒"></t-input>
-              </t-form-item>
-              <t-form-item label="开启时间">
-                <t-date-range-picker
-                  v-model="contestEditForm.openTime"
-                  allow-input
-                  clearable
-                  format="YYYY-MM-DD HH:mm:ss"
-                  :default-time="['00:00:00', '23:59:59']"
-                />
-              </t-form-item>
-              <t-form-item label="提交限制">
-                <t-switch v-model="contestEditForm.submitAnytime">
-                  <template #label="slotProps">{{ slotProps.value ? "结束仍能提交" : "仅比赛期间提交" }}</template>
-                </t-switch>
-              </t-form-item>
+            <t-tabs v-model="editTab">
+              <t-tab-panel value="1" label="基础信息" style="padding: 10px">
+                <t-form :model="contestEditForm" label-width="150px">
+                  <t-form-item label="标题">
+                    <t-input v-model="contestEditForm.title" placeholder="比赛标题"></t-input>
+                  </t-form-item>
+                  <t-form-item label="通知">
+                    <t-input v-model="contestEditForm.notification" placeholder="会更为醒目地提醒"></t-input>
+                  </t-form-item>
+                  <t-form-item label="开启时间">
+                    <t-date-range-picker
+                      v-model="contestEditForm.openTime"
+                      allow-input
+                      clearable
+                      format="YYYY-MM-DD HH:mm:ss"
+                      :default-time="['00:00:00', '23:59:59']"
+                    />
+                  </t-form-item>
+                  <t-form-item label="提交限制">
+                    <t-switch v-model="contestEditForm.submitAnytime">
+                      <template #label="slotProps">{{ slotProps.value ? "结束仍能提交" : "仅比赛期间提交" }}</template>
+                    </t-switch>
+                  </t-form-item>
 
-              <t-form-item label="锁榜时长">
-                <t-input-number v-model="contestEditForm.lockRankDuration" :min="0" :format="GetTimeStringBySeconds" auto-width></t-input-number>
-              </t-form-item>
-              <t-form-item label="自动解锁">
-                <t-switch v-model="contestEditForm.alwaysLock">
-                  <template #label="slotProps">{{ slotProps.value ? "结束后仍锁榜" : "结束后解锁" }}</template>
-                </t-switch>
-              </t-form-item>
+                  <t-form-item label="锁榜时长">
+                    <t-input-number v-model="contestEditForm.lockRankDuration" :min="0" :format="GetTimeStringBySeconds" auto-width></t-input-number>
+                  </t-form-item>
+                  <t-form-item label="自动解锁">
+                    <t-switch v-model="contestEditForm.alwaysLock">
+                      <template #label="slotProps">{{ slotProps.value ? "结束后仍锁榜" : "结束后解锁" }}</template>
+                    </t-switch>
+                  </t-form-item>
 
-              <t-form-item label="私有">
-                <t-switch v-model="contestEditForm.private" />
-              </t-form-item>
-              <t-form-item label="密码" v-if="contestEditForm.private">
-                <t-input v-model="contestEditForm.password" type="password" placeholder="请输入访问密码，留空代表关闭密码访问"></t-input>
-              </t-form-item>
-
-              <t-form-item label="成员" v-if="contestEditForm.private">
-                <ParseUserList v-model="contestEditForm.members" />
-              </t-form-item>
-              <t-form-item label="问题">
+                  <t-form-item label="私有">
+                    <t-switch v-model="contestEditForm.private" />
+                  </t-form-item>
+                  <t-form-item label="密码" v-if="contestEditForm.private">
+                    <t-input v-model="contestEditForm.password" type="password" autocomplete="current-password" placeholder="请输入访问密码，留空代表关闭密码访问"></t-input>
+                  </t-form-item>
+                </t-form>
+              </t-tab-panel>
+              <t-tab-panel value="2" label="问题" style="padding: 10px">
                 <ParseProblemList v-model="contestEditForm.problems" />
-              </t-form-item>
-            </t-form>
+              </t-tab-panel>
+              <t-tab-panel v-if="contestEditForm.private" value="3" label="成员" style="padding: 10px">
+                <ParseUserList v-model="contestEditForm.members" />
+              </t-tab-panel>
+            </t-tabs>
           </t-card>
         </div>
       </t-col>
@@ -289,9 +293,10 @@ onMounted(async () => {
             </t-space>
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="contestId">
-            <t-descriptions-item label="创建时间">{{ contestData?.createTime }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ contestData?.updateTime }}</t-descriptions-item>
-            <t-descriptions-item label="创建用户">{{ contestData?.ownerNickname }}</t-descriptions-item>
+            <t-descriptions-item label="创建时间">{{ contestData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="更新时间">{{ contestData?.modifyTime }}</t-descriptions-item>
+            <t-descriptions-item label="创建用户">{{ contestData?.inserterNickname }}</t-descriptions-item>
+            <t-descriptions-item label="修改用户">{{ contestData?.modifierNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>
@@ -310,7 +315,7 @@ onMounted(async () => {
   </t-loading>
   <t-dialog v-model:visible="showDialog" @confirm="handleParse" :header="parseDialogTitle" :confirm-loading="isParsing">
     <div style="margin-bottom: 10px">
-      <span>多条请以空格、换行、英文逗号隔开</span>
+      <span>多条请换行隔开</span>
     </div>
     <t-textarea v-model="textareaValue" :autosize="{ minRows: 5 }"></t-textarea>
   </t-dialog>

@@ -306,6 +306,7 @@ const loadProgress = () => {
     item.problems.forEach((problem: ContestRankProblem) => {
       let acDuration = -1;
       let lockCount = problem.lock || 0;
+      problem.attempt = problem.attempt || 0;
       if (problem.ac) {
         let contestStartTimeGetTime = 0;
         if (contestStartTime) {
@@ -466,8 +467,8 @@ const fetchData = async (needLoading: boolean) => {
         await router.push({ name: "contest-detail", params: { contestId: contestId } });
         return;
       }
-      res.data.problems.sort((a: number, b: number) => a - b);
-      res.data.problems.forEach((problemIndex: number, _: number) => {
+      res.data.contest.problems.sort((a: number, b: number) => a - b);
+      res.data.contest.problems.forEach((problemIndex: number, _: number) => {
         listColumns.value.push({
           colKey: `problem_${problemIndex}`,
           align: "center",

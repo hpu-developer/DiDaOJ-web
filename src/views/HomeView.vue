@@ -210,7 +210,7 @@ onUnmounted(() => {
           </template>
           <t-loading :loading="problemDailyLoading && !stateLoading">
             <t-list :split="true" size="small" style="min-height: 200px">
-              <t-list-item v-for="item in problemDailies" :key="item.id">
+              <t-list-item v-for="item in problemDailies" :key="item.key">
                 <t-list-item-meta style="width: 100px">
                   <template #description>
                     <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.key } })">

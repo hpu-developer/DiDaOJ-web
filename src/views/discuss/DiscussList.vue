@@ -203,7 +203,7 @@ onMounted(async () => {
       if (contestId) {
         listColumns.value = listColumns.value.concat([
           {
-            title: "问题ID",
+            title: "问题标识",
             colKey: "contestProblemIndex",
             width: "100",
             cell: (_: any, data: any) => {
@@ -221,7 +221,7 @@ onMounted(async () => {
       } else {
         listColumns.value = listColumns.value.concat([
           {
-            title: "问题ID",
+            title: "问题标识",
             colKey: "problemId",
             width: "100",
             cell: (_: any, data: any) => {
@@ -283,8 +283,8 @@ onBeforeUnmount(() => {
       <div style="margin: 10px">
         <t-card class="sh-card">
           <t-form :model="discussSearchForm">
-            <t-form-item label="问题ID">
-              <t-input v-model="discussSearchForm.problemId" placeholder="请输入完整问题ID"></t-input>
+            <t-form-item label="问题标识">
+              <t-input v-model="discussSearchForm.problemId" placeholder="请输入完整问题标识"></t-input>
             </t-form-item>
             <t-form-item label="标题">
               <t-input v-model="discussSearchForm.title" placeholder="暂不支持模糊查询"></t-input>
