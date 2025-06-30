@@ -13,9 +13,9 @@ import {
 export function ParseDiscuss(item: Discuss): DiscussView {
   const result: DiscussView = {} as DiscussView;
   result.id = item.id;
-  result.authorId = item.author_id;
-  result.authorUsername = item.author_username;
-  result.authorNickname = item.author_nickname;
+  result.authorId = item.inserter;
+  result.authorUsername = item.inserter_username;
+  result.authorNickname = item.inserter_nickname;
   result.title = item.title;
   result.content = item.content;
   if (item.insert_time) {
@@ -40,9 +40,9 @@ export function ParseDiscuss(item: Discuss): DiscussView {
 export function ParseDiscussComment(item: DiscussComment): DiscussCommentView {
   const result = {} as DiscussCommentView;
   result.id = item.id;
-  result.authorId = item.author_id;
-  result.authorUsername = item.author_username;
-  result.authorNickname = item.author_nickname;
+  result.authorId = item.inserter;
+  result.authorUsername = item.inserter_username;
+  result.authorNickname = item.inserter_nickname;
   result.content = "";
   if (item.content) {
     result.content = item.content;

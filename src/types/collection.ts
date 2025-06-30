@@ -27,9 +27,9 @@ export interface CollectionView {
 }
 
 export interface CollectionRank {
-  author_id: number;
-  author_username: string;
-  author_nickname: string;
+  inserter: number;
+  inserter_username: string;
+  inserter_nickname: string;
   accept: number;
 }
 

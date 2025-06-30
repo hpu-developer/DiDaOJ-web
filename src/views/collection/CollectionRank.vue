@@ -136,9 +136,9 @@ const fetchData = async (needLoading: boolean) => {
         for (let i = 0; i < responseList.length; i++) {
           const item = responseList[i];
           let result = {
-            userId: item.author_id,
-            username: item.author_username,
-            nickname: item.author_nickname,
+            userId: item.inserter,
+            username: item.inserter_username,
+            nickname: item.inserter_nickname,
           } as CollectionRankView;
           result.accept = item.accept;
           results.push(result);

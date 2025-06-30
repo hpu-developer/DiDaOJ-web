@@ -297,9 +297,9 @@ const loadProgress = () => {
   for (let i = 0; i < fetchRankViews.length; i++) {
     const item = fetchRankViews[i];
     let result = {
-      userId: item.author_id,
-      username: item.author_username,
-      nickname: item.author_nickname,
+      userId: item.inserter,
+      username: item.inserter_username,
+      nickname: item.inserter_nickname,
     } as ContestRankView;
     let acCount = 0;
     let penalty = 0;
@@ -322,11 +322,11 @@ const loadProgress = () => {
 
         if (problemFirstAcRecords[problem.index] === undefined) {
           problemFirstAcRecords[problem.index] = {
-            userId: item.author_id,
+            userId: item.inserter,
             ac: acDuration,
           };
         } else if (problemFirstAcRecords[problem.index].ac > acDuration) {
-          problemFirstAcRecords[problem.index].userId = item.author_id;
+          problemFirstAcRecords[problem.index].userId = item.inserter;
           problemFirstAcRecords[problem.index].ac = acDuration;
         }
       }

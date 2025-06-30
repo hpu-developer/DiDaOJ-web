@@ -204,14 +204,14 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
 
   result.language = item.language;
   result.codeLength = item.code_length;
-  if (item.approve_time) {
-    result.approveTime = new Date(item.approve_time).toLocaleString();
+  if (item.insert_time) {
+    result.approveTime = new Date(item.insert_time).toLocaleString();
   } else {
     result.approveTime = "-";
   }
   result.author = item.author;
-  result.authorUsername = item.author_username;
-  result.authorNickname = item.author_nickname;
+  result.authorUsername = item.inserter_username;
+  result.authorNickname = item.inserter_nickname;
   result.code = item.code;
   result.compileMessage = item.compile_message;
   result.taskCurrent = item.task_current;

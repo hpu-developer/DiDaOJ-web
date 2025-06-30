@@ -31,10 +31,10 @@ export interface JudgeJob {
   memory: number;
   code_length: number;
   author: number;
-  author_username: string;
-  author_nickname: string;
+  inserter_username: string;
+  inserter_nickname: string;
   language: JudgeLanguage;
-  approve_time: string;
+  insert_time: string;
   code?: string;
   compile_message?: string;
   task_current: number;

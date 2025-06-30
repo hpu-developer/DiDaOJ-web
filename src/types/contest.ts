@@ -54,9 +54,9 @@ export interface ContestRankProblem {
 }
 
 export interface ContestRank {
-  author_id: number;
-  author_username: string;
-  author_nickname: string;
+  inserter: number;
+  inserter_username: string;
+  inserter_nickname: string;
   problems: ContestRankProblem[];
 }
 
