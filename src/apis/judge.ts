@@ -260,7 +260,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   return result;
 }
 
-export function PostJudgeJob(problemId: string, contestId: number, problemIndex: number, language: JudgeLanguage, code: string) {
+export function PostJudgeJob(problemId: number, contestId: number, problemIndex: number, language: JudgeLanguage, code: string) {
   return httpRequest({
     url: "/judge/approve",
     method: "post",

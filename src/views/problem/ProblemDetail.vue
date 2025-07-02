@@ -30,6 +30,7 @@ const userStore = useUserStore();
 let problemDescription = ref("");
 
 let problemKey = "";
+let problemId = 0;
 let dailyId = "";
 let contestId = 0;
 let problemIndex = ref(0);
@@ -242,7 +243,7 @@ const handleSubmitCode = async () => {
   problemSubmitting.value = true;
 
   try {
-    const res = await PostJudgeJob(problemKey, contestId, problemIndex.value, selectValue, code);
+    const res = await PostJudgeJob(problemId, contestId, problemIndex.value, selectValue, code);
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
@@ -302,6 +303,8 @@ const fetchProblemData = async () => {
   }
 
   problemData.value = ParseProblem(res.data.problem, tagsMap);
+
+  problemId = problemData.value.id
 
   webStyleStore.setTitle(problemData.value.title + " - " + webStyleStore.getTitle);
 
