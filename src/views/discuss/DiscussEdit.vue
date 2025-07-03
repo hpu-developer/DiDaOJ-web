@@ -4,7 +4,6 @@ import { useRoute } from "vue-router";
 import router from "@/router";
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import {
-  GetDiscuss,
   GetDiscussEdit,
   GetDiscussImageToken,
   ParseDiscuss,
@@ -29,7 +28,7 @@ const discussData = ref<DiscussView | null>(null);
 
 const discussEditForm = ref({
   title: "",
-  problemId: "",
+  problemKey: "",
   content: "",
 });
 
@@ -57,7 +56,7 @@ const handleClickCreate = async () => {
     const postData = {
       title: discussEditForm.value.title,
       content: discussEditForm.value.content,
-      problem_id: discussEditForm.value.problemId,
+      problem_key: discussEditForm.value.problemKey,
     } as DiscussEditRequest;
     const res = await PostDiscussCreate(postData);
 
@@ -89,7 +88,7 @@ const handleClickSave = async () => {
       id: discussId.value,
       title: discussEditForm.value.title,
       content: discussEditForm.value.content,
-      problem_id: discussEditForm.value.problemId,
+      problem_key: discussEditForm.value.problemKey,
     } as DiscussEditRequest;
     const res = await PostDiscussEdit(postData);
     isSaving.value = true;
@@ -136,7 +135,7 @@ const loadDiscuss = async () => {
 
   discussEditForm.value.title = discuss.title;
   discussEditForm.value.content = discuss.content;
-  discussEditForm.value.problemId = discuss.problem_id;
+  discussEditForm.value.problemKey = discuss.problem_key;
 
   discussLoading.value = false;
 };
@@ -156,7 +155,7 @@ onMounted(async () => {
         await loadDiscuss();
       } else {
         discussEditForm.value.title = "";
-        discussEditForm.value.problemId = "";
+        discussEditForm.value.problemKey = "";
         discussEditForm.value.content = "";
       }
     },
@@ -183,7 +182,7 @@ onBeforeUnmount(() => {
                 <t-input v-model="discussEditForm.title" placeholder="讨论标题"></t-input>
               </t-form-item>
               <t-form-item label="关联题目">
-                <t-input v-model="discussEditForm.problemId" placeholder="讨论题目"></t-input>
+                <t-input v-model="discussEditForm.problemKey" placeholder="讨论题目"></t-input>
               </t-form-item>
             </t-form>
           </t-card>

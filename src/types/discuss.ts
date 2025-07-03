@@ -14,7 +14,8 @@ export interface Discuss {
   modify_time: string;
   update_time: string;
 
-  problem_id: string;
+  problem_id: number;
+  problem_key: string;
   problem_title: string;
   contest_id: string;
   contest_title: string;
@@ -25,14 +26,15 @@ export interface DiscussView {
   id: number;
   title: string;
   content: string;
-  authorId: number;
-  authorUsername: string;
-  authorNickname: string;
+  inserter: number;
+  inserterUsername: string;
+  inserterNickname: string;
   insertTime: string;
   modifyTime: string;
   updateTime: string;
 
-  problemId: string;
+  problemId: number;
+  problemKey: string;
   problemTitle: string;
   contestId: string;
   contestTitle: string;
@@ -42,7 +44,7 @@ export interface DiscussView {
 export interface DiscussComment {
   id: number;
   content: string;
-  inserter: string;
+  inserter: number;
   inserter_username: string;
   inserter_nickname: string;
   insert_time: string;
@@ -53,9 +55,9 @@ export interface DiscussComment {
 export interface DiscussCommentView {
   id: number;
   content: string;
-  authorId: number;
-  authorUsername: string;
-  authorNickname: string;
+  inserter: number;
+  inserterUsername: string;
+  inserterNickname: string;
   insertTime: string;
   modifyTime: string;
   updateTime: string;
