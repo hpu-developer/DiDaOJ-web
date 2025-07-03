@@ -165,13 +165,7 @@ onMounted(async () => {
   joined.value = res.data.joined;
   problemAttemptStatus = res.data.attempt_status || {};
   collectionData.value = ParseCollection(res.data.collection);
-  problemViews.value = [];
-  if (res.data.collection.problems) {
-    res.data.collection.problems.forEach((problemId: string) => {
-      const problem = res.data.problems.find((p: Problem) => p.id === problemId);
-      problemViews.value.push(problem);
-    });
-  }
+  problemViews.value = res.data.problems
 
   webStyleStore.setTitle(collectionData.value.title + " - " + webStyleStore.getTitle);
 

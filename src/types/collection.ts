@@ -1,9 +1,9 @@
 export interface Collection {
   id: string;
   title: string;
-  owner_id: number;
-  owner_username?: string;
-  owner_nickname?: string;
+  inserter: number;
+  inserter_username?: string;
+  inserter_nickname?: string;
   create_time: string;
   update_time: string;
   start_time: string;
@@ -15,9 +15,9 @@ export interface Collection {
 export interface CollectionView {
   id: string;
   title: string;
-  ownerId: number;
-  ownerUsername?: string;
-  ownerNickname?: string;
+  inserter: number;
+  inserterUsername?: string;
+  inserterNickname?: string;
   createTime: string;
   updateTime: string;
   startTime: string;

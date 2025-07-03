@@ -41,7 +41,7 @@ const listColumns = ref([
   },
   {
     title: "负责人",
-    colKey: "ownerNickname",
+    colKey: "inserterNickname",
     width: "200",
   },
   {

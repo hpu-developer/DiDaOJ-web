@@ -6,9 +6,9 @@ import type { Collection, CollectionView, CollectionEditRequest } from "@/types/
 export function ParseCollection(item: Collection) {
   const result: CollectionView = {} as CollectionView;
   result.id = item.id;
-  result.ownerId = item.owner_id;
-  result.ownerUsername = item.owner_username;
-  result.ownerNickname = item.owner_nickname;
+  result.inserter = item.inserter;
+  result.inserterUsername = item.inserter_username;
+  result.inserterNickname = item.inserter_nickname;
   result.title = item.title;
 
   if (item.start_time) {
@@ -37,7 +37,6 @@ export function ParseCollection(item: Collection) {
   } else {
     result.description = "";
   }
-  result.problems = item.problems;
   return result;
 }
 
