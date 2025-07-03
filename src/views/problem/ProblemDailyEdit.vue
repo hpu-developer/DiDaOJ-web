@@ -82,10 +82,10 @@ const handleClickSave = async () => {
 
     if (problemDailyData.value) {
       if (res.data.update_time != undefined) {
-        problemDailyData.value.updateTime = new Date(res.data.update_time).toLocaleString();
+        problemDailyData.value.modifyTime = new Date(res.data.modify_time).toLocaleString();
       }
       if (res.data.updater_nickname != undefined) {
-        problemDailyData.value.updaterNickname = res.data.updater_nickname;
+        problemDailyData.value.modifierNickname = res.data.updater_nickname;
       }
     }
     if (res.data.solution != undefined) {
@@ -191,10 +191,10 @@ onBeforeUnmount(() => {
             </t-space>
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="dailyId">
-            <t-descriptions-item label="创建时间">{{ problemDailyData?.createTime }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ problemDailyData?.updateTime }}</t-descriptions-item>
-            <t-descriptions-item label="创建用户">{{ problemDailyData?.creatorNickname }}</t-descriptions-item>
-            <t-descriptions-item label="更新用户">{{ problemDailyData?.updaterNickname }}</t-descriptions-item>
+            <t-descriptions-item label="创建时间">{{ problemDailyData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="更新时间">{{ problemDailyData?.modifyTime }}</t-descriptions-item>
+            <t-descriptions-item label="创建用户">{{ problemDailyData?.inserterNickname }}</t-descriptions-item>
+            <t-descriptions-item label="更新用户">{{ problemDailyData?.modifierNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>

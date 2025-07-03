@@ -26,11 +26,11 @@ const hasEditAuth = computed(() => {
 const listColumns = ref([
   {
     title: "日期",
-    colKey: "id",
+    colKey: "key",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="dashed" onClick={() => handleGotoProblem(data.row.id)}>
-          {data.row.id}
+        <t-button variant="dashed" onClick={() => handleGotoProblem(data.row.key)}>
+          {data.row.key}
         </t-button>
       );
     },
@@ -41,7 +41,7 @@ const listColumns = ref([
     cell: (_: any, data: any) => {
       let theme = getProblemIdTheme(data.row.problemId);
       return (
-        <t-button variant="dashed" theme={theme} onClick={() => handleGotoProblem(data.row.id)}>
+        <t-button variant="dashed" theme={theme} onClick={() => handleGotoProblem(data.row.key)}>
           {data.row.problemId}
         </t-button>
       );
@@ -52,7 +52,7 @@ const listColumns = ref([
     colKey: "title",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoProblem(data.row.id)}>
+        <t-button variant="text" onClick={() => handleGotoProblem(data.row.key)}>
           {data.row.title}
         </t-button>
       );
@@ -109,14 +109,14 @@ const searchProblemForm = ref({
   problemId: "",
 });
 
-const handleGotoProblem = (id: string) => {
-  if (!id) {
+const handleGotoProblem = (key: string) => {
+  if (!key) {
     return;
   }
   router.push({
     name: "problem-daily-detail",
     params: {
-      dailyId: id,
+      dailyId: key,
     },
   });
 };
@@ -301,7 +301,7 @@ onBeforeUnmount(() => {
         <t-table
           :data="problemViews"
           :columns="listColumns"
-          row-key="id"
+          row-key="key"
           vertical-align="top"
           :hover="true"
           :pagination="pagination"

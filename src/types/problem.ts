@@ -71,7 +71,7 @@ export interface ProblemJudgeData {
 }
 
 export interface ProblemDaily {
-  id: string;
+  key: string;
   problem_id: string;
   title: string;
   tags: number[];
@@ -87,7 +87,7 @@ export interface ProblemDaily {
 }
 
 export interface ProblemDailyView {
-  id: string;
+  key: string;
   problemId: string;
   title: string;
   tags: ProblemTag[];

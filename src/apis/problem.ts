@@ -86,7 +86,7 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
 
 export function ParseProblemDaily(item: ProblemDaily, tagsMap: { [key: number]: ProblemTag }): ProblemDailyView {
   const result: ProblemDailyView = {} as ProblemDailyView;
-  result.id = item.id;
+  result.key = item.key;
   result.problemId = item.problem_id;
   result.title = item.title;
   result.tags = [];
@@ -195,14 +195,14 @@ export function GetProblemRecommend(problemId: string) {
 
 export function GetProblemDaily(dailyId: string) {
   return httpRequest({
-    url: "/problem/daily" + "?id=" + dailyId,
+    url: "/problem/daily" + "?key=" + dailyId,
     method: "get",
   });
 }
 
 export function GetProblemDailyEdit(dailyId: string) {
   return httpRequest({
-    url: "/problem/daily/edit" + "?id=" + dailyId,
+    url: "/problem/daily/edit" + "?key=" + dailyId,
     method: "get",
   });
 }
