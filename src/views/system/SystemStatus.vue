@@ -228,6 +228,7 @@ onMounted(async () => {
   weberList.value = [];
   weberLoading.value = true;
   await handleReloadStatus();
+  clearInterval(intervalId);
   intervalId = setInterval(() => {
     handleReloadStatus();
   }, 5000);
