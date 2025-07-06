@@ -24,6 +24,7 @@ export interface JudgeTaskView {
 export interface JudgeJob {
   id: string;
   problem_id: string;
+  problem_key: string;
   contest_problem_index: number;
   status: JudgeStatus;
   score: number;
@@ -49,6 +50,7 @@ export interface JudgeJob {
 export interface JudgeJobView {
   id: string;
   problemId: string;
+  problemKey: string;
   contestProblemIndex: number;
   status: JudgeStatus;
   score: string;
