@@ -12,7 +12,7 @@ import {
   PostDiscussCommentCreate,
   PostDiscussCommentEdit,
 } from "@/apis/discuss.ts";
-import type { DiscussComment, DiscussCommentEditRequest, DiscussCommentView, DiscussTag, DiscussView } from "@/types/discuss.ts";
+import type { DiscussComment, DiscussCommentEditRequest, DiscussCommentView, DiscussView } from "@/types/discuss.ts";
 import { handleGotoUsername } from "@/util/router.ts";
 
 import { useWebStyleStore } from "@/stores/webStyle.ts";
@@ -63,7 +63,7 @@ const hasManageDiscussAuth = computed(() => {
 });
 
 const hasEditDiscussAuth = computed(() => {
-  return userStore.hasAuth(AuthType.ManageDiscuss) || (discussData.value && userStore.getUserId == discussData.value.authorId);
+  return userStore.hasAuth(AuthType.ManageDiscuss) || (discussData.value && userStore.getUserId == discussData.value.inserter);
 });
 
 const handleClickEdit = () => {
@@ -312,14 +312,14 @@ onBeforeUnmount(() => {
           <template #header>
             <div class="dida-operation-container">
               <t-space>
-                <span>{{ comment.authorNickname }}</span>
+                <span>{{ comment.inserterNickname }}</span>
                 <span>{{ comment.insertTime }}</span>
               </t-space>
             </div>
             <div class="dida-operation-container">
               <t-space>
                 <t-button
-                  v-if="hasManageDiscussAuth || userStore.getUserId === comment.authorId"
+                  v-if="hasManageDiscussAuth || userStore.getUserId === comment.inserter"
                   @click="
                     () => {
                       handleGotoEditComment(comment.id, comment.content);
@@ -373,8 +373,8 @@ onBeforeUnmount(() => {
             <t-descriptions-item label="编辑时间">{{ discussData?.modifyTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ discussData?.updateTime }}</t-descriptions-item>
             <t-descriptions-item label="创建用户">
-              <t-button variant="text" @click="async () => await handleGotoUsername(router, discussData?.authorUsername)">
-                {{ discussData?.authorNickname }}
+              <t-button variant="text" @click="async () => await handleGotoUsername(router, discussData?.inserterUsername)">
+                {{ discussData?.inserterNickname }}
               </t-button>
             </t-descriptions-item>
             <t-descriptions-item label="标签"></t-descriptions-item>

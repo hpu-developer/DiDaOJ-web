@@ -7,7 +7,7 @@ import { GetDiscussList, ParseDiscuss } from "@/apis/discuss.ts";
 import { Discuss, DiscussView } from "@/types/discuss.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
-import { handleGotoUsername } from "@/util/router.ts";
+import { handleGotoProblem, handleGotoUsername } from "@/util/router.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -37,12 +37,12 @@ const listColumns2 = [
   },
   {
     title: "创建人",
-    colKey: "authorNickname",
+    colKey: "inserterNickname",
     width: "200",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={async () => await handleGotoUsername(router, data.row.authorUsername)}>
-          {data.row.authorNickname}
+        <t-button variant="text" onClick={async () => await handleGotoUsername(router, data.row.inserterUsername)}>
+          {data.row.inserterNickname}
         </t-button>
       );
     },
@@ -80,13 +80,6 @@ const discussSearchForm = ref({
   title: "",
   username: "",
 });
-
-const handleGotoProblem = (id: string) => {
-  if (!id) {
-    return;
-  }
-  router.push({ name: "problem-detail", params: { problemId: id } });
-};
 
 const handleGotoContestProblem = (contestId: number, problemIndex: string) => {
   router.push({ name: "contest-problem-detail", params: { contestId: contestId, problemIndex: problemIndex } });
@@ -222,15 +215,15 @@ onMounted(async () => {
         listColumns.value = listColumns.value.concat([
           {
             title: "问题标识",
-            colKey: "problemId",
+            colKey: "problemKey",
             width: "100",
             cell: (_: any, data: any) => {
-              if (!data.row.problemId) {
+              if (!data.row.problemKey) {
                 return "";
               }
               return (
-                <t-button variant="text" onClick={() => handleGotoProblem(data.row.problemId)}>
-                  {data.row.problemId}
+                <t-button variant="text" onClick={() => handleGotoProblem(data.row.problemKey)}>
+                  {data.row.problemKey}
                 </t-button>
               );
             },

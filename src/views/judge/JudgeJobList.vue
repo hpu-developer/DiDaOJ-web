@@ -36,7 +36,7 @@ const isCodeLoading = ref(false);
 let contestId = -1;
 
 const searchForm = ref({
-  problemId: "",
+  problemKey: "",
   username: "",
   language: undefined as JudgeLanguage | undefined,
   status: undefined as JudgeStatus | undefined,
@@ -62,7 +62,7 @@ const listColumns = ref([
   },
   {
     title: "问题",
-    colKey: "problemId",
+    colKey: "problemKey",
     cell: (_: any, data: any) => {
       if (contestId) {
         return (
@@ -72,8 +72,8 @@ const listColumns = ref([
         );
       }
       return (
-        <t-button variant="text" onClick={() => handleGotoProblem(data.row.problemId)}>
-          {data.row.problemId}
+        <t-button variant="text" onClick={() => handleGotoProblem(data.row.problemKey)}>
+          {data.row.problemKey}
         </t-button>
       );
     },
@@ -235,7 +235,7 @@ const handleSearchFormSubmit = async () => {
       ...route.query,
       page: 1,
       page_size: currentPageSize,
-      problem_id: searchForm.value.problemId,
+      problem_id: searchForm.value.problemKey,
       username: searchForm.value.username,
       language: searchForm.value.language,
       status: searchForm.value.status,
@@ -244,7 +244,7 @@ const handleSearchFormSubmit = async () => {
 };
 
 const handleSearchFormReset = async () => {
-  searchForm.value.problemId = "";
+  searchForm.value.problemKey = "";
   searchForm.value.username = "";
   searchForm.value.language = undefined;
   searchForm.value.status = undefined;
@@ -270,7 +270,7 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
     const { current, pageSize } = paginationInfo;
     const res = await GetJudgeJobList(
       contestId,
-      searchForm.value.problemId,
+      searchForm.value.problemKey,
       searchForm.value.username,
       searchForm.value.language,
       searchForm.value.status,
@@ -341,7 +341,7 @@ onMounted(async () => {
       } else {
         contestId = Number(route.params.contestId);
       }
-      searchForm.value.problemId = (newQuery.problem_id as string) || "";
+      searchForm.value.problemKey = (newQuery.problem_id as string) || "";
       searchForm.value.username = (newQuery.username as string) || "";
       if (newQuery.language != undefined) {
         searchForm.value.language = Number(newQuery.language as string) as JudgeLanguage;
@@ -382,7 +382,7 @@ onBeforeUnmount(() => {
   <t-card style="margin: 10px">
     <t-form layout="inline" @submit="handleSearchFormSubmit" @reset="handleSearchFormReset">
       <t-form-item label="题号">
-        <t-input v-model="searchForm.problemId" placeholder="请输入完整题号" />
+        <t-input v-model="searchForm.problemKey" placeholder="请输入完整题号" />
       </t-form-item>
       <t-form-item label="用户">
         <t-input v-model="searchForm.username" placeholder="仅支持输入完整用户名" />

@@ -181,6 +181,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   const result: JudgeJobView = {} as JudgeJobView;
   result.id = item.id;
   result.problemId = item.problem_id;
+  result.problemKey = item.problem_key;
   result.contestProblemIndex = item.contest_problem_index;
   result.status = item.status;
 
@@ -296,7 +297,7 @@ export function GetJudgeJobCode(judgeId: number) {
 
 export function GetJudgeJobList(
   contestId: number,
-  problemId: string,
+  problemKey: string,
   username: string,
   language: JudgeLanguage | undefined,
   status: JudgeStatus | undefined,
@@ -304,7 +305,7 @@ export function GetJudgeJobList(
   pageSize: number
 ) {
   let params = {
-    problem_id: problemId,
+    problem_key: problemKey,
     username: username,
     language: String(language),
     status: String(status),
