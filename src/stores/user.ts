@@ -37,7 +37,7 @@ export const useUserStore = defineStore("user", {
     loadResponse(response: any) {
       this.$patch({
         token: response.token,
-        userId: response.user_id,
+        userId: response.id,
         username: response.username,
         nickname: response.nickname,
         roles: response.roles,
