@@ -81,9 +81,9 @@ export interface ProblemDaily {
   code?: string;
 
   insert_time?: string; // 创建时间
-  modify_time?: string; // 更新时间
+  modify_time?: string; // 编辑时间
   inserter_nickname?: string; // 创建者昵称
-  modifier_nickname?: string; // 更新者昵称
+  modifier_nickname?: string; // 编辑者昵称
 }
 
 export interface ProblemDailyView {
@@ -97,7 +97,7 @@ export interface ProblemDailyView {
   code?: string;
 
   insertTime?: string; // 创建时间
-  modifyTime?: string; // 更新时间
+  modifyTime?: string; // 修改时间
   inserterNickname?: string; // 创建者昵称
-  modifierNickname?: string; // 更新者昵称
+  modifierNickname?: string; // 修改者昵称
 }

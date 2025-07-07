@@ -294,9 +294,9 @@ onMounted(async () => {
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="contestId">
             <t-descriptions-item label="创建时间">{{ contestData?.insertTime }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ contestData?.modifyTime }}</t-descriptions-item>
+            <t-descriptions-item label="编辑时间">{{ contestData?.modifyTime }}</t-descriptions-item>
             <t-descriptions-item label="创建用户">{{ contestData?.inserterNickname }}</t-descriptions-item>
-            <t-descriptions-item label="修改用户">{{ contestData?.modifierNickname }}</t-descriptions-item>
+            <t-descriptions-item label="编辑用户">{{ contestData?.modifierNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>

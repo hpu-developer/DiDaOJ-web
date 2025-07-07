@@ -8,7 +8,7 @@ import { useWebStyleStore } from "@/stores/webStyle.ts";
 import type { CollectionEditRequest, CollectionView } from "@/types/collection.ts";
 import ParseProblemList from "@/components/problem/ParseProblemList.vue";
 import ParseUserList from "@/components/user/ParseUserList.vue";
-import { HandleR2ImageUpload, type UploadImageCallbackUrl } from "@/util/md-editor-v3.ts";
+import type { UploadImageCallbackUrl } from "@/util/md-editor-v3.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -235,21 +235,21 @@ onMounted(async () => {
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="collectionId">
             <t-descriptions-item label="创建时间">{{ collectionData?.createTime }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ collectionData?.updateTime }}</t-descriptions-item>
-            <t-descriptions-item label="创建用户">{{ collectionData?.ownerNickname }}</t-descriptions-item>
+            <t-descriptions-item label="编辑时间">{{ collectionData?.updateTime }}</t-descriptions-item>
+            <t-descriptions-item label="创建用户">{{ collectionData?.inserterNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>
     </t-row>
-      <md-editor-v3
-        id="collection-description-editor"
-        v-model="collectionEditForm.description"
-        @save="handleClickSave"
-        @onUploadImg="handleUploadImg"
-        previewTheme="cyanosis"
-        class="dida-description-editor"
-      />
-      <t-loading :loading="isSaving" attach="#collection-description-editor" :z-index="100000"></t-loading>
+    <md-editor-v3
+      id="collection-description-editor"
+      v-model="collectionEditForm.description"
+      @save="handleClickSave"
+      @onUploadImg="handleUploadImg"
+      previewTheme="cyanosis"
+      class="dida-description-editor"
+    />
+    <t-loading :loading="isSaving" attach="#collection-description-editor" :z-index="100000"></t-loading>
   </t-loading>
   <t-dialog v-model:visible="showDialog" @confirm="handleParse" :header="parseDialogTitle" :confirm-loading="isParsing">
     <div style="margin-bottom: 10px">

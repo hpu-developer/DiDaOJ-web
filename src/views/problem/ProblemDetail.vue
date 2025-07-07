@@ -521,7 +521,7 @@ onBeforeUnmount(() => {
             <t-descriptions-item label="正确提交" v-if="!isContestProblem">{{ problemData?.accept }} </t-descriptions-item>
             <t-descriptions-item label="提交总数" v-if="!isContestProblem">{{ problemData?.attempt }} </t-descriptions-item>
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ problemData?.modifyTime }}</t-descriptions-item>
+            <t-descriptions-item label="编辑时间">{{ problemData?.modifyTime }}</t-descriptions-item>
             <t-descriptions-item label="上传用户">{{ problemData?.inserterNickname }}</t-descriptions-item>
             <t-descriptions-item label="题目来源" v-if="!isContestProblem">
               <t-link v-if="problemData?.sourceUrl" :href="problemData?.sourceUrl" target="_blank">

@@ -240,7 +240,7 @@ onMounted(async () => {
             <t-descriptions-item label="创建时间">{{ contestData?.insertTime }}</t-descriptions-item>
           </t-descriptions>
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="更新时间">{{ contestData?.modifyTime }}</t-descriptions-item>
+            <t-descriptions-item label="编辑时间">{{ contestData?.modifyTime }}</t-descriptions-item>
           </t-descriptions>
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="开始时间">{{ contestData?.startTime }}</t-descriptions-item>

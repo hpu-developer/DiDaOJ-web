@@ -50,7 +50,7 @@ const listColumns = ref([
     },
   },
   {
-    title: "最后修改时间",
+    title: "最后编辑时间",
     colKey: "lastModified",
     width: 180,
     cell: (_: any, data: any) => {
@@ -273,10 +273,10 @@ onMounted(async () => {
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="标题">{{ problemData?.title }}</t-descriptions-item>
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ problemData?.updateTime }}</t-descriptions-item>
+            <t-descriptions-item label="编辑时间">{{ problemData?.modifyTime }}</t-descriptions-item>
             <t-descriptions-item label="判题方式">{{ problemData?.judgeType }}</t-descriptions-item>
             <t-descriptions-item label="评测数据">{{ problemData?.judgeMd5 }}</t-descriptions-item>
-            <t-descriptions-item label="上传用户">{{ problemData?.creatorNickname }}</t-descriptions-item>
+            <t-descriptions-item label="上传用户">{{ problemData?.inserterNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>
