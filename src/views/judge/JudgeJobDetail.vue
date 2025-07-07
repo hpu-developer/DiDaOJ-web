@@ -46,7 +46,7 @@ const ListColumns = ref([
   },
   {
     title: "问题",
-    colKey: "problemId",
+    colKey: "problemKey",
     cell: (_: any, data: any) => {
       if (contestId) {
         return (
@@ -56,8 +56,8 @@ const ListColumns = ref([
         );
       }
       return (
-        <t-button variant="text" onClick={() => handleGotoProblem(data.row.problemId)}>
-          {data.row.problemId}
+        <t-button variant="text" onClick={() => handleGotoProblem(data.row.problemKey)}>
+          {data.row.problemKey}
         </t-button>
       );
     },
