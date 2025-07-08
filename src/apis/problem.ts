@@ -150,7 +150,7 @@ export function GetProblemTagList(num: number) {
 
 export function GetProblemJudge(problemId: string) {
   return httpRequest({
-    url: "/problem/judge" + "?id=" + problemId,
+    url: "/problem/judge" + "?key=" + problemId,
     method: "get",
   });
 }
@@ -335,7 +335,7 @@ export function PostProblemDailyEdit(dailyId: string, problemId: string, solutio
   });
 }
 
-export function GetJudgeDataDownload(id: string, key: string) {
+export function GetJudgeDataDownload(id: number, key: string) {
   return httpRequest({
     url: "/problem/judge/data/download" + "?id=" + id + "&key=" + key,
     method: "get",
@@ -362,7 +362,7 @@ export function GetProblemDailyImageToken(dailyId: string): Promise<UploadImageT
   });
 }
 
-export function PostJudgeData(id: string, zip: File) {
+export function PostJudgeData(id: number, zip: File) {
   const formData = new FormData();
   formData.append("id", id);
   formData.append("zip", zip);

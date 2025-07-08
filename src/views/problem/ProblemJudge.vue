@@ -12,7 +12,8 @@ const { globalProperties } = useCurrentInstance();
 
 const webStyleStore = useWebStyleStore();
 
-const problemId = ref("");
+const problemKey = ref("");
+let problemId = 0;
 const problemLoading = ref(false);
 
 const problemData = ref<ProblemView | null>(null);
@@ -88,7 +89,7 @@ const handleClickView = () => {
   router.push({
     name: "problem-detail",
     params: {
-      problemId: problemId.value,
+      problemKey: problemKey.value,
     },
   });
 };
@@ -97,13 +98,13 @@ const handleClickEdit = () => {
   router.push({
     name: "manage-problem",
     params: {
-      problemId: problemId.value,
+      problemKey: problemKey.value,
     },
   });
 };
 
 const handleClickDownloadFile = async (key: string) => {
-  const res = await GetJudgeDataDownload(problemId.value, key);
+  const res = await GetJudgeDataDownload(problemId, key);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
     return;
@@ -123,7 +124,7 @@ const handleClickSave = async () => {
 
   isUploading.value = true;
 
-  PostJudgeData(problemId.value, problemJudgeZip)
+  PostJudgeData(problemId, problemJudgeZip)
     .then(async (res) => {
       if (res.code == 0) {
         fileInput.value.value = null;
@@ -188,7 +189,7 @@ const handleDrop = (event: any) => {
 };
 
 const loadProblem = async () => {
-  const res = await GetProblemJudge(problemId.value);
+  const res = await GetProblemJudge(problemKey.value);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
     await router.push({ name: "problem" });
@@ -196,6 +197,8 @@ const loadProblem = async () => {
   }
 
   const problem = res.data.problem;
+
+  problemId = problem.id
 
   problemData.value = ParseProblem(problem, {} as any);
 
@@ -225,12 +228,12 @@ const loadProblem = async () => {
 };
 
 onMounted(async () => {
-  if (Array.isArray(route.params.problemId)) {
-    problemId.value = route.params.problemId[0];
+  if (Array.isArray(route.params.problemKey)) {
+    problemKey.value = route.params.problemKey[0];
   } else {
-    problemId.value = route.params.problemId;
+    problemKey.value = route.params.problemKey;
   }
-  if (!problemId.value) {
+  if (!problemKey.value) {
     ShowTextTipsError(globalProperties, "题目不存在");
     await router.push({ name: "problem" });
     return;
