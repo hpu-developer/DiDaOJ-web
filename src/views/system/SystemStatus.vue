@@ -22,7 +22,7 @@ const handleRenderStatusHeader = (judger) => {
   let tagTheme = "danger";
 
   const nowTime = new Date();
-  const updateTime = new Date(judger.modifyTime);
+  const modifyTime = new Date(judger.modifyTime);
 
   // 如果已经60秒未更新，认为离线
   if (nowTime.getTime() - modifyTime.getTime() > 30000) {
