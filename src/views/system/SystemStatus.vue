@@ -22,10 +22,10 @@ const handleRenderStatusHeader = (judger) => {
   let tagTheme = "danger";
 
   const nowTime = new Date();
-  const updateTime = new Date(judger.updateTime);
+  const updateTime = new Date(judger.modifyTime);
 
   // 如果已经60秒未更新，认为离线
-  if (nowTime.getTime() - updateTime.getTime() > 30000) {
+  if (nowTime.getTime() - modifyTime.getTime() > 30000) {
     tagName = "离线";
     tagTheme = "default";
   } else if (judger.cpuUsage > 90) {
@@ -44,7 +44,7 @@ const handleRenderStatusHeader = (judger) => {
       <span>
         {judger.key} - {judger.name}
       </span>
-      <span>{judger.updateTime}</span>
+      <span>{judger.modifyTime}</span>
       <t-tag theme={tagTheme} size="small">
         {tagName}
       </t-tag>
@@ -80,10 +80,10 @@ const handleReloadWeberStatus = async () => {
   } else {
     weberView.name = "-";
   }
-  if (weber.update_time) {
-    weberView.updateTime = new Date(weber.update_time).toLocaleString();
+  if (weber.modify_time) {
+    weberView.modifyTime = new Date(weber.modify_time).toLocaleString();
   } else {
-    weberView.updateTime = "-";
+    weberView.modifyTime = "-";
   }
   if (weber.cpu_usage) {
     weberView.cpuUsage = Number(weber.cpu_usage);
@@ -138,10 +138,10 @@ const handleReloadWeberStatus = async () => {
     } else {
       judgerView.name = "-";
     }
-    if (judger.update_time) {
-      judgerView.updateTime = new Date(judger.update_time).toLocaleString();
+    if (judger.modify_time) {
+      judgerView.modifyTime = new Date(judger.modify_time).toLocaleString();
     } else {
-      judgerView.updateTime = "-";
+      judgerView.modifyTime = "-";
     }
     if (judger.max_job) {
       judgerView.maxJob = Number(judger.max_job);
