@@ -28,8 +28,16 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
     }
   }
   result.private = item.private;
-  result.accept = item.accept;
-  result.attempt = item.attempt;
+  if (item.accept) {
+    result.accept = item.accept;
+  } else {
+    result.accept = 0;
+  }
+  if (item.attempt) {
+    result.attempt = item.attempt;
+  } else {
+    result.attempt = 0;
+  }
 
   if (item.description != undefined) {
     result.description = item.description;
