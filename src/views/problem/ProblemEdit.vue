@@ -203,6 +203,14 @@ const handleClickSave = async () => {
   }
 };
 
+const onEditSave = async () => {
+  if (problemId){
+    await handleClickSave();
+  } else {
+    await handleClickCreate();
+  }
+}
+
 const loadDescriptionEditor = (description: string) => {
   problemEditForm.value.description = description;
   problemLoading.value = false;
@@ -377,7 +385,7 @@ onMounted(async () => {
     <div class="dida-description-editor">
       <p>题目描述</p>
       <t-loading :loading="disabledEdit || isSaving">
-        <md-editor-v3 v-model="problemEditForm.description" @save="handleClickSave" @onUploadImg="onUploadImg" previewTheme="cyanosis"></md-editor-v3>
+        <md-editor-v3 v-model="problemEditForm.description" @save="onEditSave" @onUploadImg="onUploadImg" previewTheme="cyanosis"></md-editor-v3>
       </t-loading>
     </div>
   </t-loading>
