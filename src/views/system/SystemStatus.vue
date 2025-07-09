@@ -5,6 +5,8 @@ import { ShowErrorTips, useCurrentInstance } from "@/util";
 
 const { globalProperties } = useCurrentInstance();
 
+let viewActive = false;
+
 const weberList = ref([]);
 const judgerList = ref([]);
 const weberLoading = ref(false);
@@ -223,18 +225,23 @@ const handleReloadStatus = async () => {
   weberLoading.value = false;
 };
 
-onMounted(async () => {
+onMounted(() => {
+  viewActive = true;
   judgerList.value = [];
   weberList.value = [];
   weberLoading.value = true;
-  await handleReloadStatus();
-  clearInterval(intervalId);
-  intervalId = setInterval(() => {
-    handleReloadStatus();
-  }, 5000);
+  handleReloadStatus().finally(() => {
+    clearInterval(intervalId);
+    if (viewActive) {
+      intervalId = setInterval(() => {
+        handleReloadStatus();
+      }, 5000);
+    }
+  });
 });
 
 onBeforeUnmount(() => {
+  viewActive = false;
   clearInterval(intervalId);
 });
 </script>
