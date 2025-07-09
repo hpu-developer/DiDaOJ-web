@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { ref } from "vue";
 import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { PostRejudgeRecently, PostRejudgeSearch, PostRejudgeAll, JudgeStatus, GetJudgeStatusOptions, PostRejudgeStatus } from "@/apis/judge.ts";
+import { PostRejudgeRecently, PostRejudgeSearch, PostRejudgeAll, JudgeStatus, GetJudgeStatusOptions } from "@/apis/judge.ts";
 import router from "@/router";
 import { GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
 
@@ -11,7 +11,7 @@ const rejudgeRecentlyLoading = ref(false);
 const rejudgeAllLoading = ref(false);
 
 const searchForm = ref({
-  problemId: "",
+  problemKey: "",
   language: undefined as JudgeLanguage | undefined,
   status: undefined as JudgeStatus | undefined,
 });
@@ -42,13 +42,13 @@ const handleRejudgeRecently = async () => {
 };
 
 const handleRejudgeSearch = async () => {
-  if (!searchForm.value.problemId && !searchForm.value.language && !searchForm.value.status) {
+  if (!searchForm.value.problemKey && !searchForm.value.language && !searchForm.value.status) {
     ShowErrorTips(globalProperties, "请输入问题标识");
     return;
   }
   rejudgeSearchLoading.value = true;
   try {
-    const res = await PostRejudgeSearch(searchForm.value.problemId, searchForm.value.language, searchForm.value.status);
+    const res = await PostRejudgeSearch(searchForm.value.problemKey, searchForm.value.language, searchForm.value.status);
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
@@ -57,7 +57,7 @@ const handleRejudgeSearch = async () => {
     await router.push({
       name: "judge-list",
       query: {
-        problem_id: searchForm.value.problemId,
+        problem_id: searchForm.value.problemKey,
         language: searchForm.value.language,
       },
     });
@@ -94,8 +94,8 @@ const handleRejudgeAll = async () => {
   </t-card>
   <t-card class="yj-manage-card" title="重判指定记录">
     <t-form layout="inline" @submit="handleRejudgeSearch">
-      <t-form-item label="题号">
-        <t-input v-model="searchForm.problemId" placeholder="请输入完整题号" />
+      <t-form-item label="问题标识">
+        <t-input v-model="searchForm.problemKey" placeholder="请输入完整问题标识" />
       </t-form-item>
       <t-form-item label="语言">
         <t-select v-model="searchForm.language" placeholder="请选择提交语言" auto-width clearable>

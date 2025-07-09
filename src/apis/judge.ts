@@ -335,10 +335,10 @@ export function PostRejudgeRecently() {
   });
 }
 
-export function PostRejudgeSearch(problemId: string, language: JudgeLanguage | undefined, status: JudgeStatus | undefined) {
+export function PostRejudgeSearch(problemKey: string, language: JudgeLanguage | undefined, status: JudgeStatus | undefined) {
   const data = {} as any;
-  if (problemId != undefined) {
-    data["problem_id"] = problemId;
+  if (problemKey != undefined) {
+    data["problem_key"] = problemKey;
   }
   if (language != undefined) {
     data["language"] = language;
