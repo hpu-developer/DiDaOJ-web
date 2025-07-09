@@ -149,6 +149,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100032": {
         zh: "暂不支持更后面的页面，可调整筛选参数更精确的查找",
       },
+      "100033": {
+        zh: "判题数据中存在预期外的文件",
+      },
     });
   });
 }
