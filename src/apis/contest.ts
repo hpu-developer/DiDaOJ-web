@@ -94,7 +94,7 @@ export function GetContestImageToken(contestId: number) {
   });
 }
 
-export function GetContestProblemRealId(contestId: number, problemIndex: number) {
+export function GetContestProblemRealKey(contestId: number, problemIndex: number) {
   return httpRequest({
     url: "/contest/problem" + "?id=" + contestId + "&problem_index=" + problemIndex,
     method: "get",

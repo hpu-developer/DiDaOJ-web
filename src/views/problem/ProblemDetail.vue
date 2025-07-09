@@ -16,7 +16,7 @@ import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
-import { GetContestProblemIndexStr, GetContestProblemRealId, GetContestProblems } from "@/apis/contest.ts";
+import { GetContestProblemIndexStr, GetContestProblemRealKey, GetContestProblems } from "@/apis/contest.ts";
 import { handleGotoContestProblem } from "@/util/router.ts";
 import SecretPanel from "@/components/SecretPanel.vue";
 
@@ -126,13 +126,13 @@ const handleClickDailyEdit = async () => {
 };
 
 const handleClickEdit = async () => {
-  let realProblemId = problemKey;
+  let realProblemKey = problemKey;
 
-  if (!realProblemId) {
+  if (!realProblemKey) {
     try {
-      const res = await GetContestProblemRealId(contestId, problemIndex.value);
+      const res = await GetContestProblemRealKey(contestId, problemIndex.value);
       if (res.code === 0) {
-        realProblemId = res.data;
+        realProblemKey = res.data;
       } else {
         ShowErrorTips(globalProperties, res.code);
       }
@@ -145,7 +145,7 @@ const handleClickEdit = async () => {
   await router.push({
     name: "manage-problem",
     params: {
-      problemId: realProblemId,
+      problemKey: realProblemKey,
     },
   });
 };
@@ -305,6 +305,7 @@ const fetchProblemData = async () => {
   problemData.value = ParseProblem(res.data.problem, tagsMap);
 
   problemId = problemData.value.id
+  problemKey = problemData.value.key;
 
   webStyleStore.setTitle(problemData.value.title + " - " + webStyleStore.getTitle);
 
