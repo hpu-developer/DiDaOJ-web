@@ -36,13 +36,13 @@ const listColumns = ref([
     },
   },
   {
-    title: "ID",
-    colKey: "problemId",
+    title: "问题标识",
+    colKey: "problemKey",
     cell: (_: any, data: any) => {
       let theme = getProblemIdTheme(data.row.problemId);
       return (
         <t-button variant="dashed" theme={theme} onClick={() => handleGotoProblem(data.row.key)}>
-          {data.row.problemId}
+          {data.row.problemKey}
         </t-button>
       );
     },

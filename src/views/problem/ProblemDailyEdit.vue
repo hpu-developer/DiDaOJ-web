@@ -21,7 +21,7 @@ const problemDailyData = ref<ProblemDailyView | null>(null);
 
 const dailyEditForm = ref({
   date: "",
-  problemId: "",
+  problemKey: "",
   solution: "",
   code: "",
 });
@@ -48,7 +48,7 @@ const handleClickCreate = async () => {
 
   try {
     const createDailyId = dailyEditForm.value.date;
-    const res = await PostProblemDailyCreate(createDailyId, dailyEditForm.value.problemId, dailyEditForm.value.solution, dailyEditForm.value.code);
+    const res = await PostProblemDailyCreate(createDailyId, dailyEditForm.value.problemKey, dailyEditForm.value.solution, dailyEditForm.value.code);
 
     isSaving.value = true;
 
@@ -72,7 +72,7 @@ const handleClickSave = async () => {
   isSaving.value = true;
 
   try {
-    const res = await PostProblemDailyEdit(dailyId.value, dailyEditForm.value.problemId, dailyEditForm.value.solution, dailyEditForm.value.code);
+    const res = await PostProblemDailyEdit(dailyId.value, dailyEditForm.value.problemKey, dailyEditForm.value.solution, dailyEditForm.value.code);
     isSaving.value = true;
 
     if (res.code !== 0) {
@@ -124,7 +124,7 @@ const loadProblemDaily = async () => {
 
   problemDailyData.value = ParseProblemDaily(daily, {} as any);
 
-  dailyEditForm.value.problemId = daily.problem_id;
+  dailyEditForm.value.problemKey = daily.problem_key;
 
   loadSolutionEditor(daily.solution);
   loadCodeEditor(daily.code);
@@ -173,7 +173,7 @@ onBeforeUnmount(() => {
                 <t-date-picker v-model="dailyEditForm.date" :disabled="dailyId && true" />
               </t-form-item>
               <t-form-item label="问题标识">
-                <t-input v-model="dailyEditForm.problemId" placeholder="问题标题"></t-input>
+                <t-input v-model="dailyEditForm.problemKey" placeholder="问题标题"></t-input>
               </t-form-item>
             </t-form>
           </t-card>

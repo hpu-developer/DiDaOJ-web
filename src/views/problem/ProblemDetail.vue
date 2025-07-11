@@ -346,7 +346,7 @@ const loadDailyData = async () => {
   }
   isDailyProblem.value = true;
   const daily = res.data.problem_daily;
-  problemKey = daily.problem_id;
+  problemKey = daily.problem_key;
   dailySolution.value = daily.solution;
   dailyCode.value = daily.code;
 

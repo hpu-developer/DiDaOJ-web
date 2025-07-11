@@ -96,6 +96,7 @@ export function ParseProblemDaily(item: ProblemDaily, tagsMap: { [key: number]: 
   const result: ProblemDailyView = {} as ProblemDailyView;
   result.key = item.key;
   result.problemId = item.problem_id;
+  result.problemKey = item.problem_key;
   result.title = item.title;
   result.tags = [];
   if (item.tags) {
@@ -256,13 +257,13 @@ export function GetProblemAttemptStatus(problemIds: string[]) {
   });
 }
 
-export function PostProblemCrawl(oj: string, problemId: string) {
+export function PostProblemCrawl(oj: string, problemKey: string) {
   return httpRequest({
     url: "/problem/crawl",
     method: "post",
     data: {
       oj: oj,
-      id: problemId,
+      key: problemKey,
     },
   });
 }
@@ -330,13 +331,13 @@ export function PostProblemDailyCreate(id: string, problemId: string, solution: 
   });
 }
 
-export function PostProblemDailyEdit(dailyId: string, problemId: string, solution: string, code: string) {
+export function PostProblemDailyEdit(dailyId: string, problemKey: string, solution: string, code: string) {
   return httpRequest({
     url: "/problem/daily/edit",
     method: "post",
     data: {
       id: dailyId,
-      problem_id: problemId,
+      problem_key: problemKey,
       solution: solution,
       code: code,
     },
