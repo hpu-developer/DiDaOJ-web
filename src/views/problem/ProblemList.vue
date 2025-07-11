@@ -181,7 +181,7 @@ const handleClickCrawl = async () => {
       ShowTextTipsInfo(globalProperties, "搜索成功");
       await router.push({
         name: "problem-detail",
-        params: { problemId: res.data },
+        params: { problemKey: res.data },
       });
     } else {
       ShowErrorTips(globalProperties, res.code);
