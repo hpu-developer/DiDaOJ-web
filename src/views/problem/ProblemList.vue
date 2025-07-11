@@ -380,7 +380,7 @@ onBeforeUnmount(() => {
             </t-form-item>
           </t-form>
         </t-card>
-        <t-card class="sh-card sh-background-black">
+        <t-card class="sh-card sh-background-black" v-if="problemTags && problemTags.length > 0">
           <t-button
             v-for="tag in problemTags"
             class="sh-tag-button"
