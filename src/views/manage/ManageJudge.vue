@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { ref } from "vue";
-import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { PostRejudgeRecently, PostRejudgeSearch, PostRejudgeAll, JudgeStatus, GetJudgeStatusOptions } from "@/apis/judge.ts";
 import router from "@/router";
 import { GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";
@@ -42,8 +42,8 @@ const handleRejudgeRecently = async () => {
 };
 
 const handleRejudgeSearch = async () => {
-  if (!searchForm.value.problemKey && !searchForm.value.language && !searchForm.value.status) {
-    ShowErrorTips(globalProperties, "请输入问题标识");
+  if (!searchForm.value.problemKey && searchForm.value.language === undefined && searchForm.value.status === undefined) {
+    ShowTextTipsError(globalProperties, "请输入问题标识");
     return;
   }
   rejudgeSearchLoading.value = true;
