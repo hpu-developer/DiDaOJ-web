@@ -152,6 +152,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100033": {
         zh: "判题数据中存在预期外的文件",
       },
+      "100034": {
+        zh: "登录信息已过期，请重新登陆",
+      },
     });
   });
 }
