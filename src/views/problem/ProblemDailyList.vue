@@ -106,7 +106,7 @@ const problemViews = ref<ProblemDailyView[]>([]);
 
 const searchProblemForm = ref({
   date: [] as string[],
-  problemId: "",
+  problemKey: "",
 });
 
 const handleGotoProblem = (key: string) => {
@@ -152,7 +152,7 @@ const handleClickSearch = async () => {
     query: {
       ...route.query,
       date: dateStr,
-      problem_id: searchProblemForm.value.problemId,
+      problem_key: searchProblemForm.value.problemKey,
       page: 1,
       page_size: pagination.value.defaultPageSize,
     },
@@ -161,13 +161,13 @@ const handleClickSearch = async () => {
 
 const handleClickReset = async () => {
   searchProblemForm.value.date = [];
-  searchProblemForm.value.problemId = "";
+  searchProblemForm.value.problemKey = "";
   // 更新 URL 查询参数
   await router.push({
     query: {
       ...route.query,
       date: "",
-      problem_id: "",
+      problem_key: "",
       page: 1,
       page_size: pagination.value.defaultPageSize,
     },
@@ -208,10 +208,13 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
     if (searchProblemForm.value.date[1]) {
       endDate = searchProblemForm.value.date[1];
     }
-    const res = await GetProblemDailyList(startDate, endDate, searchProblemForm.value.problemId, current, pageSize);
+    const res = await GetProblemDailyList(startDate, endDate, searchProblemForm.value.problemKey, current, pageSize);
     problemViews.value = [];
     if (res.code === 0) {
-      const responseList = res.data.list as ProblemDaily[];
+      let responseList = [] as ProblemDaily[];
+      if (res.data) {
+        responseList = res.data.list as ProblemDaily[];
+      }
       if (!responseList || responseList.length <= 0) {
         pagination.value = { ...pagination.value, total: 0 };
         problemAttemptStatus = {};
@@ -273,7 +276,7 @@ onMounted(async () => {
           searchProblemForm.value.date = [dateRange[0], dateRange[1]];
         }
       }
-      searchProblemForm.value.problemId = (newQuery.problem_id as string) || "";
+      searchProblemForm.value.problemKey = (newQuery.problem_key as string) || "";
       const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
       const queryPageSize = parseInt(newQuery.page_size as string) || pagination.value.defaultPageSize;
       currentPage = queryPage;
@@ -324,7 +327,7 @@ onBeforeUnmount(() => {
               <t-date-range-picker v-model="searchProblemForm.date" allow-input clearable format="YYYY-MM-DD" />
             </t-form-item>
             <t-form-item label="问题" label-align="top">
-              <t-input v-model="searchProblemForm.problemId" placeholder="请输入问题标识" clearable></t-input>
+              <t-input v-model="searchProblemForm.problemKey" placeholder="请输入问题标识" clearable></t-input>
             </t-form-item>
             <t-form-item label-align="top">
               <t-space>

@@ -223,7 +223,7 @@ export function GetProblemDailyRecently() {
   });
 }
 
-export function GetProblemDailyList(startDate: string, endData: string, problemId: string, page: number, pageSize: number) {
+export function GetProblemDailyList(startDate: string, endData: string, problemKey: string, page: number, pageSize: number) {
   const params = {} as any;
   if (startDate) {
     params.start_date = startDate;
@@ -231,8 +231,8 @@ export function GetProblemDailyList(startDate: string, endData: string, problemI
   if (endData) {
     params.end_date = endData;
   }
-  if (problemId) {
-    params.problem_id = problemId;
+  if (problemKey) {
+    params.problem_key = problemKey;
   }
   if (page) {
     params.page = page;
@@ -318,13 +318,13 @@ export function PostProblemEdit(
   });
 }
 
-export function PostProblemDailyCreate(id: string, problemId: string, solution: string, code: string) {
+export function PostProblemDailyCreate(id: string, problemKey: string, solution: string, code: string) {
   return httpRequest({
     url: "/problem/daily/create",
     method: "post",
     data: {
       id: id,
-      problem_id: problemId,
+      problem_key: problemKey,
       solution: solution,
       code: code,
     },
@@ -373,7 +373,7 @@ export function GetProblemDailyImageToken(dailyId: string): Promise<UploadImageT
 
 export function PostJudgeData(id: number, zip: File) {
   const formData = new FormData();
-  formData.append("id", id);
+  formData.append("id", String(id));
   formData.append("zip", zip);
   return httpRequest({
     url: "/problem/judge/data",

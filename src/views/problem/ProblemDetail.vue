@@ -302,6 +302,8 @@ const fetchProblemData = async () => {
     });
   }
 
+  res.data.problem.tags = res.data.tags.map(tag => tag.id);
+
   problemData.value = ParseProblem(res.data.problem, tagsMap);
 
   problemId = problemData.value.id

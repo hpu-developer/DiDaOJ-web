@@ -101,6 +101,14 @@ const handleClickSave = async () => {
   }
 };
 
+const handleSave = async () => {
+  if (!dailyId.value) {
+    await handleClickCreate();
+  } else {
+    await handleClickSave();
+  }
+};
+
 const loadSolutionEditor = (description: string) => {
   dailyEditForm.value.solution = description;
   problemDailyLoading.value = false;
@@ -204,7 +212,7 @@ onBeforeUnmount(() => {
       <md-editor-v3
         id="daily-solution-editor"
         v-model="dailyEditForm.solution"
-        @save="handleClickSave"
+        @save="handleSave"
         @onUploadImg="handleUploadImg"
         previewTheme="cyanosis"
       ></md-editor-v3>
@@ -215,7 +223,7 @@ onBeforeUnmount(() => {
       <md-editor-v3
         id="daily-code-editor"
         v-model="dailyEditForm.code"
-        @save="handleClickSave"
+        @save="handleSave"
         @onUploadImg="handleUploadImg"
         previewTheme="cyanosis"
       ></md-editor-v3>
