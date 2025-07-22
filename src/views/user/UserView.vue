@@ -172,7 +172,7 @@ onMounted(async () => {
               size="small"
               variant="dashed"
               :theme="getProblemTheme(problem)"
-              @click="() => router.push({ name: 'problem-detail', params: { problemId: problem } })"
+              @click="() => router.push({ name: 'problem-detail', params: { problemKey: problem } })"
             >
               {{ problem }}
             </t-button>
