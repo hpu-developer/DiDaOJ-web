@@ -50,24 +50,26 @@ import * as prettier from "prettier";
 import parserMarkdown from "prettier/plugins/markdown";
 
 config({
-  prettier: {
-    prettierInstance: prettier,
-    parserMarkdownInstance: parserMarkdown,
-  },
-  highlight: {
-    instance: highlight,
-  },
-  screenfull: {
-    instance: screenfull,
-  },
-  katex: {
-    instance: katex,
-  },
-  cropper: {
-    instance: Cropper,
-  },
-  mermaid: {
-    instance: mermaid,
+  editorExtensions: {
+    prettier: {
+      prettierInstance: prettier,
+      parserMarkdownInstance: parserMarkdown,
+    },
+    highlight: {
+      instance: highlight,
+    },
+    screenfull: {
+      instance: screenfull,
+    },
+    katex: {
+      instance: katex,
+    },
+    cropper: {
+      instance: Cropper,
+    },
+    mermaid: {
+      instance: mermaid,
+    },
   },
   markdownItConfig(mdit) {
     mdit.use(container, "align-left", {
