@@ -43,6 +43,9 @@ export const useUserStore = defineStore("user", {
         roles: response.roles,
       });
     },
+    setNickname(nickname: string) {
+      this.nickname = nickname;
+    },
     isLogin(): boolean {
       return this.token != null && this.token != "";
     },

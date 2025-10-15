@@ -3,7 +3,8 @@ import httpCommonRequest from "@/apis/axios-common";
 
 import md5 from "md5";
 
-import type { UserInfo, UserInfoView } from "@/types/user.ts";
+import { UserInfo, UserInfoView, UserModifyInfoRequest } from "@/types/user.ts";
+import { PostRejudgeJob } from "@/apis/judge.ts";
 
 export function ParseUser(item: UserInfo): UserInfoView {
   const result: any = {};
@@ -47,6 +48,21 @@ export function GetUserInfo(username: string) {
   return httpRequest({
     url: `/user/info?${new URLSearchParams(params).toString()}`,
     method: "get",
+  });
+}
+
+export function GetUserModifyInfo() {
+  return httpRequest({
+    url: `/user/modify/info`,
+    method: "get",
+  });
+}
+
+export function PostUserModifyInfo(request: UserModifyInfoRequest) {
+  return httpRequest({
+    url: "/user/modify",
+    method: "post",
+    data: request,
   });
 }
 

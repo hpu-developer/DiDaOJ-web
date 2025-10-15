@@ -30,3 +30,17 @@ export interface UserInfoView {
   avatar: string;
   vjudgeId: string;
 }
+
+export interface UserModifyInfo {
+  nickname: string;
+  slogan: string;
+  email: string;
+  organization: string;
+  vjudge_id: string;
+}
+
+export interface UserModifyInfoRequest {
+  nickname?: string;
+  slogan?: string;
+  organization: string;
+}

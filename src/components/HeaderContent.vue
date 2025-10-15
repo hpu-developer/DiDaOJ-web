@@ -79,6 +79,7 @@ onMounted(() => {
           <t-icon name="user" />
         </template>
         <t-menu-item value="user" :to="{ path: '/user/' + username }">个人空间</t-menu-item>
+        <t-menu-item value="user_modify" :to="{ name: 'user-modify' }">修改信息</t-menu-item>
         <t-menu-item value="user_logout" @click="handleClickLogout"> 注销</t-menu-item>
       </t-submenu>
       <t-menu-item v-else-if="!isLoaded" value="login">

@@ -6,6 +6,7 @@ import View404 from "@/views/View404.vue";
 import LoginView from "@/views/user/LoginView.vue";
 import RegisterView from "@/views/user/RegisterView.vue";
 import UserView from "@/views/user/UserView.vue";
+import UserModify from "@/views/user/UserModify.vue";
 
 import type { RouteRecordRaw } from "vue-router";
 import { AuthType } from "@/auth";
@@ -132,6 +133,14 @@ const tabsConfig: Tab[] = [
     showSidebar: false,
     disableGenerateTab: true,
     component: UserView,
+  },
+  {
+    name: "user-modify",
+    path: "/user",
+    title: "用户信息",
+    showSidebar: false,
+    disableGenerateTab: true,
+    component: UserModify,
   },
   {
     name: "404",

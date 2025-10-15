@@ -21,13 +21,13 @@ let currentUsername = "";
 const userLoading = ref(false);
 const userData = ref<UserInfoView | null>(null);
 
-const problemsAc = ref([] as string[]);
+const problemsAc = ref([] as any[]);
 let problemAttemptStatus = null as Record<string, ProblemAttemptStatus> | null;
 
 const vjudgeAcProblems = ref({} as Record<string, string[]>);
 const vjudgeFailProblems = ref({} as Record<string, string[]>);
 
-const getProblemTheme = (problemId: string) => {
+const getProblemTheme = (problemId: number) => {
   if (userStore.getUsername === currentUsername) {
     return "success";
   }
@@ -87,11 +87,13 @@ const loadUserInfo = async (username: string) => {
     userData.value = ParseUser(res.data.user);
 
     const acProblems = res.data.problems_ac;
-    acProblems.sort((a: string, b: string) => {
-      if (a.length === b.length) {
-        return a.localeCompare(b);
+    acProblems.sort((a: any, b: any) => {
+      const problemKeyA = a.key as string;
+      const problemKeyB = b.key as string;
+      if (problemKeyA.length === problemKeyB.length) {
+        return problemKeyA.localeCompare(problemKeyB);
       }
-      return a.length - b.length;
+      return problemKeyA.length - problemKeyB.length;
     });
     problemsAc.value = acProblems;
 
@@ -118,7 +120,6 @@ const loadUserInfo = async (username: string) => {
         });
       }
     }
-
     await loadProblemAttemptStatus();
   } catch (e) {
     ShowTextTipsError(globalProperties, "获取用户信息失败");
@@ -171,10 +172,10 @@ onMounted(async () => {
               :key="problem"
               size="small"
               variant="dashed"
-              :theme="getProblemTheme(problem)"
-              @click="() => router.push({ name: 'problem-detail', params: { problemKey: problem } })"
+              :theme="getProblemTheme(problem.id)"
+              @click="() => router.push({ name: 'problem-detail', params: { problemKey: problem.key } })"
             >
-              {{ problem }}
+              {{ problem.key }}
             </t-button>
           </template>
         </t-card>
