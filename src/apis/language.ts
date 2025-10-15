@@ -25,7 +25,10 @@ export function IsJudgeLanguageValid(language: number) {
   return language > JudgeLanguage.Unknown && language < JudgeLanguage.Max;
 }
 
-export function GetJudgeLanguageStr(language: JudgeLanguage) {
+export function GetJudgeLanguageStr(language: JudgeLanguage | undefined) {
+  if (language === undefined) {
+    return "未知";
+  }
   switch (language) {
     case JudgeLanguage.C:
       return "C";
