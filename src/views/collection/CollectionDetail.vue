@@ -56,7 +56,7 @@ const listColumns = ref([
     cell: (_: any, data: any) => {
       const theme = getProblemIdTheme(data.row.id);
       return (
-        <t-button variant="dashed" theme={theme} onClick={() => handleOpenProblem(data.row.id)}>
+        <t-button variant="dashed" theme={theme} onClick={() => handleOpenProblem(data.row.key)}>
           {data.row.id}
         </t-button>
       );
@@ -67,7 +67,7 @@ const listColumns = ref([
     colKey: "title",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleOpenProblem(data.row.id)}>
+        <t-button variant="text" onClick={() => handleOpenProblem(data.row.key)}>
           {data.row.title}
         </t-button>
       );

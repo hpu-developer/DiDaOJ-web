@@ -8,10 +8,10 @@ export const handleGotoUsername = async (router: Router, username: string | unde
   await router.push({ name: "user", params: { username: username } });
 };
 
-export const handleOpenProblem = (problemId: string) => {
+export const handleOpenProblem = (problemKey: string) => {
   const routeData = router.resolve({
     name: "problem-detail",
-    params: { problemId }
+    params: { problemKey: problemKey }
   });
   window.open(routeData.href, '_blank');
 };
