@@ -296,13 +296,13 @@ const fetchProblemData = async () => {
     return;
   }
 
+  res.data.problem.tags = []
   if (res.data.tags) {
     res.data.tags.forEach((tag: ProblemTag) => {
       tagsMap[tag.id] = tag;
     });
+    res.data.problem.tags = res.data.tags.map(tag => tag.id);
   }
-
-  res.data.problem.tags = res.data.tags.map(tag => tag.id);
 
   problemData.value = ParseProblem(res.data.problem, tagsMap);
 
