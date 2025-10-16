@@ -65,7 +65,8 @@ const loadProblemAttemptStatus = async () => {
   if (problemsAc.value.length === 0) {
     return;
   }
-  const res = await GetProblemAttemptStatus(problemsAc.value);
+  const problemIds = problemsAc.value.map((p) => p.id);
+  const res = await GetProblemAttemptStatus(problemIds);
   if (res.code === 0) {
     problemAttemptStatus = res.data;
   } else {
