@@ -72,6 +72,7 @@ const loadProblemAttemptStatus = async () => {
     ShowErrorTips(globalProperties, res.code, res.data);
   }
 };
+
 const loadUserInfo = async (username: string) => {
   userLoading.value = true;
   try {

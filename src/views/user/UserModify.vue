@@ -12,6 +12,7 @@ const userStore = useUserStore();
 
 const formData = ref({
   nickname: "",
+  slogan: "",
   password: "",
   confirmPassword: "",
 });
@@ -32,6 +33,7 @@ const formRules = ref({
     { min: 1, message: "昵称至少1个字符" },
     { max: 30, message: "昵称最多30个字符" },
   ],
+  slogan: [{ max: 100, message: "个性签名最多100个字符" }],
   password: [
     { required: true, message: "请填写密码" },
     { min: 6, message: "密码至少6个字符" },
@@ -66,6 +68,7 @@ const loadUserInfo = async () => {
 
 const onReset = () => {
   formData.value.nickname = loadedUserInfo.nickname;
+  formData.value.slogan = loadedUserInfo.slogan;
   formData.value.password = "";
   formData.value.confirmPassword = "";
 };
@@ -74,6 +77,7 @@ const onSubmit = async (_: any) => {
   isPostRunning.value = true;
   const requestData = {
     nickname: formData.value.nickname,
+    slogan: formData.value.slogan,
   } as UserModifyInfoRequest;
   try {
     const res = await PostUserModifyInfo(requestData);
@@ -100,6 +104,9 @@ onMounted(() => {
       <t-form ref="form" :rules="formRules" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit" class="yj-login-form">
         <t-form-item name="nickname" label="昵称">
           <t-input v-model="formData.nickname" clearable placeholder="请输入昵称"></t-input>
+        </t-form-item>
+        <t-form-item name="slogan" label="Slogan">
+          <t-input v-model="formData.slogan" clearable placeholder="请输入Slogan"></t-input>
         </t-form-item>
         <t-form-item>
           <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
