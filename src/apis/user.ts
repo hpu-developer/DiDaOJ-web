@@ -18,7 +18,7 @@ export function ParseUser(item: UserInfo): UserInfoView {
   result.attempt = item.attempt;
   result.vjudgeId = item.vjudge_id;
   if (item.email) {
-    result.avatar = `https://www.gravatar.com/avatar/${md5(item.email.toLowerCase().trim())}?d=identicon&s=100`;
+    result.avatar = `https://cravatar.cn/avatar/${md5(item.email.toLowerCase().trim())}?d=identicon&s=100`;
   }
   return result;
 }
