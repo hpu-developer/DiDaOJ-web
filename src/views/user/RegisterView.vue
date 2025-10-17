@@ -136,7 +136,7 @@ const requestSendEmailKey = async (token: string) => {
     isSendEmailKeying.value = false;
     isSendEmailKeyDisabled.value = true;
     sendEmailTime = new Date();
-    sendEmailButtonText.value = `60秒后重发`;
+    sendEmailButtonText.value = `60 秒后重发`;
     sendEmailInterval = setInterval(() => {
       const nowTime = new Date();
       const countdown = Math.floor((nowTime.getTime() - sendEmailTime?.getTime()) / 1000);
@@ -145,7 +145,7 @@ const requestSendEmailKey = async (token: string) => {
         isSendEmailKeyDisabled.value = false;
         clearInterval(sendEmailInterval);
       } else {
-        sendEmailButtonText.value = `${60 - countdown}秒后重发`;
+        sendEmailButtonText.value = `${60 - countdown} 秒后重发`;
       }
     }, 1000);
   } catch (e) {
