@@ -39,11 +39,11 @@ const ListColumns = ref([
   },
   {
     title: "负责人",
-    colKey: "ownerNickname",
+    colKey: "inserterNickname",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoUsername(router, data.row.ownerUsername)}>
-          {data.row.ownerNickname}
+        <t-button variant="text" onClick={() => handleGotoUsername(router, data.row.inserterUsername)}>
+          {data.row.inserterNickname}
         </t-button>
       );
     },
