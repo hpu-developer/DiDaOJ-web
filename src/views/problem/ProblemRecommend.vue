@@ -11,7 +11,7 @@ const router = useRouter();
 const { globalProperties } = useCurrentInstance();
 
 let watchHandle: WatchStopHandle | null = null;
-let problemId = "";
+let problemKey = "";
 
 let tagsMap = {} as { [key: number]: ProblemTag };
 let problemAttemptStatus = {} as { [key: string]: ProblemAttemptStatus };
@@ -119,7 +119,7 @@ const fetchData = async (needLoading: boolean) => {
     dataLoading.value = true;
   }
   try {
-    const res = await GetProblemRecommend(problemId);
+    const res = await GetProblemRecommend(problemKey);
     problemViews.value = [];
     if (res.code === 0) {
       const responseList = res.data.list as Problem[];
@@ -162,10 +162,10 @@ onMounted(async () => {
   watchHandle = watch(
     () => route.query,
     (_: any) => {
-      if (Array.isArray(route.params.problemId)) {
-        problemId = route.params.problemId[0];
+      if (Array.isArray(route.params.problemKey)) {
+        problemKey = route.params.problemKey[0];
       } else {
-        problemId = route.params.problemId;
+        problemKey = route.params.problemKey;
       }
       fetchData(true);
     },

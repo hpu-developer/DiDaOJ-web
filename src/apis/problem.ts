@@ -191,10 +191,10 @@ export function GetProblemList(oj: string, title: string, tag: string, privateDa
   });
 }
 
-export function GetProblemRecommend(problemId: string) {
+export function GetProblemRecommend(problemKey: string) {
   const params = {} as any;
-  if (problemId) {
-    params.problem_id = problemId;
+  if (problemKey) {
+    params.problem_key = problemKey;
   }
   return httpRequest({
     url: `/problem/recommend?${new URLSearchParams(params).toString()}`,

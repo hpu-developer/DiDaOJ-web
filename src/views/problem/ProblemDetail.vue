@@ -196,7 +196,7 @@ const handleClickRecommend = () => {
   router.push({
     name: "problem-recommend",
     params: {
-      problemId: problemKey,
+      problemKey: problemKey,
     },
   });
 };
