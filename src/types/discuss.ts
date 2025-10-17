@@ -10,6 +10,7 @@ export interface Discuss {
   inserter: number;
   inserter_username: string;
   inserter_nickname: string;
+  inserter_email: string;
   insert_time: string;
   modify_time: string;
   update_time: string;
@@ -29,6 +30,8 @@ export interface DiscussView {
   inserter: number;
   inserterUsername: string;
   inserterNickname: string;
+  inserterEmail: string;
+  avatarUrl?: string;
   insertTime: string;
   modifyTime: string;
   updateTime: string;
@@ -47,6 +50,7 @@ export interface DiscussComment {
   inserter: number;
   inserter_username: string;
   inserter_nickname: string;
+  inserter_email: string;
   insert_time: string;
   modify_time: string;
   update_time: string;
@@ -58,6 +62,8 @@ export interface DiscussCommentView {
   inserter: number;
   inserterUsername: string;
   inserterNickname: string;
+  inserterEmail: string;
+  avatarUrl?: string;
   insertTime: string;
   modifyTime: string;
   updateTime: string;

@@ -8,12 +8,20 @@ export const handleGotoUsername = async (router: Router, username: string | unde
   await router.push({ name: "user", params: { username: username } });
 };
 
+export const handleOpenUsername = async (router: Router, username: string | undefined) => {
+  if (!username) {
+    return;
+  }
+  const routeData = router.resolve({ name: "user", params: { username: username } });
+  window.open(routeData.href, "_blank");
+};
+
 export const handleOpenProblem = (problemKey: string) => {
   const routeData = router.resolve({
     name: "problem-detail",
-    params: { problemKey: problemKey }
+    params: { problemKey: problemKey },
   });
-  window.open(routeData.href, '_blank');
+  window.open(routeData.href, "_blank");
 };
 
 export const handleGotoProblem = async (problemKey: string) => {

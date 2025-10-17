@@ -1,14 +1,8 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import {
-  Discuss,
-  DiscussView,
-  DiscussEditRequest,
-  DiscussComment,
-  DiscussCommentView,
-  DiscussCommentEditRequest,
-} from "@/types/discuss";
+import { Discuss, DiscussView, DiscussEditRequest, DiscussComment, DiscussCommentView, DiscussCommentEditRequest } from "@/types/discuss";
+import { GetAvatarUrl } from "@/util/avatar.ts";
 
 export function ParseDiscuss(item: Discuss): DiscussView {
   const result: DiscussView = {} as DiscussView;
@@ -16,6 +10,12 @@ export function ParseDiscuss(item: Discuss): DiscussView {
   result.inserter = item.inserter;
   result.inserterUsername = item.inserter_username;
   result.inserterNickname = item.inserter_nickname;
+  result.inserterEmail = item.inserter_email;
+  if (result.inserterEmail) {
+    result.avatarUrl = GetAvatarUrl(result.inserterEmail);
+  } else {
+    result.avatarUrl = GetAvatarUrl(result.inserterUsername + "@avatar.com");
+  }
   result.title = item.title;
   result.content = item.content;
   if (item.insert_time) {
@@ -44,6 +44,12 @@ export function ParseDiscussComment(item: DiscussComment): DiscussCommentView {
   result.inserter = item.inserter;
   result.inserterUsername = item.inserter_username;
   result.inserterNickname = item.inserter_nickname;
+  result.inserterEmail = item.inserter_email;
+  if (result.inserterEmail) {
+    result.avatarUrl = GetAvatarUrl(result.inserterEmail);
+  } else {
+    result.avatarUrl = GetAvatarUrl(result.inserterUsername + "@avatar.com");
+  }
   result.content = "";
   if (item.content) {
     result.content = item.content;

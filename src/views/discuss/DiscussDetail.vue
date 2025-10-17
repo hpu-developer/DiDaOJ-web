@@ -13,7 +13,7 @@ import {
   PostDiscussCommentEdit,
 } from "@/apis/discuss.ts";
 import type { DiscussComment, DiscussCommentEditRequest, DiscussCommentView, DiscussView } from "@/types/discuss.ts";
-import { handleGotoUsername } from "@/util/router.ts";
+import { handleOpenUsername } from "@/util/router.ts";
 
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 
@@ -312,8 +312,17 @@ onBeforeUnmount(() => {
           <template #header>
             <div class="dida-operation-container">
               <t-space>
-                <span>{{ comment.inserterNickname }}</span>
-                <span>{{ comment.insertTime }}</span>
+                <t-avatar shape="round" size="32px" :image="comment?.avatarUrl" :hide-on-load-failed="false" />
+                <t-button
+                  variant="text"
+                  @click="
+                    () => {
+                      handleOpenUsername(router, comment.inserterUsername);
+                    }
+                  "
+                  >{{ comment.inserterNickname }}</t-button
+                >
+                <span style="line-height: 32px">{{ comment.insertTime }}</span>
               </t-space>
             </div>
             <div class="dida-operation-container">
@@ -369,14 +378,17 @@ onBeforeUnmount(() => {
             <t-button @click="handleClickEdit">编辑</t-button>
           </div>
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="创建时间">{{ discussData?.insertTime }}</t-descriptions-item>
-            <t-descriptions-item label="编辑时间">{{ discussData?.modifyTime }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ discussData?.updateTime }}</t-descriptions-item>
             <t-descriptions-item label="创建用户">
-              <t-button variant="text" @click="async () => await handleGotoUsername(router, discussData?.inserterUsername)">
+              <t-button variant="text" @click="async () => await handleOpenUsername(router, discussData?.inserterUsername)">
                 {{ discussData?.inserterNickname }}
               </t-button>
             </t-descriptions-item>
+            <t-descriptions-item label="头像">
+              <t-avatar shape="round" size="100px" :image="discussData?.avatarUrl" :hide-on-load-failed="false" />
+            </t-descriptions-item>
+            <t-descriptions-item label="创建时间">{{ discussData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="编辑时间">{{ discussData?.modifyTime }}</t-descriptions-item>
+            <t-descriptions-item label="更新时间">{{ discussData?.updateTime }}</t-descriptions-item>
             <t-descriptions-item label="标签"></t-descriptions-item>
           </t-descriptions>
         </div>
