@@ -131,7 +131,7 @@ const loadProblemDaily = async () => {
       problemDailies.value.push({
         key: item.key,
         title: title,
-        problemId: item.problem_id,
+        problemKey: item.problem_key,
         theme: theme,
         tag: tag,
       } as any);
@@ -214,7 +214,7 @@ onUnmounted(() => {
                 <t-list-item-meta style="width: 100px">
                   <template #description>
                     <t-link @click="$router.push({ name: 'problem-daily-detail', params: { dailyId: item.key } })">
-                      {{ item.problemId }}
+                      {{ item.problemKey }}
                     </t-link>
                   </template>
                 </t-list-item-meta>

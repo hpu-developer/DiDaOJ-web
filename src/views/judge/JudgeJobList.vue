@@ -235,7 +235,7 @@ const handleSearchFormSubmit = async () => {
       ...route.query,
       page: 1,
       page_size: currentPageSize,
-      problem_id: searchForm.value.problemKey,
+      problem_key: searchForm.value.problemKey,
       username: searchForm.value.username,
       language: searchForm.value.language,
       status: searchForm.value.status,
@@ -253,7 +253,7 @@ const handleSearchFormReset = async () => {
       ...route.query,
       page: 1,
       page_size: currentPageSize,
-      problem_id: "",
+      problem_key: "",
       username: "",
       language: undefined,
       status: undefined,
@@ -341,7 +341,7 @@ onMounted(async () => {
       } else {
         contestId = Number(route.params.contestId);
       }
-      searchForm.value.problemKey = (newQuery.problem_id as string) || "";
+      searchForm.value.problemKey = (newQuery.problem_key as string) || "";
       searchForm.value.username = (newQuery.username as string) || "";
       if (newQuery.language != undefined) {
         searchForm.value.language = Number(newQuery.language as string) as JudgeLanguage;

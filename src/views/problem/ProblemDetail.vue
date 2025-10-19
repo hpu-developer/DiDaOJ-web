@@ -155,7 +155,7 @@ const handleClickJudgeStatus = () => {
     router.push({
       name: "judge-list",
       query: {
-        problem_id: problemKey,
+        problem_key: problemKey,
       },
     });
   } else {
@@ -165,7 +165,7 @@ const handleClickJudgeStatus = () => {
         contestId: contestId,
       },
       query: {
-        problem_id: GetContestProblemIndexStr(problemIndex.value),
+        problem_key: GetContestProblemIndexStr(problemIndex.value),
       },
     });
   }
@@ -176,7 +176,7 @@ const handleClickDiscuss = () => {
     router.push({
       name: "discuss-list-problem",
       query: {
-        problem_id: problemKey,
+        problem_key: problemKey,
       },
     });
   } else {
@@ -186,7 +186,7 @@ const handleClickDiscuss = () => {
         contestId: contestId,
       },
       query: {
-        problem_id: GetContestProblemIndexStr(problemIndex.value),
+        problem_key: GetContestProblemIndexStr(problemIndex.value),
       },
     });
   }

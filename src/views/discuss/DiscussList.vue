@@ -76,7 +76,7 @@ const pagination = ref({
 const discussViews = ref<DiscussView[]>();
 
 const discussSearchForm = ref({
-  problemId: "",
+  problemKey: "",
   title: "",
   username: "",
 });
@@ -100,7 +100,7 @@ const handleSearchDiscuss = async () => {
   await router.push({
     query: {
       ...route.query,
-      problem_id: discussSearchForm.value.problemId,
+      problem_key: discussSearchForm.value.problemKey,
       title: discussSearchForm.value.title,
       username: discussSearchForm.value.username,
       page: 1,
@@ -118,7 +118,7 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
     const res = await GetDiscussList(
       onlyProblemDiscuss.value,
       contestId,
-      discussSearchForm.value.problemId,
+      discussSearchForm.value.problemKey,
       discussSearchForm.value.title,
       discussSearchForm.value.username,
       current,
@@ -232,7 +232,7 @@ onMounted(async () => {
       }
       listColumns.value = listColumns.value.concat(listColumns2 as BaseTableCol[]);
 
-      discussSearchForm.value.problemId = (newQuery.problem_id as string) || "";
+      discussSearchForm.value.problemKey = (newQuery.problem_key as string) || "";
       discussSearchForm.value.title = (newQuery.title as string) || "";
       discussSearchForm.value.username = (newQuery.username as string) || "";
       const queryPage = parseInt(newQuery.page as string) || pagination.value.defaultCurrent;
@@ -277,7 +277,7 @@ onBeforeUnmount(() => {
         <t-card class="sh-card">
           <t-form :model="discussSearchForm">
             <t-form-item label="问题标识">
-              <t-input v-model="discussSearchForm.problemId" placeholder="请输入完整问题标识"></t-input>
+              <t-input v-model="discussSearchForm.problemKey" placeholder="请输入完整问题标识"></t-input>
             </t-form-item>
             <t-form-item label="标题">
               <t-input v-model="discussSearchForm.title" placeholder="暂不支持模糊查询"></t-input>

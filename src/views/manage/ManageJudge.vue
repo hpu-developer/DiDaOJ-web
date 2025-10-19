@@ -57,7 +57,7 @@ const handleRejudgeSearch = async () => {
     await router.push({
       name: "judge-list",
       query: {
-        problem_id: searchForm.value.problemKey,
+        problem_key: searchForm.value.problemKey,
         language: searchForm.value.language,
       },
     });

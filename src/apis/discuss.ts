@@ -83,7 +83,7 @@ export function GetDiscussEdit(discussId: number) {
 export function GetDiscussList(
   onlyProblemDiscuss: boolean,
   contestId: number,
-  problemId: string,
+  problemKey: string,
   title: string,
   username: string,
   page: number,
@@ -98,8 +98,8 @@ export function GetDiscussList(
   if (contestId) {
     params.contest_id = contestId;
   }
-  if (problemId) {
-    params.problem_id = problemId;
+  if (problemKey) {
+    params.problem_key = problemKey;
   }
   if (title) {
     params.title = title;
