@@ -20,9 +20,10 @@ const announcement = ref<Announcement>({
   content: "",
 });
 const problemDailies = ref([] as any[]);
+const stateLoading = ref(false);
 const ojStaticsLoading = ref(false);
 const problemDailyLoading = ref(false);
-const stateLoading = ref(false);
+const ojNotifyLoading = ref(false);
 
 const handleReloadStatus = async () => {
   notification.value = await GetWebNotification();
@@ -143,6 +144,7 @@ onMounted(async () => {
   stateLoading.value = true;
   ojStaticsLoading.value = true;
   problemDailyLoading.value = true;
+  ojNotifyLoading.value = true;
 
   void (async () => {
     await handleReloadStatus();
@@ -150,7 +152,7 @@ onMounted(async () => {
       handleReloadStatus();
     }, 30000);
     await loadWebAnnouncement();
-    stateLoading.value = false;
+    ojNotifyLoading.value = false;
   })();
 
   void (async () => {
@@ -162,6 +164,8 @@ onMounted(async () => {
     await loadProblemDaily();
     problemDailyLoading.value = false;
   })();
+
+  stateLoading.value = false;
 });
 
 onUnmounted(() => {
@@ -174,9 +178,11 @@ onUnmounted(() => {
     <t-row>
       <t-col :span="8">
         <div class="sh-main">
-          <t-alert v-if="notification" class="dida-notification-div" :theme="notification.theme">
-            {{ notification.content }}
-          </t-alert>
+          <t-loading :loading="ojNotifyLoading && !stateLoading">
+            <t-alert v-if="notification" class="dida-notification-div" :theme="notification.theme">
+              {{ notification.content }}
+            </t-alert>
+          </t-loading>
 
           <div class="dida-swiper-div">
             <t-swiper class="dida-swiper">
@@ -193,9 +199,11 @@ onUnmounted(() => {
             <div id="ojStaticsDiv" style="min-height: 200px"></div>
           </t-loading>
 
-          <t-card :title="announcement?.title" style="width: calc(100% - 100px); margin: 0 auto">
-            <md-preview :model-value="announcement?.content" previewTheme="cyanosis" />
-          </t-card>
+          <t-loading :loading="ojNotifyLoading && !stateLoading">
+            <t-card :title="announcement?.title" style="width: calc(100% - 100px); margin: 0 auto;min-height: 300px">
+              <md-preview :model-value="announcement?.content" previewTheme="cyanosis" />
+            </t-card>
+          </t-loading>
         </div>
       </t-col>
       <t-col :span="4">
