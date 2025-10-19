@@ -28,8 +28,13 @@ const progressMax = ref(0);
 const onlyShowStarMembers = ref(false);
 const enableAnimation = ref(true);
 const autoRefresh = ref(true);
+const autoScroll = ref(false);
 let fetchTimer: ReturnType<typeof setInterval> | null = null;
 let updateProgressTimer: ReturnType<typeof setInterval> | null = null;
+
+let scrollTimer = null;
+let scrollSpeed = 1; // 每次滚动的像素数
+let scrollInterval = 20; // 每次滚动间隔（毫秒）
 
 let currentPage = 1;
 let currentPageSize = 50;
@@ -278,6 +283,15 @@ const handleSwitchAutoRefresh = async (value: boolean) => {
   }
 };
 
+const handleSwitchAutoScroll = (value: boolean) => {
+  autoScroll.value = value;
+  if (value) {
+    startAutoScroll();
+  } else {
+    stopAutoScroll();
+  }
+};
+
 const handleSwitchOnlyStar = () => {
   loadProgress();
   pagination.value = { ...pagination.value, current: 1 };
@@ -449,6 +463,31 @@ const handleProgressChange = (value: number) => {
   progressValue.value = Math.min(progressValue.value, progressValueRealMax);
   loadProgress();
 };
+
+function startAutoScroll() {
+  if (scrollTimer) return; // 已在滚动中则不重复启动
+
+  scrollTimer = setInterval(() => {
+    const scrollTop = window.scrollY;
+    const scrollHeight = document.documentElement.scrollHeight;
+    const clientHeight = window.innerHeight;
+
+    // 滚动到下一位置
+    window.scrollTo(0, scrollTop + scrollSpeed);
+
+    // 如果到达底部，则返回顶部
+    if (scrollTop + clientHeight >= scrollHeight - 1) {
+      window.scrollTo(0, 0);
+    }
+  }, scrollInterval);
+}
+
+function stopAutoScroll() {
+  if (scrollTimer) {
+    clearInterval(scrollTimer);
+    scrollTimer = null;
+  }
+}
 
 const fetchData = async (needLoading: boolean) => {
   if (needLoading) {
@@ -627,6 +666,7 @@ onBeforeUnmount(() => {
     watchHandle();
   }
   clearProgressTimer();
+  stopAutoScroll();
 });
 </script>
 
@@ -645,6 +685,9 @@ onBeforeUnmount(() => {
             </t-switch>
             <t-switch size="large" v-model="autoRefresh" @change="handleSwitchAutoRefresh">
               <template #label="slotProps">{{ slotProps.value ? "自动刷新" : "关闭刷新" }}</template>
+            </t-switch>
+            <t-switch size="large" v-model="autoScroll" @change="handleSwitchAutoScroll">
+              <template #label="slotProps">{{ slotProps.value ? "自动滚动" : "关闭滚动" }}</template>
             </t-switch>
           </t-space>
         </div>
