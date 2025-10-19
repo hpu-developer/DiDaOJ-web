@@ -25,7 +25,7 @@ const joinLoading = ref(false);
 let problemAttemptStatus = {} as { [key: string]: ProblemAttemptStatus };
 
 const hasEditAuth = computed(() => {
-  return userStore.hasAuth(AuthType.ManageCollection) || (collectionData.value && userStore.getUserId == collectionData.value.ownerId);
+  return userStore.hasAuth(AuthType.ManageCollection) || (collectionData.value && userStore.getUserId == collectionData.value.inserter);
 });
 
 const getProblemIdTheme = (id: string) => {
@@ -198,7 +198,7 @@ onMounted(async () => {
 
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="创建者">{{ collectionData?.ownerNickname }}</t-descriptions-item>
+            <t-descriptions-item label="创建者">{{ collectionData?.inserterNickname }}</t-descriptions-item>
           </t-descriptions>
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="开始时间">{{ collectionData?.startTime }}</t-descriptions-item>

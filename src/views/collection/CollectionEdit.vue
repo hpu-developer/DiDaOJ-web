@@ -125,7 +125,7 @@ const loadDescriptionEditor = (description: string) => {
   collectionLoading.value = false;
 };
 
-async function handleUploadImg(files: File[], callback: (urls: UploadImageCallbackUrl[]) => void) {
+async function handleUploadImg(_files: File[], _callback: (urls: UploadImageCallbackUrl[]) => void) {
   isSaving.value = true;
   // await HandleR2ImageUpload(files, callback, globalProperties, () => {
   //   return null;
@@ -234,8 +234,8 @@ onMounted(async () => {
             </t-space>
           </div>
           <t-descriptions layout="vertical" :bordered="true" v-if="collectionId">
-            <t-descriptions-item label="创建时间">{{ collectionData?.createTime }}</t-descriptions-item>
-            <t-descriptions-item label="编辑时间">{{ collectionData?.updateTime }}</t-descriptions-item>
+            <t-descriptions-item label="创建时间">{{ collectionData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="编辑时间">{{ collectionData?.modifyTime }}</t-descriptions-item>
             <t-descriptions-item label="创建用户">{{ collectionData?.inserterNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>

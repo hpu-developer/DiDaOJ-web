@@ -4,8 +4,8 @@ export interface Collection {
   inserter: number;
   inserter_username?: string;
   inserter_nickname?: string;
-  create_time: string;
-  update_time: string;
+  insert_time: string;
+  modify_time: string;
   start_time: string;
   end_time: string;
   description: string;
@@ -18,8 +18,8 @@ export interface CollectionView {
   inserter: number;
   inserterUsername?: string;
   inserterNickname?: string;
-  createTime: string;
-  updateTime: string;
+  insertTime: string;
+  modifyTime: string;
   startTime: string;
   endTime: string;
   description: string;

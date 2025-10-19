@@ -308,6 +308,10 @@ const loadProgress = () => {
     return;
   }
 
+  if (!fetchRankViews){
+    return;
+  }
+
   for (let i = 0; i < fetchRankViews.length; i++) {
     const item = fetchRankViews[i];
     let result = {

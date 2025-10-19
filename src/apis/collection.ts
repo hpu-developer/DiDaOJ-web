@@ -21,19 +21,19 @@ export function ParseCollection(item: Collection) {
   } else {
     result.endTime = "无限制";
   }
-  if (item.update_time) {
-    result.updateTime = new Date(item.update_time).toLocaleString();
+  if (item.insert_time) {
+    result.insertTime = new Date(item.insert_time).toLocaleString();
   } else {
-    result.updateTime = "";
+    result.insertTime = "";
   }
-  if (item.create_time) {
-    result.createTime = new Date(item.create_time).toLocaleString();
+  if (item.modify_time) {
+    result.modifyTime = new Date(item.modify_time).toLocaleString();
   } else {
-    result.createTime = "";
+    result.modifyTime = "";
   }
 
   if (item.description) {
-    result.description = item.description
+    result.description = item.description;
   } else {
     result.description = "";
   }
