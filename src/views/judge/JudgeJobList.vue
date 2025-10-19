@@ -121,10 +121,15 @@ const listColumns = ref([
     title: "代码",
     colKey: "code",
     cell: (_: any, data: any) => {
-      let disabled = !IsJudgeLanguageValid(data.row.language);
+      let buttonText = GetJudgeLanguageStr(data.row.language);
+      const languageValid = IsJudgeLanguageValid(data.row.language);
+      if (languageValid && data.row.codeLength > 0) {
+        buttonText = buttonText + " / " + data.row.codeLength;
+      }
+      let disabled = !languageValid;
       return (
         <t-button theme="default" onClick={() => handleShowCode(data.row)} disabled={disabled}>
-          {GetJudgeLanguageStr(data.row.language) + " / " + data.row.codeLength}
+          {buttonText}
         </t-button>
       );
     },
@@ -162,7 +167,11 @@ const pagination = ref({
   pageSizeOptions: [50, 100],
   showPageSize: false,
   totalContent: (h, value) => {
-    return <div><t-tag>目前仅支持获取前10页数据</t-tag></div>;
+    return (
+      <div>
+        <t-tag>目前仅支持获取前10页数据</t-tag>
+      </div>
+    );
   },
 });
 
