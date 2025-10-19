@@ -14,7 +14,7 @@ const { globalProperties } = useCurrentInstance();
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
 
-const ListColumns = ref([
+const listColumns = ref([
   {
     title: "ID",
     colKey: "id",
@@ -198,7 +198,7 @@ onBeforeUnmount(() => {
       <t-card style="margin: 10px">
         <t-table
           :data="contestViews"
-          :columns="ListColumns"
+          :columns="listColumns"
           row-key="id"
           vertical-align="top"
           :hover="true"

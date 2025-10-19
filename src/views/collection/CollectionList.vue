@@ -2,9 +2,10 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
 import { GetCollectionList, ParseCollection } from "@/apis/collection.ts";
 import { Collection, CollectionEditRequest, CollectionView } from "@/types/collection.ts";
+import { handleGotoUsername } from "@/util/router.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -12,14 +13,12 @@ const { globalProperties } = useCurrentInstance();
 
 let viewActive = false;
 let watchHandle: WatchStopHandle | null = null;
-const modalShow = ref(false);
 const confirmLoading = ref(false);
 
 const listColumns = ref([
   {
     title: "ID",
     colKey: "id",
-    width: "100",
     cell: (_: any, data: any) => {
       return (
         <t-button variant="text" onClick={() => handleGotoCollection(data.row.id)}>
@@ -42,17 +41,21 @@ const listColumns = ref([
   {
     title: "负责人",
     colKey: "inserterNickname",
-    width: "200",
+    cell: (_: any, data: any) => {
+      return (
+        <t-button variant="text" onClick={() => handleGotoUsername(router, data.row.inserterUsername)}>
+          {data.row.inserterNickname}
+        </t-button>
+      );
+    },
   },
   {
     title: "开始时间",
     colKey: "startTime",
-    width: "180",
   },
   {
     title: "结束时间",
     colKey: "endTime",
-    width: "180",
   },
 ]);
 
@@ -193,6 +196,7 @@ onBeforeUnmount(() => {
           :hover="true"
           :pagination="pagination"
           :loading="dataLoading"
+          tableLayout="auto"
           @page-change="onPageChange"
         />
       </t-card>
