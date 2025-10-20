@@ -57,7 +57,7 @@ const listColumns = ref([
       const theme = getProblemIdTheme(data.row.id);
       return (
         <t-button variant="dashed" theme={theme} onClick={() => handleOpenProblem(data.row.key)}>
-          {data.row.id}
+          {data.row.key}
         </t-button>
       );
     },
