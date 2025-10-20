@@ -1,6 +1,15 @@
 ﻿import type { Router } from "vue-router";
 import router from "@/router";
 
+export const handleGotoLogin = async (router: Router, redirectUri: string | null) => {
+  if (redirectUri) {
+    await router.push({ name: "login", query: { redirect_uri: redirectUri } });
+  }
+  else {
+    await router.push({ name: "login" });
+  }
+}
+
 export const handleGotoUsername = async (router: Router, username: string | undefined) => {
   if (!username) {
     return;

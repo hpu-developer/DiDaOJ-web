@@ -17,7 +17,7 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
 import { GetContestProblemIndexStr, GetContestProblemRealKey, GetContestProblems } from "@/apis/contest.ts";
-import { handleGotoContestProblem } from "@/util/router.ts";
+import { handleGotoContestProblem, handleGotoLogin } from "@/util/router.ts";
 import SecretPanel from "@/components/SecretPanel.vue";
 
 let route = useRoute();
@@ -67,6 +67,10 @@ const hasEditAuth = computed(() => {
 
 const hasEditDailyAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblemDaily);
+});
+
+const isLogin = computed(() => {
+  return userStore.isLogin();
 });
 
 const createDailyTimer = () => {
@@ -296,17 +300,17 @@ const fetchProblemData = async () => {
     return;
   }
 
-  res.data.problem.tags = []
+  res.data.problem.tags = [];
   if (res.data.tags) {
     res.data.tags.forEach((tag: ProblemTag) => {
       tagsMap[tag.id] = tag;
     });
-    res.data.problem.tags = res.data.tags.map(tag => tag.id);
+    res.data.problem.tags = res.data.tags.map((tag) => tag.id);
   }
 
   problemData.value = ParseProblem(res.data.problem, tagsMap);
 
-  problemId = problemData.value.id
+  problemId = problemData.value.id;
   problemKey = problemData.value.key;
 
   webStyleStore.setTitle(problemData.value.title + " - " + webStyleStore.getTitle);
@@ -542,7 +546,14 @@ onBeforeUnmount(() => {
               </t-link>
             </t-descriptions-item>
             <t-descriptions-item label="标签" v-if="problemKey">
-              <t-button class="dida-tag-button" v-for="tag in problemData?.tags" :key="tag.id" variant="dashed" size="small" @click="() => handleClickTag(tag)">
+              <t-button
+                class="dida-tag-button"
+                v-for="tag in problemData?.tags"
+                :key="tag.id"
+                variant="dashed"
+                size="small"
+                @click="() => handleClickTag(tag)"
+              >
                 {{ tag.name }}
               </t-button>
             </t-descriptions-item>
@@ -563,7 +574,7 @@ onBeforeUnmount(() => {
             </t-space>
           </div>
 
-          <div class="dida-code-submit-div">
+          <div class="dida-code-submit-div" v-if="isLogin">
             <t-space>
               <t-select v-model="selectLanguage" label="语言：" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
                 <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
@@ -573,6 +584,18 @@ onBeforeUnmount(() => {
             <div class="dida-code-editor-div">
               <div ref="codeEditRef" class="dida-code-editor"></div>
             </div>
+          </div>
+          <div style="text-align: center" v-else>
+            <t-space>
+              <t-button
+                @click="
+                  () => {
+                    handleGotoLogin(router, globalProperties.$router.currentRoute.value.fullPath);
+                  }
+                "
+                >登录后提交本题</t-button
+              >
+            </t-space>
           </div>
         </div>
       </t-col>
