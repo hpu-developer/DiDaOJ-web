@@ -89,7 +89,7 @@ config({
     });
     mdit.use(shortcodeInlinePlugin, {
       renderers: {
-        problem: ([id]) => `<oj-problem id="${id}">${id}</oj-problem>`,
+        problem: ([key]) => `<oj-problem key="${key}">${key}</oj-problem>`,
       },
     });
     mdit.use(shortcodeColorPlugin, {

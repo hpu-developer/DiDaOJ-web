@@ -6,7 +6,7 @@ import { useLoginStore } from "@/stores/login";
 import { useUserStore } from "@/stores/user.ts";
 import { useWebStyleStore } from "@/stores/webStyle";
 import { useSidebarStyleStore } from "@/stores/sidebarStyle";
-import { GetProblemAttemptStatus, ProblemAttemptStatus } from "@/apis/problem.ts";
+import { GetProblemAttemptStatus, GetProblemAttemptStatusByKey, ProblemAttemptStatus } from "@/apis/problem.ts";
 
 import HeaderContent from "./components/HeaderContent.vue";
 import SidebarContent from "./components/SidebarContent.vue";
@@ -80,25 +80,25 @@ const processProblemTags = async () => {
   }
   let buttonThemes = {} as { [key: string]: any[] };
   containers.forEach((el) => {
-    const id = el.getAttribute("id");
+    const key = el.getAttribute("key") as string;
     const mountNode = document.createElement("span");
     mountNode.setAttribute("style", "padding:5px");
     el.replaceWith(mountNode);
     const theme = ref("default");
-    if (!buttonThemes[id]) {
-      buttonThemes[id] = [];
+    if (!buttonThemes[key]) {
+      buttonThemes[key] = [];
     }
-    buttonThemes[id].push(theme);
-    let problemId = id;
-    if (id && !id.includes("-")) {
-      problemId = "DidaOJ-" + id;
+    buttonThemes[key].push(theme);
+    let problemId = key;
+    if (key && !key.includes("-")) {
+      problemId = "DidaOJ-" + key;
     }
     const app = createApp({
       render: () =>
         h(TButton, {
           innerHTML: problemId,
           onClick: () => {
-            window.open(`/problem/${id}`, "_blank");
+            window.open(`/problem/${key}`, "_blank");
           },
           size: "small",
           variant: "outline",
@@ -107,11 +107,11 @@ const processProblemTags = async () => {
     });
     app.mount(mountNode);
   });
-  const problemIds = [];
-  for (const id in buttonThemes) {
-    problemIds.push(id);
+  const problemKeys = [];
+  for (const key in buttonThemes) {
+    problemKeys.push(key);
   }
-  const res = await GetProblemAttemptStatus(problemIds);
+  const res = await GetProblemAttemptStatusByKey(problemKeys);
   if (res.code === 0) {
     for (const id in buttonThemes) {
       const themes = buttonThemes[id];

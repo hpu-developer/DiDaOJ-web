@@ -257,6 +257,16 @@ export function GetProblemAttemptStatus(problemIds: string[]) {
   });
 }
 
+export function GetProblemAttemptStatusByKey(problemKeys: string[]) {
+  return httpRequest({
+    url: "/problem/attempt/status/key",
+    method: "get",
+    params: {
+      keys: problemKeys.join(","),
+    },
+  });
+}
+
 export function PostProblemCrawl(oj: string, problemKey: string) {
   return httpRequest({
     url: "/problem/crawl",
