@@ -1,3 +1,5 @@
+import { GetRemoteJudgeTypeByStr, RemoteJudgeType } from "@/apis/remote.ts";
+
 export enum JudgeLanguage {
   Unknown = -1,
   C = 0,
@@ -11,10 +13,25 @@ export enum JudgeLanguage {
   Max,
 }
 
-export function GetSubmitLanguages() {
+const languageMap: { [key in RemoteJudgeType]: JudgeLanguage[] } = {
+  [RemoteJudgeType.Hdu]: [JudgeLanguage.C, JudgeLanguage.Cpp, JudgeLanguage.Java, JudgeLanguage.Pascal],
+};
+
+export function GetSubmitLanguages(oj: string | undefined) {
   const exclude = [JudgeLanguage.Unknown, JudgeLanguage.Max]; // 不想包含的语言
   return Object.values(JudgeLanguage)
     .filter((v) => typeof v === "number" && !exclude.includes(v))
+    .filter((value) => {
+      if (oj === undefined) {
+        return true;
+      }
+      const remoteType = GetRemoteJudgeTypeByStr(oj)
+      const allowedLanguages = languageMap[remoteType];
+      if (allowedLanguages === undefined) {
+        return true;
+      }
+      return allowedLanguages.includes(value as JudgeLanguage);
+    })
     .map((value) => ({
       value,
       label: GetJudgeLanguageStr(value as JudgeLanguage),

@@ -50,8 +50,6 @@ const tagsMap = {} as { [key: number]: ProblemTag };
 const selectLanguage = ref("");
 const languageOptions = ref([] as { label: string; value: JudgeLanguage }[]);
 
-languageOptions.value = GetSubmitLanguages();
-
 const contestProblems = ref([]);
 
 const dailyUpdateProgressTimer = ref<number | null>(null);
@@ -324,6 +322,9 @@ const fetchProblemData = async () => {
       ShowErrorTips(globalProperties, res.code);
     }
   }
+
+  const originOj = problemData.value.originOj;
+  languageOptions.value = GetSubmitLanguages(originOj);
 
   problemDescription.value = problemData.value.description as string;
   await nextTick(() => {
