@@ -155,6 +155,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100034": {
         zh: "登录信息已过期，请重新登陆",
       },
+      "100035": {
+        zh: "目前暂时无法抓取目标OJ题目",
+      },
     });
   });
 }
