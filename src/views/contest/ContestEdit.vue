@@ -249,9 +249,9 @@ onMounted(async () => {
                       :default-time="['00:00:00', '23:59:59']"
                     />
                   </t-form-item>
-                  <t-form-item label="提交限制">
+                  <t-form-item label="结束后提交">
                     <t-switch v-model="contestEditForm.submitAnytime">
-                      <template #label="slotProps">{{ slotProps.value ? "结束仍能提交" : "仅比赛期间提交" }}</template>
+                      <template #label="slotProps">{{ slotProps.value ? "允许" : "禁止" }}</template>
                     </t-switch>
                   </t-form-item>
 
