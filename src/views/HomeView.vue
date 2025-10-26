@@ -54,6 +54,8 @@ const loadOjStatics = async () => {
   var myChart = echarts.init(dom, null, {
     renderer: "canvas",
     useDirtyRect: false,
+    width: 1200,
+    height: 300,
   });
   let dateValues = [];
   let acceptValues = [];
@@ -230,7 +232,7 @@ onUnmounted(() => {
           </div>
 
           <t-loading :loading="ojStaticsLoading && !stateLoading" style="width: 100%">
-            <div id="ojStaticsDiv" style="height: 300px;"></div>
+            <div id="ojStaticsDiv"></div>
           </t-loading>
 
           <t-loading :loading="ojNotifyLoading && !stateLoading">
