@@ -128,6 +128,7 @@ const loadOjStatics = async () => {
   if (option && typeof option === "object") {
     myChart.setOption(option);
   }
+  window.addEventListener("resize", myChart.resize);
 };
 
 const loadProblemDaily = async () => {
@@ -228,8 +229,8 @@ onUnmounted(() => {
             </t-swiper>
           </div>
 
-          <t-loading :loading="ojStaticsLoading && !stateLoading">
-            <div id="ojStaticsDiv" style="min-height: 300px"></div>
+          <t-loading :loading="ojStaticsLoading && !stateLoading" style="width: 100%">
+            <div id="ojStaticsDiv" style="height: 300px;"></div>
           </t-loading>
 
           <t-loading :loading="ojNotifyLoading && !stateLoading">
