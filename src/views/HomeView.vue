@@ -4,9 +4,9 @@ import Hitokoto from "@/components/Hitokoto.vue";
 import { GetWebAnnouncement, GetWebNotification } from "@/apis/system.ts";
 import type { Notification, Announcement } from "@/types/system.ts";
 import { ShowTextTipsError, useCurrentInstance } from "@/util";
-import VChart from "@visactor/vchart";
 import { GetJudgeStaticsRecently } from "@/apis/judge.ts";
 import { GetProblemDailyRecently, ProblemAttemptStatus } from "@/apis/problem.ts";
+import * as echarts from "echarts/core";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -50,51 +50,84 @@ const loadOjStatics = async () => {
     return;
   }
 
-  let values = [];
+  var dom = document.getElementById("ojStaticsDiv");
+  var myChart = echarts.init(dom, null, {
+    renderer: "canvas",
+    useDirtyRect: false,
+  });
+  let dateValues = [];
+  let acceptValues = [];
+  let attemptValues = [];
   for (const item of res.data) {
     const date = new Date(item.date);
     const dataDayString = `${date.getMonth() + 1}-${date.getDate()}`;
-    values.push({
-      Date: dataDayString,
-      Type: "Unaccept",
-      Count: item.attempt - item.accept,
-    });
-    values.push({
-      Date: dataDayString,
-      Type: "Accept",
-      Count: item.accept,
-    });
+    dateValues.push(dataDayString);
+    acceptValues.push(item.accept);
+    attemptValues.push(item.attempt);
   }
-
-  const spec = {
-    type: "bar",
-    data: [
-      {
-        id: "barData",
-        values: values,
-      },
-    ],
-    xField: "Date",
-    yField: "Count",
-    seriesField: "Type",
-    stack: true,
-    legends: {
-      visible: true,
-    },
-    bar: {
-      // The state style of bar
-      state: {
-        hover: {
-          stroke: "#000",
-          lineWidth: 1,
+  let option = {
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        type: "cross",
+        label: {
+          backgroundColor: "#6a7985",
         },
       },
     },
-    height: 300,
+    legend: {
+      data: ["Accept", "Attempt"],
+    },
+    toolbox: {
+      feature: {
+        saveAsImage: {},
+      },
+    },
+    xAxis: [
+      {
+        type: "category",
+        boundaryGap: false,
+        data: dateValues,
+      },
+    ],
+    yAxis: [
+      {
+        type: "value",
+      },
+    ],
+    series: [
+      {
+        name: "Accept",
+        type: "line",
+        stack: "Total",
+        color: "#67C23A",
+        areaStyle: {},
+        emphasis: {
+          focus: "series",
+        },
+        data: acceptValues,
+      },
+      {
+        name: "Attempt",
+        type: "line",
+        stack: "Total",
+        color: "#409EFF",
+        label: {
+          show: true,
+          position: "top",
+        },
+        areaStyle: {},
+        emphasis: {
+          focus: "series",
+        },
+        data: attemptValues,
+      },
+    ],
   };
 
-  const vchart = new VChart(spec, { dom: "ojStaticsDiv" });
-  vchart.renderSync();
+  if (option && typeof option === "object") {
+    myChart.setOption(option);
+  }
 };
 
 const loadProblemDaily = async () => {
@@ -187,20 +220,20 @@ onUnmounted(() => {
           <div class="dida-swiper-div">
             <t-swiper class="dida-swiper">
               <t-swiper-item>
-                <a href="http://codeoj.cn" target="_blank"><img src="https://cdn.codeoj.cn/image/banner.jpg" class="swiper-img" /></a>
+                <img src="https://r2-oj.didapipa.com/image/banner.jpg" class="swiper-img" />
               </t-swiper-item>
               <t-swiper-item>
-                <img src="https://cdn.codeoj.cn/image/banner.jpg" class="swiper-img" />
+                <img src="https://r2-oj.didapipa.com/image/banner.jpg" class="swiper-img" />
               </t-swiper-item>
             </t-swiper>
           </div>
 
           <t-loading :loading="ojStaticsLoading && !stateLoading">
-            <div id="ojStaticsDiv" style="min-height: 200px"></div>
+            <div id="ojStaticsDiv" style="min-height: 300px"></div>
           </t-loading>
 
           <t-loading :loading="ojNotifyLoading && !stateLoading">
-            <t-card :title="announcement?.title" style="width: calc(100% - 100px); margin: 0 auto;min-height: 300px">
+            <t-card :title="announcement?.title" style="width: calc(100% - 100px); margin: 0 auto; min-height: 300px">
               <md-preview :model-value="announcement?.content" previewTheme="cyanosis" />
             </t-card>
           </t-loading>

@@ -49,6 +49,8 @@ import "highlight.js/styles/atom-one-dark.css";
 import * as prettier from "prettier";
 import parserMarkdown from "prettier/plugins/markdown";
 
+import { initEChart } from "@/init/echart.ts";
+
 config({
   editorExtensions: {
     prettier: {
@@ -123,6 +125,8 @@ config({
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
+
+initEChart()
 
 const app = createApp(App);
 

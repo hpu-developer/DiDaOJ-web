@@ -11,9 +11,9 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "@visactor/vchart": "^2.0.0",
-    "axios": "1.8.2",
+    "axios": "^1.12.2",
     "cropperjs": "^1.6.2",
+    "echarts": "^6.0.0",
     "highlight.js": "^11.11.1",
     "katex": "^0.16.22",
     "markdown-it-container": "^4.0.0",
