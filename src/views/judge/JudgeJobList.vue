@@ -156,15 +156,15 @@ const listColumns = ref([
 const dataLoading = ref(false);
 
 let currentPage = 1;
-let currentPageSize = 50;
+let currentPageSize = 20;
 
 const pagination = ref({
   current: currentPage,
   pageSize: currentPageSize,
   defaultCurrent: currentPage,
   defaultPageSize: currentPageSize,
-  total: 500,
-  pageSizeOptions: [50, 100],
+  total: 200,
+  pageSizeOptions: [20, 100],
   showPageSize: false,
   totalContent: (h, value) => {
     return (
