@@ -62,7 +62,7 @@ const listColumns = ref([
       const theme = getProblemIdTheme(data.row.index);
       return (
         <t-button variant="dashed" theme={theme} onClick={async () => await handleGotoContestProblem(contestId, data.row.index)}>
-          {data.row.id}
+          {data.row.key}
         </t-button>
       );
     },
@@ -247,6 +247,9 @@ onMounted(async () => {
           </t-descriptions>
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="结束时间">{{ contestData?.endTime }}</t-descriptions-item>
+          </t-descriptions>
+          <t-descriptions layout="vertical" :bordered="true">
+            <t-descriptions-item label="结束后提交">{{ contestData?.submitAnytime ? "允许" : "禁止" }}</t-descriptions-item>
           </t-descriptions>
         </div>
         <t-card style="margin: 12px" v-if="contestData?.description">

@@ -21,6 +21,7 @@ export function ParseContest(item: Contest) {
   result.title = item.title;
   result.startTime = new Date(item.start_time).toLocaleString();
   result.endTime = new Date(item.end_time).toLocaleString();
+  result.submitAnytime = item.submit_anytime;
   result.private = item.private;
 
   result.inserter = item.inserter;
@@ -43,9 +44,9 @@ export function ParseContest(item: Contest) {
     });
     for (let i = 0; i < item.problems.length; i++) {
       const problem = item.problems[i];
-      let problemView: ProblemView = { accept: 0, attempt: 0, inserter: "", id: "", private: false, tags: [], title: "" };
+      let problemView: ProblemView = { id: 0, accept: 0, attempt: 0, inserter: "", key: "", private: false, tags: [], title: "" };
       problemView.index = problem.index;
-      problemView.id = GetContestProblemIndexStr(problem.index);
+      problemView.key = GetContestProblemIndexStr(problem.index);
       problemView.title = problem.title;
       if (problem.accept) {
         problemView.accept = problem.accept;
