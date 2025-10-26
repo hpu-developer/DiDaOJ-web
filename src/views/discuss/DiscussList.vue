@@ -139,7 +139,7 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
         const responseList = res.data.list as Discuss[];
         for (let i = 0; i < responseList.length; i++) {
           const item = responseList[i];
-          const result = await ParseDiscuss(item);
+          const result = ParseDiscuss(item);
           discussViews.value?.push(result);
         }
       }
