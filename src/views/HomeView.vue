@@ -53,9 +53,7 @@ const loadOjStatics = async () => {
   var dom = document.getElementById("ojStaticsDiv");
   var myChart = echarts.init(dom, null, {
     renderer: "canvas",
-    useDirtyRect: false,
-    width: 1200,
-    height: 300,
+    useDirtyRect: false
   });
   let dateValues = [];
   let acceptValues = [];
@@ -130,7 +128,10 @@ const loadOjStatics = async () => {
   if (option && typeof option === "object") {
     myChart.setOption(option);
   }
-  window.addEventListener("resize", myChart.resize);
+  const resizeObserver = new ResizeObserver(() => {
+    myChart.resize();
+  });
+  resizeObserver.observe(dom!);
 };
 
 const loadProblemDaily = async () => {
@@ -232,7 +233,7 @@ onUnmounted(() => {
           </div>
 
           <t-loading :loading="ojStaticsLoading && !stateLoading" style="width: 100%">
-            <div id="ojStaticsDiv"></div>
+            <div id="ojStaticsDiv" style="min-height: 300px"></div>
           </t-loading>
 
           <t-loading :loading="ojNotifyLoading && !stateLoading">
