@@ -129,10 +129,12 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
     contestViews.value = [];
     if (res.code === 0) {
       const responseList = res.data.list as Contest[];
-      for (let i = 0; i < responseList.length; i++) {
-        const item = responseList[i];
-        const result = ParseContest(item);
-        contestViews.value?.push(result);
+      if (responseList) {
+        for (let i = 0; i < responseList.length; i++) {
+          const item = responseList[i];
+          const result = ParseContest(item);
+          contestViews.value?.push(result);
+        }
       }
       pagination.value = { ...pagination.value, total: res.data.total_count };
     } else {
