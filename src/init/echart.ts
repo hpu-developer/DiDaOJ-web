@@ -1,19 +1,17 @@
 import * as echarts from "echarts/core";
 import {
   TitleComponent,
-  TitleComponentOption,
   ToolboxComponent,
-  ToolboxComponentOption,
   TooltipComponent,
-  TooltipComponentOption,
   GridComponent,
-  GridComponentOption,
   LegendComponent,
-  LegendComponentOption
-} from 'echarts/components';
-import { LineChart, LineSeriesOption } from 'echarts/charts';
-import { UniversalTransition } from 'echarts/features';
-import { CanvasRenderer } from 'echarts/renderers';
+  CalendarComponent,
+  VisualMapComponent,
+} from "echarts/components";
+
+import { LineChart, HeatmapChart } from "echarts/charts";
+import { UniversalTransition } from "echarts/features";
+import { CanvasRenderer } from "echarts/renderers";
 
 export const initEChart = () => {
   // 注册必须的组件
@@ -24,8 +22,10 @@ export const initEChart = () => {
     GridComponent,
     LegendComponent,
     LineChart,
+    CalendarComponent,
+    VisualMapComponent,
+    HeatmapChart,
     CanvasRenderer,
-    UniversalTransition
+    UniversalTransition,
   ]);
-
 };

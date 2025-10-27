@@ -247,7 +247,7 @@ export function GetProblemDailyList(startDate: string, endData: string, problemK
   });
 }
 
-export function GetProblemAttemptStatus(problemIds: string[]) {
+export function GetProblemAttemptStatus(problemIds: number[]) {
   return httpRequest({
     url: "/problem/attempt/status",
     method: "get",
