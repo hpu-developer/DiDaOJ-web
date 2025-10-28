@@ -297,7 +297,7 @@ onBeforeUnmount(() => {
             </template>
             <template v-else>
               <t-breadcrumb-item :to="{ name: 'discuss-list-problem' }"> 题目讨论</t-breadcrumb-item>
-              <t-breadcrumb-item :to="{ name: 'problem-detail', params: { problemId: discussData?.problemId } }">
+              <t-breadcrumb-item :to="{ name: 'problem-detail', params: { problemKey: discussData?.problemKey } }">
                 {{ discussData?.problemTitle }}
               </t-breadcrumb-item>
             </template>
