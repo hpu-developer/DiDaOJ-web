@@ -158,6 +158,15 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100035": {
         zh: "目前暂时无法抓取目标OJ题目",
       },
+      "100036": {
+        zh: "无法获取到指定验证码，请刷新重试",
+      },
+      "100037": {
+        zh: "暂时无法访问 vjudge 信息，请之后再试",
+      },
+      "100038": {
+        zh: "无法从 vjudge 指定用户页获取到验证码，请确认用户名与验证信息有效",
+      },
     });
   });
 }

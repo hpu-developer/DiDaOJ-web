@@ -23,6 +23,7 @@ const formData = ref({
 
 const vjudgeNickname = ref("");
 const vjudgeFormData = ref({
+  approved: false,
   username: "",
 });
 
@@ -105,19 +106,28 @@ const onSubmitBaseInfo = async (_: any) => {
 
 const onResetVjudge = () => {
   vjudgeNickname.value = "";
+  vjudgeFormData.value.approved = false;
   vjudgeFormData.value.username = loadedUserInfo.vjudge_id;
 };
 
 const onSubmitVjudge = async (_: any) => {
   isPostRunning.value = true;
   const requestData = {
+    approved: vjudgeFormData.value.approved,
     username: vjudgeFormData.value.username,
   } as UserModifyVjudgeRequest;
   try {
     const res = await PostUserModifyVjudge(requestData);
     if (res.code === 0) {
-      vjudgeNickname.value = res.data;
-      ShowTextTipsInfo(globalProperties, "保存成功");
+      if (requestData.approved || requestData.username == "") {
+        ShowTextTipsInfo(globalProperties, "保存成功");
+        loadedUserInfo.vjudge_id = requestData.username ? requestData.username : "";
+        onResetVjudge();
+      } else {
+        vjudgeFormData.value.approved = true;
+        vjudgeNickname.value = res.data;
+        ShowTextTipsInfo(globalProperties, "请根据提示验证账号所有权");
+      }
     } else {
       ShowErrorTips(globalProperties, res.code);
     }
@@ -169,7 +179,7 @@ onMounted(() => {
               <t-input v-model="vjudgeFormData.username" clearable placeholder="请输入用户名"></t-input>
             </t-form-item>
             <t-form-item name="username" label="随机昵称">
-              <t-input v-model="vjudgeNickname" readonly></t-input>
+              <t-input v-model="vjudgeNickname" readonly st></t-input>
             </t-form-item>
             <t-form-item>
               <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
@@ -192,7 +202,6 @@ onMounted(() => {
   align-items: center;
 }
 .yj-modify-form {
-  width: 300px;
   padding: 20px;
 }
 </style>

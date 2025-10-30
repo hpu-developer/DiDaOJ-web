@@ -46,5 +46,6 @@ export interface UserModifyInfoRequest {
 }
 
 export interface UserModifyVjudgeRequest {
+  approved: boolean;
   username?: string;
 }
