@@ -169,8 +169,15 @@ const onPageChange = async (pageInfo: { current: number; pageSize: number }) => 
 };
 
 const handleCreateDiscuss = async () => {
+  let query = {};
+  if (discussSearchForm.value.problemKey) {
+    query = {
+      problem_key: discussSearchForm.value.problemKey,
+    };
+  }
   await router.push({
     name: "discuss-create",
+    query: query,
   });
 };
 

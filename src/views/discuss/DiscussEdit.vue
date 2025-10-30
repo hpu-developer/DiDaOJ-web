@@ -3,13 +3,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
-import {
-  GetDiscussEdit,
-  GetDiscussImageToken,
-  ParseDiscuss,
-  PostDiscussCreate,
-  PostDiscussEdit,
-} from "@/apis/discuss.ts";
+import { GetDiscussEdit, GetDiscussImageToken, ParseDiscuss, PostDiscussCreate, PostDiscussEdit } from "@/apis/discuss.ts";
 import { HandleR2ImageUpload, UploadImageCallbackUrl } from "@/util/md-editor-v3.ts";
 import type { WatchStopHandle } from "vue";
 import type { Discuss, DiscussView } from "@/types/discuss.ts";
@@ -157,6 +151,10 @@ onMounted(async () => {
         discussEditForm.value.title = "";
         discussEditForm.value.problemKey = "";
         discussEditForm.value.content = "";
+
+        if (route.query.problem_key) {
+          discussEditForm.value.problemKey = route.query.problem_key as string;
+        }
       }
     },
     { immediate: true }
