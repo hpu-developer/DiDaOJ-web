@@ -287,6 +287,9 @@ onUnmounted(() => {
           </template>
           <t-list>
             <t-list-item>
+              <t-link href="https://www.hello-algo.com/" target="_blank">Hello 算法</t-link>
+            </t-list-item>
+            <t-list-item>
               <t-link href="https://oi-wiki.org/" target="_blank">OI Wiki</t-link>
             </t-list-item>
             <t-list-item>
