@@ -44,3 +44,7 @@ export interface UserModifyInfoRequest {
   slogan?: string;
   organization: string;
 }
+
+export interface UserModifyVjudgeRequest {
+  username?: string;
+}

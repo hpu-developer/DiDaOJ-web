@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { UserModifyInfo, UserModifyInfoRequest } from "@/types/user.ts";
-import { GetUserModifyInfo, PostUserModifyInfo } from "@/apis/user.ts";
 import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+
+import { GetUserModifyInfo, PostUserModifyInfo, PostUserModifyVjudge } from "@/apis/user.ts";
+import type { UserModifyInfo, UserModifyInfoRequest, UserModifyVjudgeRequest } from "@/types/user.ts";
+
 import router from "@/router";
 import { useUserStore } from "@/stores/user.ts";
 
@@ -10,11 +12,18 @@ const { globalProperties } = useCurrentInstance();
 
 const userStore = useUserStore();
 
+const editTab = ref("1");
+
 const formData = ref({
   nickname: "",
   slogan: "",
   password: "",
   confirmPassword: "",
+});
+
+const vjudgeNickname = ref("");
+const vjudgeFormData = ref({
+  username: "",
 });
 
 const isPostRunning = ref(false);
@@ -59,21 +68,22 @@ const loadUserInfo = async () => {
       return;
     }
     loadedUserInfo = res.data as UserModifyInfo;
-    onReset();
+    onResetBaseInfo();
+    onResetVjudge();
   } catch (e) {
   } finally {
     userLoading.value = false;
   }
 };
 
-const onReset = () => {
+const onResetBaseInfo = () => {
   formData.value.nickname = loadedUserInfo.nickname;
   formData.value.slogan = loadedUserInfo.slogan;
   formData.value.password = "";
   formData.value.confirmPassword = "";
 };
 
-const onSubmit = async (_: any) => {
+const onSubmitBaseInfo = async (_: any) => {
   isPostRunning.value = true;
   const requestData = {
     nickname: formData.value.nickname,
@@ -93,6 +103,29 @@ const onSubmit = async (_: any) => {
   }
 };
 
+const onResetVjudge = () => {
+  vjudgeNickname.value = "";
+  vjudgeFormData.value.username = loadedUserInfo.vjudge_id;
+};
+
+const onSubmitVjudge = async (_: any) => {
+  isPostRunning.value = true;
+  const requestData = {
+    username: vjudgeFormData.value.username,
+  } as UserModifyVjudgeRequest;
+  try {
+    const res = await PostUserModifyVjudge(requestData);
+    if (res.code === 0) {
+      vjudgeNickname.value = res.data;
+      ShowTextTipsInfo(globalProperties, "保存成功");
+    } else {
+      ShowErrorTips(globalProperties, res.code);
+    }
+  } finally {
+    isPostRunning.value = false;
+  }
+};
+
 onMounted(() => {
   loadUserInfo();
 });
@@ -101,18 +134,50 @@ onMounted(() => {
 <template>
   <t-card class="yj-login-card" title="欢迎使用DidaOJ~">
     <t-loading :loading="userLoading">
-      <t-form ref="form" :rules="formRules" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit" class="yj-login-form">
-        <t-form-item name="nickname" label="昵称">
-          <t-input v-model="formData.nickname" clearable placeholder="请输入昵称"></t-input>
-        </t-form-item>
-        <t-form-item name="slogan" label="Slogan">
-          <t-input v-model="formData.slogan" clearable placeholder="请输入Slogan"></t-input>
-        </t-form-item>
-        <t-form-item>
-          <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
-          <t-button theme="primary" type="submit" block :loading="isPostRunning">保存</t-button>
-        </t-form-item>
-      </t-form>
+      <t-tabs v-model="editTab" style="min-width: 500px">
+        <t-tab-panel value="1" label="基础信息" style="padding: 10px">
+          <t-form
+            ref="form"
+            :rules="formRules"
+            :data="formData"
+            :colon="true"
+            @reset="onResetBaseInfo"
+            @submit="onSubmitBaseInfo"
+            class="yj-modify-form"
+          >
+            <t-form-item name="nickname" label="昵称">
+              <t-input v-model="formData.nickname" clearable placeholder="请输入昵称"></t-input>
+            </t-form-item>
+            <t-form-item name="slogan" label="Slogan">
+              <t-input v-model="formData.slogan" clearable placeholder="请输入Slogan"></t-input>
+            </t-form-item>
+            <t-form-item>
+              <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
+              <t-button theme="primary" type="submit" block :loading="isPostRunning">保存</t-button>
+            </t-form-item>
+          </t-form>
+        </t-tab-panel>
+        <t-tab-panel value="2" label="VJUDGE" style="padding: 10px">
+          <t-alert>
+            <span>本站支持绑定<a href="https://vjudge.net/" target="_blank">vjudge.net</a>账号</span>
+          </t-alert>
+          <t-alert v-if="vjudgeNickname" style="margin-top: 10px; margin-bottom: 10px">
+            <span>请将<a href="https://vjudge.net/" target="_blank">vjudge.net</a>的昵称修改为下方随机昵称，保存后可还原</span>
+          </t-alert>
+          <t-form ref="form" :colon="true" @reset="onResetVjudge" @submit="onSubmitVjudge" class="yj-modify-form">
+            <t-form-item name="username" label="用户名">
+              <t-input v-model="vjudgeFormData.username" clearable placeholder="请输入用户名"></t-input>
+            </t-form-item>
+            <t-form-item name="username" label="随机昵称">
+              <t-input v-model="vjudgeNickname" readonly></t-input>
+            </t-form-item>
+            <t-form-item>
+              <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
+              <t-button theme="primary" type="submit" block :loading="isPostRunning">{{ vjudgeNickname ? "保存" : "绑定" }}</t-button>
+            </t-form-item>
+          </t-form>
+        </t-tab-panel>
+      </t-tabs>
     </t-loading>
   </t-card>
 </template>
@@ -126,7 +191,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
 }
-.yj-login-form {
+.yj-modify-form {
   width: 300px;
   padding: 20px;
 }

@@ -1,10 +1,7 @@
 import httpRequest from "@/apis/axios-api";
 import httpCommonRequest from "@/apis/axios-common";
 
-import md5 from "md5";
-
-import { UserInfo, UserInfoView, UserModifyInfoRequest } from "@/types/user.ts";
-import { PostRejudgeJob } from "@/apis/judge.ts";
+import { UserInfo, UserInfoView, UserModifyInfoRequest, UserModifyVjudgeRequest } from "@/types/user.ts";
 import { GetAvatarUrl } from "@/util/avatar.ts";
 
 export function ParseUser(item: UserInfo): UserInfoView {
@@ -64,6 +61,14 @@ export function GetUserModifyInfo() {
 export function PostUserModifyInfo(request: UserModifyInfoRequest) {
   return httpRequest({
     url: "/user/modify",
+    method: "post",
+    data: request,
+  });
+}
+
+export function PostUserModifyVjudge(request: UserModifyVjudgeRequest){
+  return httpRequest({
+    url: "/user/modify/vjudge",
     method: "post",
     data: request,
   });
