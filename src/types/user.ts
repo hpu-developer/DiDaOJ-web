@@ -36,6 +36,8 @@ export interface UserModifyInfo {
   slogan: string;
   email: string;
   organization: string;
+  real_name: string;
+  gender: string;
   vjudge_id: string;
 }
 

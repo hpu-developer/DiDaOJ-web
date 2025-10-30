@@ -17,6 +17,9 @@ const editTab = ref("1");
 const formData = ref({
   nickname: "",
   slogan: "",
+  gender: "",
+  realName: "",
+  organization: "",
   password: "",
   confirmPassword: "",
 });
@@ -80,6 +83,9 @@ const loadUserInfo = async () => {
 const onResetBaseInfo = () => {
   formData.value.nickname = loadedUserInfo.nickname;
   formData.value.slogan = loadedUserInfo.slogan;
+  formData.value.gender = loadedUserInfo.gender;
+  formData.value.realName = loadedUserInfo.real_name;
+  formData.value.organization = loadedUserInfo.organization;
   formData.value.password = "";
   formData.value.confirmPassword = "";
 };
@@ -89,6 +95,9 @@ const onSubmitBaseInfo = async (_: any) => {
   const requestData = {
     nickname: formData.value.nickname,
     slogan: formData.value.slogan,
+    gender: formData.value.gender,
+    real_name: formData.value.realName,
+    organization: formData.value.organization,
   } as UserModifyInfoRequest;
   try {
     const res = await PostUserModifyInfo(requestData);
@@ -160,6 +169,19 @@ onMounted(() => {
             </t-form-item>
             <t-form-item name="slogan" label="Slogan">
               <t-input v-model="formData.slogan" clearable placeholder="请输入Slogan"></t-input>
+            </t-form-item>
+            <t-form-item name="slogan" label="性别">
+              <t-select v-model="formData.gender" placeholder="请选择性别" clearable>
+                <t-option key="0" value="0" label="保密"></t-option>
+                <t-option key="1" value="1" label="男"></t-option>
+                <t-option key="2" value="2" label="女"></t-option>
+              </t-select>
+            </t-form-item>
+            <t-form-item name="slogan" label="组织">
+              <t-input v-model="formData.organization" clearable placeholder="请输入学校/公司/团体等"></t-input>
+            </t-form-item>
+            <t-form-item name="slogan" label="真实姓名">
+              <t-input v-model="formData.realName" clearable placeholder="真实姓名仅用在部分实名系统内"></t-input>
             </t-form-item>
             <t-form-item>
               <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
