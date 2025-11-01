@@ -191,7 +191,7 @@ onMounted(() => {
         </t-tab-panel>
         <t-tab-panel value="2" label="VJUDGE" style="padding: 10px">
           <t-alert>
-            <span>本站支持绑定<a href="https://vjudge.net/" target="_blank">vjudge.net</a>账号</span>
+            <span>本站支持绑定<a href="https://vjudge.net/" target="_blank">vjudge.net</a>账号，请输入目标用户名</span>
           </t-alert>
           <t-alert v-if="vjudgeNickname" style="margin-top: 10px; margin-bottom: 10px">
             <span>请将<a href="https://vjudge.net/" target="_blank">vjudge.net</a>的昵称修改为下方随机昵称，保存后可还原</span>

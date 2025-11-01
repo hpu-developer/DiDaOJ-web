@@ -25,7 +25,7 @@ export interface UserInfoView {
   slogan: string;
   email: string;
   organization: string;
-  accepted: number;
+  accept: number;
   attempt: number;
   avatar: string;
   vjudgeId: string;

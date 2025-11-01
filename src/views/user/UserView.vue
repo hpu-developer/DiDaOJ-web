@@ -30,6 +30,8 @@ let problemAttemptStatus = null as Record<string, ProblemAttemptStatus> | null;
 const vjudgeAcProblems = ref({} as Record<string, string[]>);
 const vjudgeFailProblems = ref({} as Record<string, string[]>);
 
+const userLink = ref("");
+
 const getProblemTheme = (problemId: number) => {
   let theme = "default";
   if (!problemAttemptStatus) {
@@ -96,6 +98,11 @@ const loadProblemAttemptStatus = async () => {
 
 const loadUserInfo = async (username: string) => {
   userLoading.value = true;
+  const routeData = router.resolve({
+    name: "judge-list",
+    query: { username: username },
+  });
+  userLink.value = routeData.href;
   try {
     let res = await GetUserInfo(username);
 
@@ -350,6 +357,7 @@ onMounted(async () => {
             <t-descriptions-item label="头像">
               <t-avatar shape="round" size="100px" :image="userData?.avatar" :hide-on-load-failed="false" />
             </t-descriptions-item>
+            <t-descriptions-item label="用户序号">{{ userData?.id }}</t-descriptions-item>
             <t-descriptions-item label="昵称">{{ userData?.nickname }}</t-descriptions-item>
             <t-descriptions-item label="Slogan">{{ userData?.slogan }}</t-descriptions-item>
             <t-descriptions-item label="邮箱">{{ userData?.email }}</t-descriptions-item>
@@ -358,7 +366,12 @@ onMounted(async () => {
             <t-descriptions-item label="提交数量">{{ userData?.attempt }}</t-descriptions-item>
           </t-descriptions>
         </div>
-        <div id="ojStaticsDiv" class="dida-statistics-chart"></div>
+        <div>
+          <div style="text-align: right; margin-right: 20px">
+            <t-link :href="userLink" :underline="true">前往查看最近提交</t-link>
+          </div>
+          <div id="ojStaticsDiv" class="dida-statistics-chart"></div>
+        </div>
       </t-col>
     </t-row>
   </t-loading>
