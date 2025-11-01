@@ -5,11 +5,42 @@ import { GetJudgeTypeStr } from "@/apis/judge.ts";
 
 import type { Problem, ProblemDaily, ProblemDailyView, ProblemTag, ProblemView } from "@/types/problem";
 import { UploadImageTokenResponse } from "@/util/md-editor-v3.ts";
+import { ProblemRank, ProblemRankView } from "@/types/rank.ts";
+import { GetRemoteJudgeTypeByStr } from "@/apis/remote.ts";
+import { GetJudgeLanguageStr, JudgeLanguage } from "@/apis/language.ts";
 
 export enum ProblemAttemptStatus {
   None = 0,
   Attempt = 1,
   Accept = 2,
+}
+
+export enum ProblemRankType {
+  Time = 0,
+  Memory = 1,
+  CodeLength = 2,
+}
+
+export function GetProblemRankTypeStr(type: ProblemRankType) {
+  switch (type) {
+    case ProblemRankType.Time:
+      return "优先用时";
+    case ProblemRankType.Memory:
+      return "优先内存";
+    case ProblemRankType.CodeLength:
+      return "优先代码长度";
+    default:
+      return "";
+  }
+}
+
+export function GetProblemRankTypes() {
+  return Object.values(ProblemRankType)
+    .filter((v) => typeof v === "number")
+    .map((value) => ({
+      value,
+      label: GetProblemRankTypeStr(value as ProblemRankType),
+    })) as { label: string; value: ProblemRankType }[];
 }
 
 export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag }): ProblemView {
@@ -136,6 +167,37 @@ export function ParseProblemDaily(item: ProblemDaily, tagsMap: { [key: number]: 
   return result;
 }
 
+export function ParseProblemRank(item: ProblemRank) {
+  const result: ProblemRankView = {} as ProblemRankView;
+
+  result.id = item.id;
+  if (item.time) {
+    // 保留到整数，向上取整
+    result.time = Math.ceil(item.time / 1000000) + "ms";
+  } else {
+    result.time = "-";
+  }
+  if (item.memory) {
+    // 保留两位数字
+    result.memory = (item.memory / 1024 / 1024).toFixed(2) + "MB";
+  } else {
+    result.memory = "-";
+  }
+
+  result.language = item.language;
+  result.codeLength = item.code_length;
+  if (item.insert_time) {
+    result.insertTime = new Date(item.insert_time).toLocaleString();
+  } else {
+    result.insertTime = "-";
+  }
+  result.inserter = item.inserter;
+  result.inserterUsername = item.inserter_username;
+  result.inserterNickname = item.inserter_nickname;
+  result.inserterEmail = item.inserter_email;
+  return result;
+}
+
 export function GetProblem(problemKey: string, contestId: number | undefined, problemIndex: number | undefined) {
   const params = {} as any;
   if (problemKey) {
@@ -244,6 +306,29 @@ export function GetProblemDailyList(startDate: string, endData: string, problemK
   return httpRequest({
     url: `/problem/daily/list?${new URLSearchParams(params).toString()}`,
     method: "get",
+  });
+}
+
+export function GetProblemStatistics(problemKey: string, language: JudgeLanguage | undefined) {
+  return httpRequest({
+    url: "/problem/statistics",
+    method: "get",
+    params: {
+      key: problemKey,
+      language: language,
+    },
+  });
+}
+
+export function GetProblemRank(problemKey: string, language: JudgeLanguage | undefined, rankType: ProblemRankType) {
+  return httpRequest({
+    url: "/problem/rank",
+    method: "get",
+    params: {
+      key: problemKey,
+      language: language,
+      type: rankType,
+    },
   });
 }
 

@@ -15,7 +15,7 @@ import {
   GetJudgeStatusTheme,
   IsJudgeStatusValid,
 } from "@/apis/judge.ts";
-import { handleGotoContestProblem } from "@/util/router.ts";
+import { handleGotoContestProblem, handleGotoJudgeJob } from "@/util/router.ts";
 import { GetJudgeLanguageStr } from "@/apis/language.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
@@ -34,7 +34,7 @@ const showJudgeJob = ref<JudgeJobView | null>(null);
 
 const isCodeLoading = ref(false);
 
-let contestId = -1;
+let contestId = ref(-1);
 
 const searchForm = ref({
   problemKey: "",
@@ -51,7 +51,7 @@ const listColumns = ref([
       let clickFunction = null;
       if (IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
         clickFunction = () => {
-          handleGotoJudgeJob(data.row.id);
+          handleGotoJudgeJob(data.row.id, contestId.value);
         };
       }
       return (
@@ -65,9 +65,9 @@ const listColumns = ref([
     title: "问题",
     colKey: "problemKey",
     cell: (_: any, data: any) => {
-      if (contestId) {
+      if (contestId.value) {
         return (
-          <t-button variant="text" onClick={() => handleGotoContestProblem(contestId, data.row.contestProblemIndex)}>
+          <t-button variant="text" onClick={() => handleGotoContestProblem(contestId.value, data.row.contestProblemIndex)}>
             {GetContestProblemIndexStr(data.row.contestProblemIndex)}
           </t-button>
         );
@@ -87,7 +87,7 @@ const listColumns = ref([
       let clickFunction = null;
       if (IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
         clickFunction = () => {
-          handleGotoJudgeJob(data.row.id);
+          handleGotoJudgeJob(data.row.id, contestId.value);
         };
       }
       const status = data.row.status as JudgeStatus;
@@ -214,28 +214,6 @@ const handleGotoProblem = (id: string) => {
   router.push({ path: "/problem/" + id });
 };
 
-const handleGotoJudgeJob = (id: string | undefined) => {
-  if (!id) {
-    return;
-  }
-  if (contestId > 0) {
-    router.push({
-      name: "contest-judge-detail",
-      params: {
-        contestId: contestId,
-        judgeId: id,
-      },
-    });
-  } else {
-    router.push({
-      name: "judge-detail",
-      params: {
-        judgeId: id,
-      },
-    });
-  }
-};
-
 const handleGotoUser = (user: string) => {
   if (!user) {
     return;
@@ -283,7 +261,7 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
   try {
     const { current, pageSize } = paginationInfo;
     const res = await GetJudgeJobList(
-      contestId,
+      contestId.value,
       searchForm.value.problemKey,
       searchForm.value.username,
       searchForm.value.language,
@@ -295,8 +273,8 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
     if (res.code === 0) {
       if (!res.data.has_auth) {
         ShowTextTipsInfo(globalProperties, "您目前没有权限查看评测记录");
-        if (contestId) {
-          await router.push({ name: "contest-detail", params: { contestId: contestId } });
+        if (contestId.value) {
+          await router.push({ name: "contest-detail", params: { contestId: contestId.value } });
         } else {
           await router.push({ name: "judge-list" });
         }
@@ -351,9 +329,9 @@ onMounted(async () => {
     () => route.query,
     (newQuery) => {
       if (Array.isArray(route.params.contestId)) {
-        contestId = Number(route.params.contestId[0]);
+        contestId.value = Number(route.params.contestId[0]);
       } else {
-        contestId = Number(route.params.contestId);
+        contestId.value = Number(route.params.contestId);
       }
       searchForm.value.problemKey = (newQuery.problem_key as string) || "";
       searchForm.value.username = (newQuery.username as string) || "";
@@ -437,7 +415,7 @@ onBeforeUnmount(() => {
       <t-link
         @click="
           () => {
-            handleGotoJudgeJob(showJudgeJob?.id);
+            handleGotoJudgeJob(showJudgeJob?.id, contestId);
           }
         "
       >

@@ -42,6 +42,45 @@ export const GetJudgeTypeStr = (type: JudgeType) => {
       return "未知";
   }
 };
+const JudgeStatusColorMap: Partial<Record<JudgeStatus, string>> = {
+  [JudgeStatus.Init]: "#95a5a6",
+  [JudgeStatus.Rejudge]: "#7f8c8d",
+  [JudgeStatus.Submitting]: "#3498db",
+  [JudgeStatus.Queuing]: "#2980b9",
+  [JudgeStatus.Compiling]: "#9b59b6",
+  [JudgeStatus.Running]: "#8e44ad",
+  [JudgeStatus.Accept]: "#2ecc71",
+  [JudgeStatus.PE]: "rgba(225,255,30,0.5)",
+  [JudgeStatus.WA]: "#e74c3c",
+  [JudgeStatus.TLE]: "#e67e22",
+  [JudgeStatus.MLE]: "#d35400",
+  [JudgeStatus.OLE]: "#f39c12",
+  [JudgeStatus.RE]: "#c0392b",
+  [JudgeStatus.CE]: "#7f8c8d",
+  [JudgeStatus.CLE]: "#d35400",
+  [JudgeStatus.JudgeFail]: "#e74c3c",
+  [JudgeStatus.SubmitFail]: "#e74c3c",
+  [JudgeStatus.Unknown]: "#bdc3c7",
+};
+
+// 用于缓存未定义状态的随机颜色，保证状态 -> 颜色稳定
+const RandomColorCache: Record<number, string> = {};
+
+const randomColor = () =>
+  "#" +
+  Math.floor(Math.random() * 0xffffff)
+    .toString(16)
+    .padStart(6, "0");
+
+export const GetJudgeStatusColor = (status: JudgeStatus) => {
+  if (JudgeStatusColorMap[status]) {
+    return JudgeStatusColorMap[status];
+  }
+  if (!RandomColorCache[status]) {
+    RandomColorCache[status] = randomColor();
+  }
+  return RandomColorCache[status];
+};
 
 export const GetJudgeStatusStr = (status: JudgeStatus) => {
   switch (status) {
@@ -82,7 +121,7 @@ export const GetJudgeStatusStr = (status: JudgeStatus) => {
     case JudgeStatus.Unknown:
       return "未知";
     default:
-      return status;
+      return "无效";
   }
 };
 
@@ -185,7 +224,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   result.contestProblemIndex = item.contest_problem_index;
   result.status = item.status;
 
-  if (item.score == undefined || (IsJudgeStatusRunning(item.status) || !IsJudgeStatusValid(item.status))) {
+  if (item.score == undefined || IsJudgeStatusRunning(item.status) || !IsJudgeStatusValid(item.status)) {
     result.score = "-";
   } else {
     result.score = (item.score / 10).toString();

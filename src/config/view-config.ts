@@ -8,6 +8,7 @@ import { AuthType } from "@/auth";
 
 import ProblemList from "@/views/problem/ProblemList.vue";
 import ProblemDetail from "@/views/problem/ProblemDetail.vue";
+import ProblemStatistics from "@/views/problem/ProblemStatistics.vue";
 import ProblemDailyList from "@/views/problem/ProblemDailyList.vue";
 import ProblemDailyEdit from "@/views/problem/ProblemDailyEdit.vue";
 import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
@@ -57,6 +58,16 @@ const viewsConfig = [
     title: "问题详情",
     icon: "list",
     component: ProblemDetail,
+  },
+  {
+    name: "problem-statistics",
+    tab: "problem",
+    sidebar: "problem-list",
+    path: "statistics/:problemKey*",
+    title: "提交统计",
+    icon: "base-station",
+    needLogin: false,
+    component: ProblemStatistics,
   },
   {
     name: "problem-daily-list",

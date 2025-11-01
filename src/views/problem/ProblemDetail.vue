@@ -194,6 +194,15 @@ const handleClickDiscuss = () => {
   }
 };
 
+const handleClickStatistics = () => {
+  router.push({
+    name: "problem-statistics",
+    params: {
+      problemKey: problemKey,
+    },
+  });
+};
+
 const handleClickRecommend = () => {
   router.push({
     name: "problem-recommend",
@@ -564,6 +573,7 @@ onBeforeUnmount(() => {
             <t-space>
               <t-button @click="handleClickJudgeStatus">提交记录</t-button>
               <t-button @click="handleClickDiscuss">题目讨论</t-button>
+              <t-button @click="handleClickStatistics" v-if="problemKey">题目统计</t-button>
               <t-button @click="handleClickRecommend" v-if="problemKey">题目推荐</t-button>
             </t-space>
           </div>
