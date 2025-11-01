@@ -8,6 +8,7 @@ import { Discuss, DiscussView } from "@/types/discuss.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { handleGotoProblem, handleGotoUsername } from "@/util/router.ts";
+import { GetAvatarUrl } from "@/util/avatar.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -40,10 +41,14 @@ const listColumns2 = [
     colKey: "inserterNickname",
     width: "200",
     cell: (_: any, data: any) => {
+      const avatarUrl = GetAvatarUrl(data.row.inserterUsername, data.row.inserterEmail);
       return (
-        <t-button variant="text" onClick={async () => await handleGotoUsername(router, data.row.inserterUsername)}>
-          {data.row.inserterNickname}
-        </t-button>
+        <t-space>
+          <t-avatar shape="round" size="32px" image={avatarUrl} hide-on-load-failed={false} />
+          <t-button variant="text" onClick={async () => await handleGotoUsername(router, data.row.inserterUsername)}>
+            {data.row.inserterNickname}
+          </t-button>
+        </t-space>
       );
     },
   },

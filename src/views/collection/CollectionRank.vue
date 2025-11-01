@@ -7,6 +7,7 @@ import { GetCollectionRank } from "@/apis/collection.ts";
 import type { CollectionRank, CollectionRankView } from "@/types/collection.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { JudgeStatus } from "@/apis/judge.ts";
+import { GetAvatarUrl } from "@/util/avatar.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -29,6 +30,29 @@ const listColumns = ref<BaseTableCol[]>([
     align: "center",
   },
   {
+    title: "昵称",
+    colKey: "nickname",
+    cell: (_: any, data: any) => {
+      const avatarUrl = GetAvatarUrl(data.row.username, data.row.email);
+      return (
+        <t-space>
+          <t-avatar shape="round" size="32px" image={avatarUrl} hide-on-load-failed={false} />
+          <t-button
+            variant="text"
+            onClick={() =>
+              router.push({
+                name: "user",
+                params: { username: data.row.username },
+              })
+            }
+          >
+            {data.row.nickname}
+          </t-button>
+        </t-space>
+      );
+    },
+  },
+  {
     title: "Username",
     colKey: "username",
     cell: (_: any, data: any) => {
@@ -43,25 +67,6 @@ const listColumns = ref<BaseTableCol[]>([
           }
         >
           {data.row.username}
-        </t-button>
-      );
-    },
-  },
-  {
-    title: "昵称",
-    colKey: "nickname",
-    cell: (_: any, data: any) => {
-      return (
-        <t-button
-          variant="text"
-          onClick={() =>
-            router.push({
-              name: "user",
-              params: { username: data.row.username },
-            })
-          }
-        >
-          {data.row.nickname}
         </t-button>
       );
     },
@@ -139,6 +144,7 @@ const fetchData = async (needLoading: boolean) => {
             userId: item.inserter,
             username: item.inserter_username,
             nickname: item.inserter_nickname,
+            email: item.inserter_email,
           } as CollectionRankView;
           result.accept = item.accept;
           results.push(result);

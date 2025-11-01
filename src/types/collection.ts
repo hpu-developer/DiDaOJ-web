@@ -30,6 +30,7 @@ export interface CollectionRank {
   inserter: number;
   inserter_username: string;
   inserter_nickname: string;
+  inserter_email: string;
   accept: number;
 }
 
@@ -39,6 +40,7 @@ export interface CollectionRankView {
   userId: number;
   username: string;
   nickname: string;
+  email: string;
   accept: number;
 }
 

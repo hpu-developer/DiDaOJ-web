@@ -63,6 +63,7 @@ export interface ContestRank {
   inserter: number;
   inserter_username: string;
   inserter_nickname: string;
+  inserter_email: string;
   problems: ContestRankProblem[];
 }
 

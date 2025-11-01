@@ -3,9 +3,17 @@ import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { GetRankACAll, GetRankACProblem, GetRankACProblemToday, GetRankACProblemDay7, GetRankACProblemDay30, GetRankACProblemYear } from "@/apis/rank.ts";
+import {
+  GetRankACAll,
+  GetRankACProblem,
+  GetRankACProblemToday,
+  GetRankACProblemDay7,
+  GetRankACProblemDay30,
+  GetRankACProblemYear,
+} from "@/apis/rank.ts";
 import { UserRank } from "@/types/rank.ts";
 import { JudgeStatus } from "@/apis/judge.ts";
+import { GetAvatarUrl } from "@/util/avatar.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -56,10 +64,14 @@ const userColumns = [
     title: "用户名",
     colKey: "username",
     cell: (_: any, data: any) => {
+      const avatarUrl = GetAvatarUrl(data.row.username, data.row.email);
       return (
-        <t-button variant="dashed" onClick={() => handleGotoUsername(data.row.username)}>
-          {data.row.username}
-        </t-button>
+        <t-space>
+          <t-avatar shape="round" size="32px" image={avatarUrl} hide-on-load-failed={false} />
+          <t-button variant="dashed" onClick={() => handleGotoUsername(data.row.username)}>
+            {data.row.username}
+          </t-button>
+        </t-space>
       );
     },
   },

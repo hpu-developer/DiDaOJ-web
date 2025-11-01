@@ -32,11 +32,7 @@ export function ParseUser(item: UserInfo): UserInfoView {
   result.accept = item.accept;
   result.attempt = item.attempt;
   result.vjudgeId = item.vjudge_id;
-  if (item.email) {
-    result.avatar = GetAvatarUrl(item.email);
-  } else {
-    result.avatar = GetAvatarUrl(item.username + "@avatar.com");
-  }
+  result.avatar = GetAvatarUrl(item.username, item.email);
   return result;
 }
 

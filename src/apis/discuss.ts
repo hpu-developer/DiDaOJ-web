@@ -11,11 +11,7 @@ export function ParseDiscuss(item: Discuss): DiscussView {
   result.inserterUsername = item.inserter_username;
   result.inserterNickname = item.inserter_nickname;
   result.inserterEmail = item.inserter_email;
-  if (result.inserterEmail) {
-    result.avatarUrl = GetAvatarUrl(result.inserterEmail);
-  } else {
-    result.avatarUrl = GetAvatarUrl(result.inserterUsername + "@avatar.com");
-  }
+  result.avatarUrl = GetAvatarUrl(result.inserterUsername, result.inserterEmail);
   result.title = item.title;
   result.content = item.content;
   if (item.insert_time) {
@@ -45,11 +41,7 @@ export function ParseDiscussComment(item: DiscussComment): DiscussCommentView {
   result.inserterUsername = item.inserter_username;
   result.inserterNickname = item.inserter_nickname;
   result.inserterEmail = item.inserter_email;
-  if (result.inserterEmail) {
-    result.avatarUrl = GetAvatarUrl(result.inserterEmail);
-  } else {
-    result.avatarUrl = GetAvatarUrl(result.inserterUsername + "@avatar.com");
-  }
+  result.avatarUrl = GetAvatarUrl(result.inserterUsername, result.inserterEmail);
   result.content = "";
   if (item.content) {
     result.content = item.content;

@@ -11,6 +11,7 @@ import { GetSecondFromDuration, GetTimeStringBySeconds } from "@/time/library.ts
 import { StarIcon, StarFilledIcon } from "tdesign-icons-vue-next";
 import { useContestStore } from "@/stores/contest.ts";
 import { TNode } from "tdesign-vue-next/es/common";
+import { GetAvatarUrl } from "@/util/avatar.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -138,9 +139,11 @@ const listColumns1 = [
           ></t-button>
         );
       }
+      const avatarUrl = GetAvatarUrl(data.row.username, data.row.email);
       return (
         <div class="rank-nickname-cell">
           <t-space>
+            <t-avatar shape="round" size="32px" image={avatarUrl} hide-on-load-failed={false} />
             <t-tooltip content={data.row.nickname}>
               <t-button
                 variant="text"
@@ -318,6 +321,7 @@ const loadProgress = () => {
       userId: item.inserter,
       username: item.inserter_username,
       nickname: item.inserter_nickname,
+      email: item.inserter_email,
     } as ContestRankView;
     let acCount = 0;
     let penalty = 0;
