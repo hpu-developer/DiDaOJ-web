@@ -52,13 +52,6 @@ const listColumns = ref([
     },
   },
   {
-    title: "权限",
-    colKey: "private",
-    cell: (_: any, data: any) => {
-      return data.row.private ? "私有" : "公开";
-    },
-  },
-  {
     title: "开始时间",
     colKey: "startTime",
   },
@@ -99,9 +92,36 @@ const listColumns = ref([
           />
         );
       } else if (nowTime > endTime) {
-        return <t-tag theme="danger">已结束</t-tag>;
+        return (
+          <t-tag theme="danger" variant="light">
+            已结束
+          </t-tag>
+        );
       } else {
-        return <t-tag theme="warning">未开始</t-tag>;
+        return (
+          <t-tag theme="warning" variant="light">
+            未开始
+          </t-tag>
+        );
+      }
+    },
+  },
+  {
+    title: "权限",
+    colKey: "private",
+    cell: (_: any, data: any) => {
+      if (data.row.private) {
+        return (
+          <t-tag theme="danger" variant="outline">
+            私有
+          </t-tag>
+        );
+      } else {
+        return (
+          <t-tag theme="success" variant="outline">
+            公开
+          </t-tag>
+        );
       }
     },
   },
