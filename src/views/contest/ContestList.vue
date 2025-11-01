@@ -2,7 +2,7 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, GetEllipsisText, ShowErrorTips, useCurrentInstance } from "@/util";
 import { GetContestList, ParseContest } from "@/apis/contest.ts";
 import { handleGotoUsername } from "@/util/router.ts";
 import { Contest, ContestView } from "@/types/contest.ts";
@@ -30,10 +30,13 @@ const listColumns = ref([
     title: "标题",
     colKey: "title",
     cell: (_: any, data: any) => {
+      const text = GetEllipsisText(data.row.title, 25);
       return (
-        <t-button variant="text" onClick={() => handleGotoContest(data.row.id)}>
-          {data.row.title}
-        </t-button>
+        <t-tooltip content={data.row.title}>
+          <t-button variant="text" onClick={() => handleGotoContest(data.row.id)}>
+            {text}
+          </t-button>
+        </t-tooltip>
       );
     },
   },
@@ -60,8 +63,47 @@ const listColumns = ref([
     colKey: "startTime",
   },
   {
-    title: "结束时间",
+    title: "时长",
     colKey: "endTime",
+    cell: (_: any, data: any) => {
+      const startTime = data.row.startTime as string;
+      const endTime = data.row.endTime as string;
+      const duration = Date.parse(endTime) - Date.parse(startTime);
+      return `${Math.round((duration / (1000 * 60) / 60) * 10) / 10} 小时`;
+    },
+  },
+  {
+    title: "状态",
+    colKey: "status",
+    width: 90,
+    cell: (_: any, data: any) => {
+      let nowTime = data.row.nowTime;
+      const startTime = new Date(data.row.startTime);
+      const endTime = new Date(data.row.endTime);
+      if (nowTime >= startTime && nowTime <= endTime) {
+        const totalDuration = endTime.getTime() - startTime.getTime();
+        const elapsedDuration = nowTime.getTime() - startTime.getTime();
+        let percentage = Math.round((elapsedDuration / totalDuration) * 1000) / 10;
+        if (percentage >= 100) {
+          percentage = 99.99;
+        }
+        return (
+          <t-progress
+            color="#00B16B"
+            status="active"
+            theme="plump"
+            percentage={percentage}
+            label={() => {
+              return percentage.toString() + "%";
+            }}
+          />
+        );
+      } else if (nowTime > endTime) {
+        return <t-tag theme="danger">已结束</t-tag>;
+      } else {
+        return <t-tag theme="warning">未开始</t-tag>;
+      }
+    },
   },
 ]);
 
@@ -69,6 +111,8 @@ const dataLoading = ref(false);
 
 let currentPage = 1;
 let currentPageSize = 50;
+
+let updateTimerHandle = -1;
 
 const pagination = ref({
   current: currentPage,
@@ -119,6 +163,15 @@ const handleResetSearch = async () => {
   });
 };
 
+const handleUpdateNowTime = () => {
+  const now = new Date();
+  if (contestViews.value) {
+    for (let i = 0; i < contestViews.value.length; i++) {
+      contestViews.value[i].nowTime = now;
+    }
+  }
+};
+
 const fetchData = async (paginationInfo: { current: number; pageSize: number }, needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
@@ -137,6 +190,18 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
         }
       }
       pagination.value = { ...pagination.value, total: res.data.total_count };
+
+      handleUpdateNowTime();
+      updateTimerHandle = setInterval(() => {
+        if (!viewActive) {
+          if (updateTimerHandle) {
+            clearInterval(updateTimerHandle);
+            updateTimerHandle = null;
+          }
+          return;
+        }
+        handleUpdateNowTime();
+      }, 1000); // 每分钟更新一次当前时间显示
     } else {
       if (needLoading) {
         ShowErrorTips(globalProperties, res.code);

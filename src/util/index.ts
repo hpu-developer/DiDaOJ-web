@@ -100,11 +100,23 @@ export function CloseTips(properties: ComponentCustomProperties & Record<string,
 }
 
 // 计算省略文本
-export function GetEllipsisText(text: string, length: number) {
-  if (text.length <= length) {
-    return text;
+// 计算省略文本：英文与英文标点算 0.5，其他算 1
+export function GetEllipsisText(text: string, maxLen: number) {
+  let curLen = 0;
+  let result = "";
+  for (const ch of text) {
+    const isAscii = ch.charCodeAt(0) <= 127;
+    const charLen = isAscii ? 0.5 : 1;
+    if (curLen + charLen > maxLen) {
+      break;
+    }
+    result += ch;
+    curLen += charLen;
   }
-  return text.slice(0, length) + "...";
+  if (result.length === text.length) {
+    return result;
+  }
+  return result + "...";
 }
 
 export function formatDate(date: Date | string | number): string {

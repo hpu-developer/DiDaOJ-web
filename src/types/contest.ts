@@ -45,6 +45,7 @@ export interface ContestView {
   modifyTime: string;
   startTime: string;
   endTime: string;
+  nowTime: Date;
   private: boolean;
   description: string;
   notification: string;
