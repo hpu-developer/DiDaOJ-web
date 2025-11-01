@@ -34,6 +34,7 @@ export interface JudgeJob {
   inserter: number;
   inserter_username: string;
   inserter_nickname: string;
+  inserter_email: string;
   language: JudgeLanguage;
   insert_time: string;
   code?: string;
@@ -60,6 +61,7 @@ export interface JudgeJobView {
   inserter: number;
   inserterUsername: string;
   inserterNickname: string;
+  inserterEmail: string;
   language: JudgeLanguage;
   insertTime: string;
   code?: string;

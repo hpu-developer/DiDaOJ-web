@@ -213,6 +213,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   result.inserter = item.inserter;
   result.inserterUsername = item.inserter_username;
   result.inserterNickname = item.inserter_nickname;
+  result.inserterEmail = item.inserter_email;
   result.code = item.code;
   result.compileMessage = item.compile_message;
   result.taskCurrent = item.task_current;

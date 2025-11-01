@@ -19,6 +19,7 @@ import { AuthType } from "@/auth";
 import { useUserStore } from "@/stores/user.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import { handleGotoContestProblem } from "@/util/router.ts";
+import { GetAvatarUrl } from "@/util/avatar.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -106,10 +107,14 @@ const ListColumns = ref([
     colKey: "inserter",
     width: 200,
     cell: (_: any, data: any) => {
+      const avatarUrl = GetAvatarUrl(data.row.inserterUsername, data.row.inserterEmail);
       return (
-        <t-button variant="text" onClick={() => handleGotoUser(data.row.inserterUsername)}>
-          {data.row.inserterNickname}
-        </t-button>
+        <t-space>
+          <t-avatar shape="round" size="32px" image={avatarUrl} hide-on-load-failed={false} />
+          <t-button variant="text" onClick={() => handleGotoUser(data.row.inserterUsername)}>
+            {data.row.inserterNickname}
+          </t-button>
+        </t-space>
       );
     },
   },
