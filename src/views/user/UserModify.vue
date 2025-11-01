@@ -200,7 +200,7 @@ onMounted(() => {
             <t-form-item name="username" label="用户名">
               <t-input v-model="vjudgeFormData.username" clearable placeholder="请输入用户名"></t-input>
             </t-form-item>
-            <t-form-item name="username" label="随机昵称">
+            <t-form-item name="username" label="随机昵称" v-if="vjudgeNickname">
               <t-input v-model="vjudgeNickname" readonly st></t-input>
             </t-form-item>
             <t-form-item>
