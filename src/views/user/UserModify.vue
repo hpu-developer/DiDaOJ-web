@@ -2,7 +2,7 @@
 import { onMounted, ref } from "vue";
 import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 
-import { GetUserModifyInfo, PostUserModifyInfo, PostUserModifyVjudge } from "@/apis/user.ts";
+import { GetUserGenderKey, GetUserModifyInfo, PostUserModifyInfo, PostUserModifyVjudge } from "@/apis/user.ts";
 import type { UserModifyInfo, UserModifyInfoRequest, UserModifyVjudgeRequest } from "@/types/user.ts";
 
 import router from "@/router";
@@ -83,7 +83,7 @@ const loadUserInfo = async () => {
 const onResetBaseInfo = () => {
   formData.value.nickname = loadedUserInfo.nickname;
   formData.value.slogan = loadedUserInfo.slogan;
-  formData.value.gender = loadedUserInfo.gender;
+  formData.value.gender = GetUserGenderKey(loadedUserInfo.gender);
   formData.value.realName = loadedUserInfo.real_name;
   formData.value.organization = loadedUserInfo.organization;
   formData.value.password = "";
@@ -172,16 +172,16 @@ onMounted(() => {
             </t-form-item>
             <t-form-item name="slogan" label="性别">
               <t-select v-model="formData.gender" placeholder="请选择性别" clearable>
-                <t-option key="0" value="0" label="保密"></t-option>
-                <t-option key="1" value="1" label="男"></t-option>
-                <t-option key="2" value="2" label="女"></t-option>
+                <t-option key="0" value="unkown" label="保密"></t-option>
+                <t-option key="1" value="male" label="男"></t-option>
+                <t-option key="2" value="female" label="女"></t-option>
               </t-select>
             </t-form-item>
             <t-form-item name="slogan" label="组织">
               <t-input v-model="formData.organization" clearable placeholder="请输入学校/公司/团体等"></t-input>
             </t-form-item>
             <t-form-item name="slogan" label="真实姓名">
-              <t-input v-model="formData.realName" clearable placeholder="真实姓名仅用在部分实名系统内"></t-input>
+              <t-input v-model="formData.realName" clearable placeholder="真实姓名仅用在部分需要实名的系统"></t-input>
             </t-form-item>
             <t-form-item>
               <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>

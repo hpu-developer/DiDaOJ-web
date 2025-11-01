@@ -23,6 +23,9 @@ const formData = ref({
   password: "",
   confirmPassword: "",
   nickname: "",
+  gender: "",
+  realName: "",
+  organization: "",
   email: "",
   emailKey: "",
 });
@@ -56,6 +59,7 @@ const formRules = ref({
     { min: 1, message: "昵称至少1个字符" },
     { max: 30, message: "昵称最多30个字符" },
   ],
+  organization: [{ max: 30, message: "组织最多30个字符" }],
   email: [
     { required: true, message: "请填写邮箱" },
     { pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, message: "邮箱格式不正确" },
@@ -175,7 +179,16 @@ const onSubmit = ({ validateResult, firstError, e }: any) => {
   }
 
   isRegisterRunning.value = true;
-  PostUserRegister(formData.value.username, formData.value.password, formData.value.email, formData.value.emailKey, formData.value.nickname)
+  PostUserRegister(
+    formData.value.username,
+    formData.value.password,
+    formData.value.email,
+    formData.value.emailKey,
+    formData.value.nickname,
+    formData.value.gender,
+    formData.value.realName,
+    formData.value.organization
+  )
     .then((res) => {
       if (res.code === 0) {
         ShowTextTipsInfo(globalProperties, "注册成功，可使用账号信息登录");
@@ -220,6 +233,19 @@ onBeforeUnmount(() => {
       </t-form-item>
       <t-form-item name="nickname" label="昵称">
         <t-input v-model="formData.nickname" clearable placeholder="用于优先在网站各处展示"></t-input>
+      </t-form-item>
+      <t-form-item name="slogan" label="性别">
+        <t-select v-model="formData.gender" placeholder="请选择性别" clearable>
+          <t-option key="0" value="unkown" label="保密"></t-option>
+          <t-option key="1" value="male" label="男"></t-option>
+          <t-option key="2" value="female" label="女"></t-option>
+        </t-select>
+      </t-form-item>
+      <t-form-item name="slogan" label="组织">
+        <t-input v-model="formData.organization" clearable placeholder="请输入学校/公司/团体等"></t-input>
+      </t-form-item>
+      <t-form-item name="slogan" label="真实姓名">
+        <t-input v-model="formData.realName" clearable placeholder="真实姓名仅用在部分需要实名的系统"></t-input>
       </t-form-item>
       <t-form-item name="email" label="邮箱">
         <t-input v-model="formData.email" clearable placeholder="请填写常用邮箱"></t-input>

@@ -4,6 +4,23 @@ import httpCommonRequest from "@/apis/axios-common";
 import { UserInfo, UserInfoView, UserModifyInfoRequest, UserModifyVjudgeRequest } from "@/types/user.ts";
 import { GetAvatarUrl } from "@/util/avatar.ts";
 
+export enum UserGender {
+  Unknown = 0,
+  Male = 1,
+  Female = 2,
+}
+
+export function GetUserGenderKey(gender: UserGender): string {
+  switch (gender) {
+    case UserGender.Male:
+      return "male";
+    case UserGender.Female:
+      return "female";
+    default:
+      return "unkown";
+  }
+}
+
 export function ParseUser(item: UserInfo): UserInfoView {
   const result: any = {};
   result.id = item.id;
@@ -66,7 +83,7 @@ export function PostUserModifyInfo(request: UserModifyInfoRequest) {
   });
 }
 
-export function PostUserModifyVjudge(request: UserModifyVjudgeRequest){
+export function PostUserModifyVjudge(request: UserModifyVjudgeRequest) {
   return httpRequest({
     url: "/user/modify/vjudge",
     method: "post",
@@ -113,7 +130,16 @@ export function PostUserRegisterEmailKey(token: string, email: string) {
   });
 }
 
-export function PostUserRegister(username: string, password: string, email: string, key: string, nickname: string) {
+export function PostUserRegister(
+  username: string,
+  password: string,
+  email: string,
+  key: string,
+  nickname: string,
+  gender: string,
+  realName: string,
+  organization: string
+) {
   return httpRequest({
     url: "/user/register",
     method: "post",
@@ -123,6 +149,9 @@ export function PostUserRegister(username: string, password: string, email: stri
       email: email,
       key: key,
       nickname: nickname,
+      gender: gender,
+      real_name: realName,
+      organization: organization,
     },
   });
 }
