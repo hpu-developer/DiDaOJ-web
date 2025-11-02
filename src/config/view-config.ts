@@ -27,6 +27,7 @@ import ContestList from "@/views/contest/ContestList.vue";
 import ContestDetail from "@/views/contest/ContestDetail.vue";
 import ContestRank from "@/views/contest/ContestRank.vue";
 import ContestEdit from "@/views/contest/ContestEdit.vue";
+import ContestStatistics from "@/views/contest/ContestStatistics.vue";
 
 import DiscussList from "@/views/discuss/DiscussList.vue";
 import DiscussDetail from "@/views/discuss/DiscussDetail.vue";
@@ -271,6 +272,15 @@ const viewsConfig = [
     title: "讨论详情",
     icon: "list",
     component: DiscussDetail,
+  },
+  {
+    name: "contest-statistics",
+    tab: "contest-detail-tab",
+    sidebar: "contest-statistics",
+    path: ":contestId+/statistics",
+    title: "提交统计",
+    icon: "list",
+    component: ContestStatistics,
   },
 
   {

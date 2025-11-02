@@ -3,6 +3,7 @@ import httpRequest from "@/apis/axios-api";
 
 import type { Contest, ContestView, ContestEditRequest, ContestProblem } from "@/types/contest";
 import { ProblemView } from "@/types/problem.ts";
+import { JudgeLanguage } from "@/apis/language.ts";
 
 export function GetContestProblemIndexStr(index: number): string {
   let result = "";
@@ -126,6 +127,17 @@ export function GetContestRank(id: number) {
   return httpRequest({
     url: "/contest/rank" + "?id=" + id,
     method: "get",
+  });
+}
+
+export function GetContestStatistics(id: number, language: JudgeLanguage | undefined) {
+  return httpRequest({
+    url: "/contest/statistics",
+    method: "get",
+    params: {
+      id: id,
+      language: language,
+    },
   });
 }
 
