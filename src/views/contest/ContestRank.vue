@@ -282,6 +282,7 @@ const handleSwitchAutoRefresh = async (value: boolean) => {
     await fetchData(false);
     createProgressTimer();
   } else {
+    loadProgress();
     clearProgressTimer();
   }
 };
@@ -311,7 +312,7 @@ const loadProgress = () => {
     return;
   }
 
-  if (!fetchRankViews){
+  if (!fetchRankViews) {
     return;
   }
 
@@ -336,7 +337,10 @@ const loadProgress = () => {
         }
         acDuration = (new Date(problem.ac).getTime() - contestStartTimeGetTime) / 1000; // 转换为秒
         if (acDuration > progressValue.value) {
-          return;
+          // 如果滑倒最后并且还开着自动刷新，那么额外展示补题的提交
+          if (!(autoRefresh.value && progressValue.value === progressMax.value)) {
+            return;
+          }
         }
         acCount++;
         penalty += acDuration;
@@ -573,6 +577,13 @@ const fetchData = async (needLoading: boolean) => {
                     },
                   };
                 }
+              }
+              if (problem.acDuration > (contestEndTime - contestStartTime) / 1000) {
+                return {
+                  style: {
+                    backgroundColor: "rgba(100,255,100,0.5)",
+                  },
+                };
               }
               return {
                 style: {
