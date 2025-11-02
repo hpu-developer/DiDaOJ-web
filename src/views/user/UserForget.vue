@@ -52,8 +52,8 @@ const formRules = ref({
   ],
   emailKey: [
     { required: true, message: "请填写验证码" },
-    { min: 6, message: "请输入完整字符" },
-    { max: 6, message: "请输入完整字符" },
+    { min: 6, message: "请输入完整验证码" },
+    { max: 6, message: "请输入完整验证码" },
   ],
 });
 

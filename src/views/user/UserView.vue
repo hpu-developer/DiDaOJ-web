@@ -22,6 +22,7 @@ let currentUsername = "";
 
 const userLoading = ref(false);
 const userData = ref<UserInfoView | null>(null);
+const vjudgeLoading = ref(false);
 
 const problemsAccept = ref([] as any[]);
 const problemsAttempt = ref([] as any[]);
@@ -96,6 +97,35 @@ const loadProblemAttemptStatus = async () => {
   }
 };
 
+const loadVjudgeInfo = async (vjudgeId: string) => {
+  vjudgeLoading.value = true;
+  try {
+    const vjudgeInfo = await GetVjudgeAcProblem(userData.value.vjudgeId);
+    if (vjudgeInfo) {
+      vjudgeAcProblems.value = vjudgeInfo.acRecords;
+      for (const oj in vjudgeAcProblems.value) {
+        vjudgeAcProblems.value[oj].sort((a: string, b: string) => {
+          if (a.length === b.length) {
+            return a.localeCompare(b);
+          }
+          return a.length - b.length;
+        });
+      }
+      vjudgeFailProblems.value = vjudgeInfo.failRecords;
+      for (const oj in vjudgeFailProblems.value) {
+        vjudgeFailProblems.value[oj].sort((a: string, b: string) => {
+          if (a.length === b.length) {
+            return a.localeCompare(b);
+          }
+          return a.length - b.length;
+        });
+      }
+    }
+  } finally {
+    vjudgeLoading.value = false;
+  }
+};
+
 const loadUserInfo = async (username: string) => {
   userLoading.value = true;
   const routeData = router.resolve({
@@ -139,34 +169,16 @@ const loadUserInfo = async (username: string) => {
     webStyleStore.setTitle(userData.value.nickname + " - " + webStyleStore.getTitle);
 
     if (userData.value.vjudgeId) {
-      const vjudgeInfo = await GetVjudgeAcProblem(userData.value.vjudgeId);
-      if (vjudgeInfo) {
-        vjudgeAcProblems.value = vjudgeInfo.acRecords;
-        for (const oj in vjudgeAcProblems.value) {
-          vjudgeAcProblems.value[oj].sort((a: string, b: string) => {
-            if (a.length === b.length) {
-              return a.localeCompare(b);
-            }
-            return a.length - b.length;
-          });
-        }
-        vjudgeFailProblems.value = vjudgeInfo.failRecords;
-        for (const oj in vjudgeFailProblems.value) {
-          vjudgeFailProblems.value[oj].sort((a: string, b: string) => {
-            if (a.length === b.length) {
-              return a.localeCompare(b);
-            }
-            return a.length - b.length;
-          });
-        }
-      }
+      loadVjudgeInfo(userData.value.vjudgeId)
     }
 
     const statics = res.data.statics;
 
-    var chartDom = document.getElementById("ojStaticsDiv")!;
-    var myChart = echarts.init(chartDom);
-    var option: EChartsOption;
+    const chartDom = document.getElementById("ojStaticsDiv")!;
+    if (!chartDom) {
+      return;
+    }
+    const myChart = echarts.init(chartDom);
 
     const data: [string, number, number][] = [];
 
@@ -190,7 +202,7 @@ const loadUserInfo = async (username: string) => {
       }
     }
 
-    option = {
+    const option = {
       tooltip: {
         formatter: function (params: any) {
           const value = params.value;
@@ -229,7 +241,7 @@ const loadUserInfo = async (username: string) => {
           },
         },
       },
-    };
+    } as EChartsOption;
 
     myChart.setOption(option);
 
@@ -311,44 +323,46 @@ onMounted(async () => {
           <template #actions>
             <t-link :href="'https://vjudge.net/user/' + userData?.vjudgeId" target="_blank">@{{ userData?.vjudgeId }} </t-link>
           </template>
-          <div style="margin: 10px" v-if="vjudgeAcProblems && Object.keys(vjudgeAcProblems).length > 0">
-            <div style="margin: 5px">
-              <span>AC</span>
+          <t-loading :loading="vjudgeLoading" style="min-height: 200px">
+            <div style="margin: 10px;" v-if="vjudgeAcProblems && Object.keys(vjudgeAcProblems).length > 0">
+              <div style="margin: 5px">
+                <span>AC</span>
+              </div>
+              <t-descriptions layout="vertical" :bordered="true">
+                <t-descriptions-item v-for="(problems, oj) in vjudgeAcProblems" :key="oj" :label="oj">
+                  <t-button
+                    class="dida-tag-button"
+                    v-for="p in problems"
+                    :key="p"
+                    variant="dashed"
+                    size="small"
+                    @click="() => handleGotoVjudgeProblem(oj, p)"
+                  >
+                    {{ p }}
+                  </t-button>
+                </t-descriptions-item>
+              </t-descriptions>
             </div>
-            <t-descriptions layout="vertical" :bordered="true">
-              <t-descriptions-item v-for="(problems, oj) in vjudgeAcProblems" :key="oj" :label="oj">
-                <t-button
-                  class="dida-tag-button"
-                  v-for="p in problems"
-                  :key="p"
-                  variant="dashed"
-                  size="small"
-                  @click="() => handleGotoVjudgeProblem(oj, p)"
-                >
-                  {{ p }}
-                </t-button>
-              </t-descriptions-item>
-            </t-descriptions>
-          </div>
-          <div style="margin: 10px" v-if="vjudgeFailProblems && Object.keys(vjudgeFailProblems).length > 0">
-            <div style="margin: 5px">
-              <span>Fail</span>
+            <div style="margin: 10px" v-if="vjudgeFailProblems && Object.keys(vjudgeFailProblems).length > 0">
+              <div style="margin: 5px">
+                <span>Fail</span>
+              </div>
+              <t-descriptions layout="vertical" :bordered="true">
+                <t-descriptions-item v-for="(problems, oj) in vjudgeFailProblems" :key="oj" :label="oj">
+                  <t-button
+                    class="dida-tag-button"
+                    v-for="p in problems"
+                    :key="p"
+                    variant="dashed"
+                    size="small"
+                    @click="() => handleGotoVjudgeProblem(oj, p)"
+                  >
+                    {{ p }}
+                  </t-button>
+                </t-descriptions-item>
+              </t-descriptions>
             </div>
-            <t-descriptions layout="vertical" :bordered="true">
-              <t-descriptions-item v-for="(problems, oj) in vjudgeFailProblems" :key="oj" :label="oj">
-                <t-button
-                  class="dida-tag-button"
-                  v-for="p in problems"
-                  :key="p"
-                  variant="dashed"
-                  size="small"
-                  @click="() => handleGotoVjudgeProblem(oj, p)"
-                >
-                  {{ p }}
-                </t-button>
-              </t-descriptions-item>
-            </t-descriptions>
-          </div>
+          </t-loading>
         </t-card>
       </t-col>
       <t-col :span="4">

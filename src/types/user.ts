@@ -52,6 +52,10 @@ export interface UserModifyPasswordRequest {
   new_password: string;
 }
 
+export interface UserModifyEmailRequest {
+  email_key: string;
+}
+
 export interface UserModifyVjudgeRequest {
   approved: boolean;
   username?: string;

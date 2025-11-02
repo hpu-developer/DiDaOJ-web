@@ -170,6 +170,12 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100038": {
         zh: "无法从 vjudge 指定用户页获取到验证码，请确认用户名与验证信息有效",
       },
+      "100039": {
+        zh: "原邮箱验证码错误，请检查输入或重新获取",
+      },
+      "100040": {
+        zh: "新邮箱验证码错误，请检查输入或重新获取",
+      },
     });
   });
 }

@@ -1,7 +1,14 @@
 import httpRequest from "@/apis/axios-api";
 import httpCommonRequest from "@/apis/axios-common";
 
-import { UserInfo, UserInfoView, UserModifyInfoRequest, UserModifyPasswordRequest, UserModifyVjudgeRequest } from "@/types/user.ts";
+import {
+  UserInfo,
+  UserInfoView,
+  UserModifyInfoRequest,
+  UserModifyPasswordRequest,
+  UserModifyEmailRequest,
+  UserModifyVjudgeRequest,
+} from "@/types/user.ts";
 import { GetAvatarUrl } from "@/util/avatar.ts";
 
 export enum UserGender {
@@ -87,11 +94,40 @@ export function PostUserModifyPassword(request: UserModifyPasswordRequest) {
   });
 }
 
+export function PostUserModifyEmail(request: UserModifyEmailRequest) {
+  return httpRequest({
+    url: "/user/modify/email",
+    method: "post",
+    data: request,
+  });
+}
+
 export function PostUserModifyVjudge(request: UserModifyVjudgeRequest) {
   return httpRequest({
     url: "/user/modify/vjudge",
     method: "post",
     data: request,
+  });
+}
+
+export function PostUserModifyOldEmailKey(token: string) {
+  return httpRequest({
+    url: "/user/modify/email/key/old",
+    method: "post",
+    data: {
+      token: token,
+    },
+  });
+}
+
+export function PostUserModifyEmailKey(token: string, email: string) {
+  return httpRequest({
+    url: "/user/modify/email/key",
+    method: "post",
+    data: {
+      token: token,
+      email: email,
+    },
   });
 }
 
