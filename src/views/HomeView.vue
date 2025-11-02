@@ -24,6 +24,7 @@ const stateLoading = ref(false);
 const ojStaticsLoading = ref(false);
 const problemDailyLoading = ref(false);
 const ojNotifyLoading = ref(false);
+const ojAnnouncementLoading = ref(false);
 
 const handleReloadStatus = async () => {
   notification.value = await GetWebNotification();
@@ -182,14 +183,16 @@ onMounted(async () => {
   ojStaticsLoading.value = true;
   problemDailyLoading.value = true;
   ojNotifyLoading.value = true;
+  ojAnnouncementLoading.value  = true;
 
   void (async () => {
     await handleReloadStatus();
+    ojNotifyLoading.value = false;
     intervalId = setInterval(() => {
       handleReloadStatus();
     }, 30000);
     await loadWebAnnouncement();
-    ojNotifyLoading.value = false;
+    ojAnnouncementLoading.value = false;
   })();
 
   void (async () => {
@@ -236,7 +239,7 @@ onUnmounted(() => {
             <div id="ojStaticsDiv" style="min-height: 300px"></div>
           </t-loading>
 
-          <t-loading :loading="ojNotifyLoading && !stateLoading">
+          <t-loading :loading="ojAnnouncementLoading && !stateLoading">
             <t-card :title="announcement?.title" style="width: calc(100% - 100px); margin: 0 auto; min-height: 300px">
               <md-preview :model-value="announcement?.content" previewTheme="cyanosis" />
             </t-card>
