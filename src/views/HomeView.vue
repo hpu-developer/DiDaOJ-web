@@ -100,7 +100,7 @@ const loadOjStatics = async () => {
         name: "Accept",
         type: "line",
         stack: "Total",
-        color: "#67C23A",
+        color: "#2ecc71",
         areaStyle: {},
         emphasis: {
           focus: "series",

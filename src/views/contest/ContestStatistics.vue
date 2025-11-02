@@ -107,7 +107,7 @@ const loadCountStatistics = (countData: { [key: string]: number }) => {
         name: "Accept",
         type: "line",
         stack: "Total",
-        color: "#67C23A",
+        color: "#2ecc71",
         areaStyle: {},
         emphasis: {
           focus: "series",
@@ -133,6 +133,11 @@ const loadCountStatistics = (countData: { [key: string]: number }) => {
   };
 
   myChart.setOption(option);
+
+  const resizeObserver = new ResizeObserver(() => {
+    myChart.resize();
+  });
+  resizeObserver.observe(chartDom!);
 };
 
 const loadLanguageStatistics = (languageData: { [key: string]: number }) => {
@@ -299,6 +304,14 @@ onMounted(async () => {
       },
     },
   ];
+  listColumns.value.push({
+    title: "统计",
+    colKey: "statistics",
+    cell: (_: any, data: any) => {
+      return <div class="echart-statistics" style="width: 300px;height: 200px;"></div>;
+    },
+  });
+
   const excludeStatuses = [JudgeStatus.Unknown, JudgeStatus.Max];
   Object.values(JudgeStatus).forEach((status) => {
     if (excludeStatuses.includes(status as JudgeStatus)) {
@@ -316,14 +329,6 @@ onMounted(async () => {
     });
   });
 
-  listColumns.value.push({
-    title: "统计",
-    colKey: "statistics",
-    cell: (_: any, data: any) => {
-      return <div class="echart-statistics" style="width: 300px;height: 200px;"></div>;
-    },
-  });
-
   await fetchContestData();
 });
 
@@ -339,18 +344,7 @@ onBeforeUnmount(() => {
 <template>
   <t-row>
     <t-col :span="8">
-      <t-card style="margin: 10px">
-        <t-table
-          :data="contestData"
-          :columns="listColumns"
-          row-key="id"
-          vertical-align="middle"
-          :hover="true"
-          :loading="contestLoading"
-          table-layout="auto"
-          style="white-space: nowrap"
-        />
-      </t-card>
+      <t-card class="sh-card"><div id="count-statistics-div" style="min-height: 400px"></div></t-card>
     </t-col>
     <t-col :span="4">
       <t-card class="sh-card">
@@ -368,10 +362,22 @@ onBeforeUnmount(() => {
           </t-form-item>
         </t-form>
       </t-card>
-      <t-card class="sh-card"><div id="count-statistics-div" style="min-height: 400px"></div></t-card>
-      <t-card class="sh-card"><div id="language-statistics-div" style="min-height: 400px"></div></t-card>
+      <t-card class="sh-card"><div id="language-statistics-div" style="min-height: 325px"></div></t-card>
     </t-col>
   </t-row>
+
+      <t-card style="margin: 10px">
+        <t-table
+          :data="contestData"
+          :columns="listColumns"
+          row-key="id"
+          vertical-align="middle"
+          :hover="true"
+          :loading="contestLoading"
+          table-layout="auto"
+          style="white-space: nowrap"
+        />
+      </t-card>
 </template>
 
 <style scoped>
