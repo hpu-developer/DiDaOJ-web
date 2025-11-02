@@ -47,6 +47,11 @@ export interface UserModifyInfoRequest {
   organization: string;
 }
 
+export interface UserModifyPasswordRequest {
+  password: string;
+  new_password: string;
+}
+
 export interface UserModifyVjudgeRequest {
   approved: boolean;
   username?: string;

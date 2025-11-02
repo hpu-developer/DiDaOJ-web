@@ -2,7 +2,7 @@
 import { onMounted, onBeforeUnmount, ref, nextTick } from "vue";
 import { useUserStore } from "@/stores/user.ts";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
-import { PostUserLoginForget, PostUserPasswordModify } from "@/apis/user.ts";
+import { PostUserLoginForget, PostUserPasswordForget } from "@/apis/user.ts";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -146,7 +146,7 @@ const confirmEmail = ref(() => (
 const handleModifyPassword = async () => {
   isPostRunning.value = true;
   try {
-    const res = await PostUserPasswordModify(formData.value.username, formData.value.password, formData.value.emailKey);
+    const res = await PostUserPasswordForget(formData.value.username, formData.value.password, formData.value.emailKey);
     if (res.code === 0) {
       ShowTextTipsInfo(globalProperties, "密码修改成功");
       globalProperties.$router.push({ name: "login" });

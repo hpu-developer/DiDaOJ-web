@@ -1,7 +1,7 @@
 import httpRequest from "@/apis/axios-api";
 import httpCommonRequest from "@/apis/axios-common";
 
-import { UserInfo, UserInfoView, UserModifyInfoRequest, UserModifyVjudgeRequest } from "@/types/user.ts";
+import { UserInfo, UserInfoView, UserModifyInfoRequest, UserModifyPasswordRequest, UserModifyVjudgeRequest } from "@/types/user.ts";
 import { GetAvatarUrl } from "@/util/avatar.ts";
 
 export enum UserGender {
@@ -74,6 +74,14 @@ export function GetUserModifyInfo() {
 export function PostUserModifyInfo(request: UserModifyInfoRequest) {
   return httpRequest({
     url: "/user/modify",
+    method: "post",
+    data: request,
+  });
+}
+
+export function PostUserModifyPassword(request: UserModifyPasswordRequest) {
+  return httpRequest({
+    url: "/user/modify/password",
     method: "post",
     data: request,
   });
@@ -163,9 +171,9 @@ export function PostUserLoginForget(token: string, username: string) {
   });
 }
 
-export function PostUserPasswordModify(username: string, password: string, key: string) {
+export function PostUserPasswordForget(username: string, password: string, key: string) {
   return httpRequest({
-    url: "/user/password/modify",
+    url: "/user/password/forget",
     method: "post",
     data: {
       username: username,

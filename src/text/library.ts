@@ -53,6 +53,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "10004": {
         zh: "操作需要登录，请登录后重试",
       },
+      "10005": {
+        zh: "用户密码不匹配",
+      },
       "100001": {
         zh: "用户名不存在或密码不匹配",
       },

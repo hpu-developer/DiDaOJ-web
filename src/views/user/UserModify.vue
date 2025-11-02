@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 
-import { GetUserGenderKey, GetUserModifyInfo, PostUserModifyInfo, PostUserModifyVjudge } from "@/apis/user.ts";
-import type { UserModifyInfo, UserModifyInfoRequest, UserModifyVjudgeRequest } from "@/types/user.ts";
+import { GetUserGenderKey, GetUserModifyInfo, PostUserModifyInfo, PostUserModifyPassword, PostUserModifyVjudge } from "@/apis/user.ts";
+import { UserModifyInfo, UserModifyInfoRequest, UserModifyPasswordRequest, UserModifyVjudgeRequest } from "@/types/user.ts";
 
 import router from "@/router";
 import { useUserStore } from "@/stores/user.ts";
@@ -20,7 +20,11 @@ const formData = ref({
   gender: "",
   realName: "",
   organization: "",
+});
+
+const passwordFormData = ref({
   password: "",
+  changePassword: "",
   confirmPassword: "",
 });
 
@@ -35,7 +39,7 @@ const isPostRunning = ref(false);
 const rePassword = (val: any) =>
   new Promise((resolve) => {
     const timer = setTimeout(() => {
-      resolve(formData.value.password === val);
+      resolve(!passwordFormData.value.changePassword || passwordFormData.value.changePassword === val);
       clearTimeout(timer);
     });
   });
@@ -47,15 +51,19 @@ const formRules = ref({
     { max: 30, message: "昵称最多30个字符" },
   ],
   slogan: [{ max: 100, message: "个性签名最多100个字符" }],
+});
+
+const passwordFormRules = ref({
   password: [
     { required: true, message: "请填写密码" },
     { min: 6, message: "密码至少6个字符" },
     { max: 20, message: "密码最多20个字符" },
   ],
-  confirmPassword: [
-    { required: true, message: "请确认密码" },
-    { validator: rePassword, message: "两次密码不一致" },
+  changePassword: [
+    { min: 6, message: "密码至少6个字符" },
+    { max: 20, message: "密码最多20个字符" },
   ],
+  confirmPassword: [{ validator: rePassword, message: "两次密码不一致" }],
 });
 
 const userLoading = ref(false);
@@ -86,8 +94,6 @@ const onResetBaseInfo = () => {
   formData.value.gender = GetUserGenderKey(loadedUserInfo.gender);
   formData.value.realName = loadedUserInfo.real_name;
   formData.value.organization = loadedUserInfo.organization;
-  formData.value.password = "";
-  formData.value.confirmPassword = "";
 };
 
 const onSubmitBaseInfo = async (_: any) => {
@@ -105,6 +111,41 @@ const onSubmitBaseInfo = async (_: any) => {
       ShowTextTipsInfo(globalProperties, "保存成功");
       userStore.setNickname(formData.value.nickname);
       loadedUserInfo.nickname = formData.value.nickname;
+    } else {
+      ShowErrorTips(globalProperties, res.code);
+    }
+  } finally {
+    isPostRunning.value = false;
+  }
+};
+
+const onResetPasswordInfo = async (_: any) => {
+  passwordFormData.value.password = "";
+  passwordFormData.value.changePassword = "";
+  passwordFormData.value.confirmPassword = "";
+};
+
+const onSubmitPasswordInfo = async (_: any) => {
+  if (passwordFormData.value.changePassword !== passwordFormData.value.confirmPassword) {
+    return;
+  }
+  if (passwordFormData.value.password === passwordFormData.value.changePassword) {
+    ShowTextTipsError(globalProperties, "请输入一个不同的密码");
+    return;
+  }
+  isPostRunning.value = true;
+  const requestData = {
+    password: passwordFormData.value.password,
+    new_password: passwordFormData.value.changePassword,
+  } as UserModifyPasswordRequest;
+  try {
+    const res = await PostUserModifyPassword(requestData);
+    if (res.code === 0) {
+      ShowTextTipsInfo(globalProperties, "保存成功");
+      userStore.clear();
+      globalProperties.$router.push({
+        path: "/login",
+      });
     } else {
       ShowErrorTips(globalProperties, res.code);
     }
@@ -189,7 +230,38 @@ onMounted(() => {
             </t-form-item>
           </t-form>
         </t-tab-panel>
-        <t-tab-panel value="2" label="VJUDGE" style="padding: 10px">
+        <t-tab-panel value="2" label="安全信息" style="padding: 10px">
+          <t-form
+            ref="form"
+            :rules="passwordFormRules"
+            :data="passwordFormData"
+            :colon="true"
+            @reset="onResetPasswordInfo"
+            @submit="onSubmitPasswordInfo"
+            class="yj-modify-form"
+          >
+            <t-form-item name="password" label="当前密码">
+              <t-input v-model="passwordFormData.password" clearable type="password" placeholder="请输入旧密码"></t-input>
+            </t-form-item>
+            <t-form-item name="changePassword" label="新密码">
+              <t-input v-model="passwordFormData.changePassword" clearable type="password" placeholder="输入新密码"></t-input>
+            </t-form-item>
+            <t-form-item name="confirmPassword" label="确认密码">
+              <t-input
+                v-model="passwordFormData.confirmPassword"
+                clearable
+                type="password"
+                autocomplete="current-password"
+                placeholder="请确认新密码"
+              ></t-input>
+            </t-form-item>
+            <t-form-item>
+              <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
+              <t-button theme="primary" type="submit" block :loading="isPostRunning">保存</t-button>
+            </t-form-item>
+          </t-form>
+        </t-tab-panel>
+        <t-tab-panel value="3" label="VJUDGE" style="padding: 10px">
           <t-alert>
             <span>本站支持绑定<a href="https://vjudge.net/" target="_blank">vjudge.net</a>账号，请输入目标用户名</span>
           </t-alert>
