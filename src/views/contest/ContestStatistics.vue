@@ -135,7 +135,9 @@ const loadCountStatistics = (countData: { [key: string]: number }) => {
   myChart.setOption(option);
 
   const resizeObserver = new ResizeObserver(() => {
-    myChart.resize();
+    myChart.resize({
+      height: 400
+    });
   });
   resizeObserver.observe(chartDom!);
 };
@@ -182,6 +184,13 @@ const loadLanguageStatistics = (languageData: { [key: string]: number }) => {
   };
 
   myChart.setOption(option);
+
+  const resizeObserver = new ResizeObserver(() => {
+    myChart.resize({
+      height: 325
+    });
+  });
+  resizeObserver.observe(chartDom!);
 };
 
 const fetchContestData = async () => {
@@ -343,10 +352,10 @@ onBeforeUnmount(() => {
 
 <template>
   <t-row>
-    <t-col :span="8">
+    <t-col :span="7">
       <t-card class="sh-card"><div id="count-statistics-div" style="min-height: 400px"></div></t-card>
     </t-col>
-    <t-col :span="4">
+    <t-col :span="5">
       <t-card class="sh-card">
         <t-form layout="inline" @submit="handleSearchFormSubmit" @reset="handleSearchFormReset">
           <t-form-item label="语言">
@@ -362,7 +371,7 @@ onBeforeUnmount(() => {
           </t-form-item>
         </t-form>
       </t-card>
-      <t-card class="sh-card"><div id="language-statistics-div" style="min-height: 325px"></div></t-card>
+      <t-card class="sh-card"><div id="language-statistics-div" style="min-height: 200px"></div></t-card>
     </t-col>
   </t-row>
 
