@@ -472,6 +472,9 @@ onMounted(() => {
     <t-loading :loading="userLoading">
       <t-tabs v-model="editTab" style="min-width: 500px">
         <t-tab-panel value="1" label="基础信息" style="padding: 10px">
+          <t-alert>
+            <span>头像可以参考<t-link href="/system/about" target="_blank">系统帮助</t-link>中的<t-tag>用户头像</t-tag>相关介绍</span>
+          </t-alert>
           <t-form
             ref="form"
             :rules="formRules"
