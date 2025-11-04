@@ -372,6 +372,7 @@ onMounted(async () => {
               <t-avatar shape="round" size="100px" :image="userData?.avatar" :hide-on-load-failed="false" />
             </t-descriptions-item>
             <t-descriptions-item label="用户序号">{{ userData?.id }}</t-descriptions-item>
+            <t-descriptions-item label="用户名">{{ userData?.username }}</t-descriptions-item>
             <t-descriptions-item label="昵称">{{ userData?.nickname }}</t-descriptions-item>
             <t-descriptions-item label="Slogan">{{ userData?.slogan }}</t-descriptions-item>
             <t-descriptions-item label="邮箱">{{ userData?.email }}</t-descriptions-item>
