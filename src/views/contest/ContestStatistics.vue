@@ -302,7 +302,7 @@ onMounted(async () => {
 
   listColumns.value = [
     {
-      title: "序号",
+      title: "题目",
       colKey: "index",
       cell: (_: any, data: any) => {
         return (

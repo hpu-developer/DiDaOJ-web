@@ -57,7 +57,7 @@ const listColumns = ref([] as any);
 
 const userColumns = [
   {
-    title: "序号",
+    title: "排名",
     colKey: "index",
   },
   {

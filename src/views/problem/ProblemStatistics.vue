@@ -53,7 +53,7 @@ const searchForm = ref({
 
 const listColumns = [
   {
-    title: "序号",
+    title: "排名",
     colKey: "index",
   },
   {
