@@ -15,6 +15,7 @@ export enum JudgeLanguage {
 
 const languageMap: { [key in RemoteJudgeType]: JudgeLanguage[] } = {
   [RemoteJudgeType.Hdu]: [JudgeLanguage.C, JudgeLanguage.Cpp, JudgeLanguage.Java, JudgeLanguage.Pascal],
+  [RemoteJudgeType.Poj]: [JudgeLanguage.C, JudgeLanguage.Cpp, JudgeLanguage.Java, JudgeLanguage.Pascal],
 };
 
 export function GetSubmitLanguages(oj?: string | undefined) {

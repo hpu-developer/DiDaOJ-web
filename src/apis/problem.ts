@@ -119,6 +119,9 @@ export function ParseProblem(item: Problem, tagsMap: { [key: number]: ProblemTag
   if (item.origin_url != undefined) {
     result.originUrl = item.origin_url;
   }
+  if (item.origin_author != undefined) {
+    result.originAuthor = item.origin_author;
+  }
 
   return result;
 }

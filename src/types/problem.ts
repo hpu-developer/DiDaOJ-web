@@ -29,6 +29,7 @@ export interface Problem {
   origin_oj?: string;
   origin_id?: string;
   origin_url?: string;
+  origin_author?: string;
 
   valid?: ParseValidType; // 是否有效，true表示有效，false表示无效
 }
@@ -58,6 +59,7 @@ export interface ProblemView {
   originOj?: string;
   originId?: string;
   originUrl?: string;
+  originAuthor?: string;
 
   index?: number; // 仅限Contest题目
 

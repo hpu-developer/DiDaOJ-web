@@ -54,7 +54,7 @@ const loadOjStatics = async () => {
   var dom = document.getElementById("ojStaticsDiv");
   var myChart = echarts.init(dom, null, {
     renderer: "canvas",
-    useDirtyRect: false
+    useDirtyRect: false,
   });
   let dateValues = [];
   let acceptValues = [];
@@ -183,7 +183,7 @@ onMounted(async () => {
   ojStaticsLoading.value = true;
   problemDailyLoading.value = true;
   ojNotifyLoading.value = true;
-  ojAnnouncementLoading.value  = true;
+  ojAnnouncementLoading.value = true;
 
   void (async () => {
     await handleReloadStatus();
@@ -284,21 +284,63 @@ onUnmounted(() => {
           </t-loading>
         </t-card>
 
-        <t-card style="margin: 10px" :bordered="true">
-          <template #header>
-            <b>友情链接</b>
+        <t-card style="margin: 10px" :bordered="true" title="判官状态">
+          <template #actions>
+            <t-link @click="$router.push({ name: 'system-about' })">系统说明</t-link>
           </template>
-          <t-list>
-            <t-list-item>
-              <t-link href="https://www.hello-algo.com/" target="_blank">Hello 算法</t-link>
-            </t-list-item>
-            <t-list-item>
-              <t-link href="https://oi-wiki.org/" target="_blank">OI Wiki</t-link>
-            </t-list-item>
-            <t-list-item>
-              <t-link href="https://boiltask.com" target="_blank">BoilTask Blog</t-link>
-            </t-list-item>
-          </t-list>
+          <div class="oj-grid">
+            <div class="oj-item">
+              <t-link href="https://oj.didapipa.com/" target="_blank">DidaOJ</t-link>
+              <t-tag theme="success" shape="round">有效</t-tag>
+            </div>
+            <div class="oj-item">
+              <t-link href="https://acm.hdu.edu.cn/" target="_blank">HDU</t-link>
+              <t-tag theme="success" shape="round">有效</t-tag>
+            </div>
+            <div class="oj-item">
+              <t-link href="http://poj.org/" target="_blank">POJ</t-link>
+              <t-tag theme="success" shape="round">有效</t-tag>
+            </div>
+            <div class="oj-item">
+              <t-link href="https://codeforces.com/" target="_blank">CodeForces</t-link>
+              <t-tag theme="warning" shape="round">开发中</t-tag>
+            </div>
+            <div class="oj-item">
+              <t-link href="https://lightoJ.com/" target="_blank">LightOJ</t-link>
+              <t-tag theme="warning" shape="round">开发中</t-tag>
+            </div>
+            <div class="oj-item">
+              <t-link href="https://onlinejudge.org/" target="_blank">UVaOJ</t-link>
+              <t-tag theme="warning" shape="round">开发中</t-tag>
+            </div>
+            <div class="oj-item">
+              <t-link href="https://acm.haut.edu.cn/" target="_blank">HAUTOJ</t-link>
+              <t-tag theme="warning" shape="round">开发中</t-tag>
+            </div>
+            <div class="oj-item">
+              <t-link href="https://oj.zznu.edu.cn/" target="_blank">ZZNUOJ</t-link>
+              <t-tag theme="warning" shape="round">开发中</t-tag>
+            </div>
+            <div class="oj-item">
+              <t-link href="https://xcpc.nyist.edu.cn/" target="_blank">NYOJ-XCPC</t-link>
+              <t-tag theme="warning" shape="round">开发中</t-tag>
+            </div>
+            <div class="oj-item">
+              <t-link href="https://acm.nyist.edu.cn/" target="_blank">NYOJ-ACM</t-link>
+              <t-tag theme="warning" shape="round">开发中</t-tag>
+            </div>
+            <div class="oj-item">
+              <t-link href="https://acm.zzuli.edu.cn/" target="_blank">ZZULIOJ</t-link>
+              <t-tag theme="default" shape="round">失效</t-tag>
+            </div>
+          </div>
+        </t-card>
+        <t-card class="friend-link-card" :bordered="true" title="友情链接">
+          <ul>
+            <li><t-link href="https://www.hello-algo.com/" target="_blank">Hello 算法</t-link></li>
+            <li><t-link href="https://oi-wiki.org/" target="_blank">OI Wiki</t-link></li>
+            <li><t-link href="https://boiltask.com" target="_blank">BoilTask Blog</t-link></li>
+          </ul>
         </t-card>
       </t-col>
     </t-row>
@@ -322,5 +364,28 @@ onUnmounted(() => {
 
 .swiper-img {
   width: 100%;
+}
+
+.oj-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 三列布局 */
+  gap: 16px; /* 横纵间距 */
+  margin: 10px 0;
+}
+
+.oj-item {
+  display: flex;
+  justify-content: space-between; /* 左右对齐 */
+  align-items: center; /* 垂直居中 */
+  padding: 8px;
+  border: 1px solid #e0e0e0; /* 可选：表格风格边框 */
+  border-radius: 6px;
+}
+
+.friend-link-card {
+  margin: 10px;
+}
+.friend-link-card li {
+  margin: 8px;
 }
 </style>

@@ -81,6 +81,7 @@ router.afterEach((to: any, from: any) => {
   // }
 
   if (toMeta?.title) {
+    webStyleStore.setRouteTitle(toMeta?.title as string);
     webStyleStore.setTitle(toMeta?.title as string);
   }
 

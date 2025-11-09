@@ -2,6 +2,7 @@ import { DefineComponent } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 
 export interface WebStyleState {
+  routeTitle: string;
   title: string;
 }
 

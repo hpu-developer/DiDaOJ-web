@@ -320,7 +320,7 @@ const fetchProblemData = async () => {
   problemId = problemData.value.id;
   problemKey = problemData.value.key;
 
-  webStyleStore.setTitle(problemData.value.title + " - " + webStyleStore.getTitle);
+  webStyleStore.setTitle(problemData.value.title + " - " + webStyleStore.getRouteTitle);
 
   if (contestId) {
     res = await GetContestProblems(contestId);
@@ -539,7 +539,7 @@ onBeforeUnmount(() => {
             <t-descriptions-item label="提交总数" v-if="!isContestProblem">{{ problemData?.attempt }} </t-descriptions-item>
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
             <t-descriptions-item label="编辑时间">{{ problemData?.modifyTime }}</t-descriptions-item>
-            <t-descriptions-item label="上传用户">{{ problemData?.inserterNickname }}</t-descriptions-item>
+            <t-descriptions-item label="上传用户">{{ problemData?.inserterNickname ? problemData?.inserterNickname : problemData?.originAuthor}}</t-descriptions-item>
             <t-descriptions-item label="题目来源" v-if="!isContestProblem">
               <t-link v-if="problemData?.sourceUrl" :href="problemData?.sourceUrl" target="_blank">
                 {{ problemData?.source }}
