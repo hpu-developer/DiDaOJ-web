@@ -21,8 +21,9 @@ const isSaving = ref(false);
 const discussData = ref<DiscussView | null>(null);
 
 const discussEditForm = ref({
-  title: "",
+  contestId : "",
   problemKey: "",
+  title: "",
   content: "",
 });
 
@@ -50,6 +51,7 @@ const handleClickCreate = async () => {
     const postData = {
       title: discussEditForm.value.title,
       content: discussEditForm.value.content,
+      contest_id: discussEditForm.value.contestId,
       problem_key: discussEditForm.value.problemKey,
     } as DiscussEditRequest;
     const res = await PostDiscussCreate(postData);
@@ -82,6 +84,7 @@ const handleClickSave = async () => {
       id: discussId.value,
       title: discussEditForm.value.title,
       content: discussEditForm.value.content,
+      contest_id: discussEditForm.value.contestId,
       problem_key: discussEditForm.value.problemKey,
     } as DiscussEditRequest;
     const res = await PostDiscussEdit(postData);
@@ -129,6 +132,7 @@ const loadDiscuss = async () => {
 
   discussEditForm.value.title = discuss.title;
   discussEditForm.value.content = discuss.content;
+  discussEditForm.value.contestId = discuss.contest_id;
   discussEditForm.value.problemKey = discuss.problem_key;
 
   discussLoading.value = false;
@@ -149,9 +153,13 @@ onMounted(async () => {
         await loadDiscuss();
       } else {
         discussEditForm.value.title = "";
+        discussEditForm.value.contestId = "";
         discussEditForm.value.problemKey = "";
         discussEditForm.value.content = "";
 
+        if (route.query.contest_id) {
+          discussEditForm.value.contestId = route.query.contest_id as string;
+        }
         if (route.query.problem_key) {
           discussEditForm.value.problemKey = route.query.problem_key as string;
         }
@@ -200,7 +208,7 @@ onBeforeUnmount(() => {
           <t-descriptions layout="vertical" :bordered="true" v-if="discussId">
             <t-descriptions-item label="创建时间">{{ discussData?.insertTime }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ discussData?.modifyTime }}</t-descriptions-item>
-            <t-descriptions-item label="创建用户">{{ discussData?.authorNickname }}</t-descriptions-item>
+            <t-descriptions-item label="创建用户">{{ discussData?.inserterNickname }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>
