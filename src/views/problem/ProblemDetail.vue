@@ -310,7 +310,7 @@ const handleResetCode = () => {
 
   codeEditRef.value && codeEditRef.value.replaceChildren();
 
-  const codeEditor = monaco.editor.create(codeEditRef.value, {
+  codeEditor = monaco.editor.create(codeEditRef.value, {
     value: codeTemplate,
     language: "cpp",
     minimap: { enabled: true },
