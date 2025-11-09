@@ -21,7 +21,7 @@ const isSaving = ref(false);
 const discussData = ref<DiscussView | null>(null);
 
 const discussEditForm = ref({
-  contestId : "",
+  contestId: "",
   problemKey: "",
   title: "",
   content: "",
@@ -51,7 +51,7 @@ const handleClickCreate = async () => {
     const postData = {
       title: discussEditForm.value.title,
       content: discussEditForm.value.content,
-      contest_id: discussEditForm.value.contestId,
+      contest_id: Number(discussEditForm.value.contestId),
       problem_key: discussEditForm.value.problemKey,
     } as DiscussEditRequest;
     const res = await PostDiscussCreate(postData);
@@ -84,7 +84,7 @@ const handleClickSave = async () => {
       id: discussId.value,
       title: discussEditForm.value.title,
       content: discussEditForm.value.content,
-      contest_id: discussEditForm.value.contestId,
+      contest_id: Number(discussEditForm.value.contestId),
       problem_key: discussEditForm.value.problemKey,
     } as DiscussEditRequest;
     const res = await PostDiscussEdit(postData);
@@ -132,7 +132,11 @@ const loadDiscuss = async () => {
 
   discussEditForm.value.title = discuss.title;
   discussEditForm.value.content = discuss.content;
-  discussEditForm.value.contestId = discuss.contest_id;
+  if (discuss.contest_id) {
+    discussEditForm.value.contestId = discuss.contest_id.toString();
+  } else {
+    discussEditForm.value.contestId = "";
+  }
   discussEditForm.value.problemKey = discuss.problem_key;
 
   discussLoading.value = false;
@@ -159,9 +163,13 @@ onMounted(async () => {
 
         if (route.query.contest_id) {
           discussEditForm.value.contestId = route.query.contest_id as string;
+        } else {
+          discussEditForm.value.contestId = "";
         }
         if (route.query.problem_key) {
           discussEditForm.value.problemKey = route.query.problem_key as string;
+        } else {
+          discussEditForm.value.problemKey = "";
         }
       }
     },
@@ -186,6 +194,9 @@ onBeforeUnmount(() => {
             <t-form :model="discussEditForm">
               <t-form-item label="标题">
                 <t-input v-model="discussEditForm.title" placeholder="讨论标题"></t-input>
+              </t-form-item>
+              <t-form-item label="关联比赛">
+                <t-input v-model="discussEditForm.contestId" placeholder="比赛标识"></t-input>
               </t-form-item>
               <t-form-item label="关联题目">
                 <t-input v-model="discussEditForm.problemKey" placeholder="讨论题目"></t-input>

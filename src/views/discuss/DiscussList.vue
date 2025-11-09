@@ -180,6 +180,12 @@ const handleCreateDiscuss = async () => {
       problem_key: discussSearchForm.value.problemKey,
     };
   }
+  if (contestId) {
+    query = {
+      ...query,
+      contest_id: contestId,
+    };
+  }
   await router.push({
     name: "discuss-create",
     query: query,

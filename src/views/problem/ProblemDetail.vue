@@ -344,9 +344,13 @@ const fetchProblemData = async () => {
 using namespace std;
 int main() {
 \tint a, b;
+// code-edit-start
+{{ code1 }}
+// code-edit-end
+
 \twhile (cin >> a >> b) {
 // code-edit-start
-{{ code }}
+{{ code2 }}
 // code-edit-end
 \t}
 \treturn 0;
@@ -364,48 +368,72 @@ int main() {
       const model = codeEditor.getModel();
       let decorationIds: string[] = [];
 
-// 工具函数：动态查找可编辑区域
-      function getEditableRange() {
-        let startLine = 0, endLine = 0;
+// 动态查找所有可编辑区域
+      function getEditableRanges(): monaco.Range[] {
+        const ranges: monaco.Range[] = [];
+        let startLine = 0;
         for (let i = 1; i <= model.getLineCount(); i++) {
           const line = model.getLineContent(i);
           if (line.includes("code-edit-start")) startLine = i;
-          if (line.includes("code-edit-end")) endLine = i;
+          else if (line.includes("code-edit-end") && startLine) {
+            ranges.push(
+              new monaco.Range(
+                startLine + 1, 1,
+                i - 1, model.getLineMaxColumn(i - 1)
+              )
+            );
+            startLine = 0; // 重置
+          }
         }
-        // 如果标记没找到，返回空 Range
-        if (!startLine || !endLine || endLine <= startLine) return null;
-        return new monaco.Range(
-          startLine + 1, 1,
-          endLine - 1, model.getLineMaxColumn(endLine - 1)
-        );
+        return ranges;
       }
 
-// 工具函数：动态更新装饰（只读行视觉提示）
+// 判断 change 是否在任意可编辑区
+      function isChangeAllowed(change: monaco.editor.IModelContentChange): boolean {
+        const editableRanges = getEditableRanges();
+        for (const range of editableRanges) {
+          if (range.containsRange(change.range)) return true;
+        }
+        return false;
+      }
+
+// 动态更新装饰（只读行视觉提示）
       function updateDecorations() {
-        const editableRange = getEditableRange();
-        if (!editableRange) return;
-        decorationIds = model.deltaDecorations(decorationIds, [
-          { range: new monaco.Range(1, 1, editableRange.startLineNumber - 1, 1), options: { isWholeLine: true, className: "readonly-line" } },
-          { range: new monaco.Range(editableRange.endLineNumber + 1, 1, model.getLineCount(), 1), options: { isWholeLine: true, className: "readonly-line" } },
-        ]);
+        const editableRanges = getEditableRanges();
+        const decs: monaco.editor.IModelDeltaDecoration[] = [];
+
+        let lastEnd = 0;
+        for (const range of editableRanges) {
+          // 上方不可编辑行
+          if (range.startLineNumber - 1 > lastEnd) {
+            decs.push({
+              range: new monaco.Range(lastEnd + 1, 1, range.startLineNumber - 1, 1),
+              options: { isWholeLine: true, className: "readonly-line" },
+            });
+          }
+          lastEnd = range.endLineNumber;
+        }
+        // 下方不可编辑行
+        if (lastEnd < model.getLineCount()) {
+          decs.push({
+            range: new monaco.Range(lastEnd + 1, 1, model.getLineCount(), 1),
+            options: { isWholeLine: true, className: "readonly-line" },
+          });
+        }
+
+        decorationIds = model.deltaDecorations(decorationIds, decs);
       }
 
 // 初始化一次装饰
       updateDecorations();
 
-// 监听内容变化，动态计算允许编辑区域
+// 监听内容变化
       model.onDidChangeContent((e) => {
-        const editableRange = getEditableRange();
-        if (!editableRange) return;
-
         for (const change of e.changes) {
-          if (!editableRange.containsRange(change.range)) {
-            // 非法编辑 → 撤销
+          if (!isChangeAllowed(change)) {
             codeEditor.trigger("prevent-edit", "undo", null);
           }
         }
-
-        // 每次变化后更新装饰
         updateDecorations();
       });
 

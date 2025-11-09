@@ -18,7 +18,7 @@ export interface Discuss {
   problem_id: number;
   problem_key: string;
   problem_title: string;
-  contest_id: string;
+  contest_id: number;
   contest_title: string;
   contest_problem_index: number;
 }
@@ -39,7 +39,7 @@ export interface DiscussView {
   problemId: number;
   problemKey: string;
   problemTitle: string;
-  contestId: string;
+  contestId: number;
   contestTitle: string;
   contestProblemIndex: number;
 }
@@ -73,6 +73,7 @@ export interface DiscussEditRequest {
   id?: number;
   title: string;
   content: string;
+  contest_id: number;
   problem_id?: string;
 }
 
