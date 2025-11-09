@@ -38,3 +38,14 @@ a {
 .dida-tag-button {
   margin: 4px;
 }
+
+/* 不可编辑区域背景淡化 */
+.readonly-global {
+  opacity: 0.5;
+}
+
+/* 可编辑区域高亮 */
+.editable-code {
+  background-color: rgba(52, 152, 219, 0.2);
+  border-radius: 3px;
+}

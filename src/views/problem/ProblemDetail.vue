@@ -339,7 +339,13 @@ const fetchProblemData = async () => {
   await nextTick(() => {
     if (!codeEditor && codeEditRef.value) {
       codeEditor = monaco.editor.create(codeEditRef.value, {
-        value: "",
+        value: `line 1
+line 2
+line 3
+line 4
+line 5
+line 6
+line 7`,
         language: "cpp",
         minimap: {
           enabled: true,
@@ -347,6 +353,80 @@ const fetchProblemData = async () => {
         colorDecorators: true, //颜色装饰器
         readOnly: false, //是否开启已读功能
         theme: "vs-dark", //主题
+      });
+      const model = codeEditor.getModel();
+
+      // 禁止编辑的范围定义
+      const forbiddenRanges = [
+        {
+          // 整行禁止：第 3~5 行：行号从 1 开始
+          type: "line-range",
+          startLine: 3,
+          endLine: 5,
+        },
+        {
+          // 禁止编辑：第 7 行，第 5~8 字符
+          type: "char-range",
+          line: 7,
+          startColumn: 5,
+          endColumn: 8,
+        },
+      ];
+
+      // 判断某次变更是否在允许区域内
+      function isChangeAllowed(range) {
+        const { startLineNumber, endLineNumber, startColumn, endColumn } = range;
+
+        for (const rule of forbiddenRanges) {
+          if (rule.type === "line-range") {
+            // 如果修改涉及到禁止行 → 禁止
+            if (!(endLineNumber < rule.startLine || startLineNumber > rule.endLine)) {
+              return false;
+            }
+          }
+
+          if (rule.type === "char-range") {
+            if (startLineNumber <= rule.line && endLineNumber >= rule.line) {
+              // 若修改行 == 禁止行
+              if (startLineNumber === rule.line || endLineNumber === rule.line) {
+                if (!(endColumn < rule.startColumn || startColumn > rule.endColumn)) {
+                  return false;
+                }
+              }
+            }
+          }
+        }
+
+        return true;
+      }
+      let decorationIds = [];
+      function updateDecorations() {
+        decorationIds = model.deltaDecorations(decorationIds, [
+          // 行只读装饰（不需要 stickiness）
+          {
+            range: new monaco.Range(3, 1, 5, 1),
+            options: { isWholeLine: true, className: "readonly-line" },
+          },
+          // 列只读装饰（重点）
+          {
+            range: new monaco.Range(7, 5, 7, 8),
+            options: {
+              inlineClassName: "readonly-chars",
+              stickiness: monaco.editor.TrackedRangeStickiness.GrownOnlyWhenTypingAtEdges,
+            },
+          },
+        ]);
+      }
+      // 初始化时调用一次
+      updateDecorations();
+      // 监听内容变更并撤销非法编辑
+      model.onDidChangeContent((e) => {
+        for (const change of e.changes) {
+          if (!isChangeAllowed(change.range)) {
+            codeEditor.trigger("prevent-edit", "undo", null);
+          }
+          updateDecorations();
+        }
       });
     }
     problemLoading.value = false;
@@ -539,7 +619,9 @@ onBeforeUnmount(() => {
             <t-descriptions-item label="提交总数" v-if="!isContestProblem">{{ problemData?.attempt }} </t-descriptions-item>
             <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
             <t-descriptions-item label="编辑时间">{{ problemData?.modifyTime }}</t-descriptions-item>
-            <t-descriptions-item label="上传用户">{{ problemData?.inserterNickname ? problemData?.inserterNickname : problemData?.originAuthor}}</t-descriptions-item>
+            <t-descriptions-item label="上传用户">{{
+              problemData?.inserterNickname ? problemData?.inserterNickname : problemData?.originAuthor
+            }}</t-descriptions-item>
             <t-descriptions-item label="题目来源" v-if="!isContestProblem">
               <t-link v-if="problemData?.sourceUrl" :href="problemData?.sourceUrl" target="_blank">
                 {{ problemData?.source }}
