@@ -308,7 +308,10 @@ const handleResetCode = () => {
     isContainReadOnly = true;
   }
 
-  codeEditRef.value && codeEditRef.value.replaceChildren();
+  // 如果已有 editor，先销毁旧实例
+  if (codeEditor) {
+    codeEditor.dispose();
+  }
 
   codeEditor = monaco.editor.create(codeEditRef.value, {
     value: codeTemplate,
