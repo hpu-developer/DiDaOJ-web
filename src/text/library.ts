@@ -179,6 +179,12 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100041": {
         zh: "比赛不存在或者缺少权限",
       },
+      "100042": {
+        zh: "目标语言当前不允许提交",
+      },
+      "100043": {
+        zh: "代码过短，请检查输入",
+      },
     });
   });
 }
