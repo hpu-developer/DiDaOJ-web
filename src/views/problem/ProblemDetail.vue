@@ -338,96 +338,78 @@ const fetchProblemData = async () => {
   problemDescription.value = problemData.value.description as string;
   await nextTick(() => {
     if (!codeEditor && codeEditRef.value) {
-      codeEditor = monaco.editor.create(codeEditRef.value, {
-        value: `line 1
-line 2
-line 3
-line 4
-line 5
-line 6
-line 7`,
+
+
+      const codeTemplate = `#include <iostream>
+using namespace std;
+int main() {
+\tint a, b;
+\twhile (cin >> a >> b) {
+// code-edit-start
+{{ code }}
+// code-edit-end
+\t}
+\treturn 0;
+}`;
+
+      const codeEditor = monaco.editor.create(codeEditRef.value, {
+        value: codeTemplate,
         language: "cpp",
-        minimap: {
-          enabled: true,
-        },
-        colorDecorators: true, //颜色装饰器
-        readOnly: false, //是否开启已读功能
-        theme: "vs-dark", //主题
+        minimap: { enabled: true },
+        colorDecorators: true,
+        readOnly: false,
+        theme: "vs-dark",
       });
+
       const model = codeEditor.getModel();
+      let decorationIds: string[] = [];
 
-      // 禁止编辑的范围定义
-      const forbiddenRanges = [
-        {
-          // 整行禁止：第 3~5 行：行号从 1 开始
-          type: "line-range",
-          startLine: 3,
-          endLine: 5,
-        },
-        {
-          // 禁止编辑：第 7 行，第 5~8 字符
-          type: "char-range",
-          line: 7,
-          startColumn: 5,
-          endColumn: 8,
-        },
-      ];
-
-      // 判断某次变更是否在允许区域内
-      function isChangeAllowed(range) {
-        const { startLineNumber, endLineNumber, startColumn, endColumn } = range;
-
-        for (const rule of forbiddenRanges) {
-          if (rule.type === "line-range") {
-            // 如果修改涉及到禁止行 → 禁止
-            if (!(endLineNumber < rule.startLine || startLineNumber > rule.endLine)) {
-              return false;
-            }
-          }
-
-          if (rule.type === "char-range") {
-            if (startLineNumber <= rule.line && endLineNumber >= rule.line) {
-              // 若修改行 == 禁止行
-              if (startLineNumber === rule.line || endLineNumber === rule.line) {
-                if (!(endColumn < rule.startColumn || startColumn > rule.endColumn)) {
-                  return false;
-                }
-              }
-            }
-          }
+// 工具函数：动态查找可编辑区域
+      function getEditableRange() {
+        let startLine = 0, endLine = 0;
+        for (let i = 1; i <= model.getLineCount(); i++) {
+          const line = model.getLineContent(i);
+          if (line.includes("code-edit-start")) startLine = i;
+          if (line.includes("code-edit-end")) endLine = i;
         }
-
-        return true;
+        // 如果标记没找到，返回空 Range
+        if (!startLine || !endLine || endLine <= startLine) return null;
+        return new monaco.Range(
+          startLine + 1, 1,
+          endLine - 1, model.getLineMaxColumn(endLine - 1)
+        );
       }
-      let decorationIds = [];
+
+// 工具函数：动态更新装饰（只读行视觉提示）
       function updateDecorations() {
+        const editableRange = getEditableRange();
+        if (!editableRange) return;
         decorationIds = model.deltaDecorations(decorationIds, [
-          // 行只读装饰（不需要 stickiness）
-          {
-            range: new monaco.Range(3, 1, 5, 1),
-            options: { isWholeLine: true, className: "readonly-line" },
-          },
-          // 列只读装饰（重点）
-          {
-            range: new monaco.Range(7, 5, 7, 8),
-            options: {
-              inlineClassName: "readonly-chars",
-              stickiness: monaco.editor.TrackedRangeStickiness.GrownOnlyWhenTypingAtEdges,
-            },
-          },
+          { range: new monaco.Range(1, 1, editableRange.startLineNumber - 1, 1), options: { isWholeLine: true, className: "readonly-line" } },
+          { range: new monaco.Range(editableRange.endLineNumber + 1, 1, model.getLineCount(), 1), options: { isWholeLine: true, className: "readonly-line" } },
         ]);
       }
-      // 初始化时调用一次
+
+// 初始化一次装饰
       updateDecorations();
-      // 监听内容变更并撤销非法编辑
+
+// 监听内容变化，动态计算允许编辑区域
       model.onDidChangeContent((e) => {
+        const editableRange = getEditableRange();
+        if (!editableRange) return;
+
         for (const change of e.changes) {
-          if (!isChangeAllowed(change.range)) {
+          if (!editableRange.containsRange(change.range)) {
+            // 非法编辑 → 撤销
             codeEditor.trigger("prevent-edit", "undo", null);
           }
-          updateDecorations();
         }
+
+        // 每次变化后更新装饰
+        updateDecorations();
       });
+
+
     }
     problemLoading.value = false;
   });

@@ -44,8 +44,12 @@ a {
   opacity: 0.5;
 }
 
-/* 可编辑区域高亮 */
-.editable-code {
-  background-color: rgba(52, 152, 219, 0.2);
-  border-radius: 3px;
+/* 不可编辑区域淡一些 */
+.monaco-editor .readonly-line {
+  opacity: 0.6;
+}
+
+/* 可编辑区域突出显示 */
+.monaco-editor .editable-line {
+  background-color: rgba(0, 255, 120, 0.08);
 }
