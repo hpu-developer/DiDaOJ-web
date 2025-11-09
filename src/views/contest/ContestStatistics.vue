@@ -122,6 +122,13 @@ const loadCountStatistics = (countData: { [key: string]: number }) => {
         label: {
           show: true,
           position: "top",
+          // 只显示第一个和最后一个以及每隔5个点
+          formatter: (params: any) => {
+            if (params.dataIndex === 0 || params.dataIndex === attemptValues.length - 1 || params.dataIndex % 5 === 0) {
+              return params.data;
+            }
+            return "";
+          }
         },
         areaStyle: {},
         emphasis: {
