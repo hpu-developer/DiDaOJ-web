@@ -48,7 +48,7 @@ const problemSubmitting = ref(false);
 const tagsMap = {} as { [key: number]: ProblemTag };
 
 const selectLanguage = ref("");
-const languageOptions = ref([] as { label: string; value: JudgeLanguage }[]);
+const languageOptions = ref([] as { label: string; value: JudgeLanguage | undefined }[]);
 
 const contestProblems = ref([]);
 
@@ -284,6 +284,110 @@ const handleSubmitCode = async () => {
   }
 };
 
+const handleResetCode = () => {
+  //   const codeTemplate = `#include <iostream>
+  // using namespace std;
+  // int main() {
+  // \tint a, b;
+  // // code-edit-start
+  // {{ code1 }}
+  // // code-edit-end
+  //
+  // \twhile (cin >> a >> b) {
+  // // code-edit-start
+  // {{ code2 }}
+  // // code-edit-end
+  // \t}
+  // \treturn 0;
+  // }`;
+
+  const codeTemplate = "";
+
+  let isContainReadOnly = false;
+  if (codeTemplate) {
+    isContainReadOnly = true;
+  }
+
+  codeEditRef.value && codeEditRef.value.replaceChildren();
+
+  const codeEditor = monaco.editor.create(codeEditRef.value, {
+    value: codeTemplate,
+    language: "cpp",
+    minimap: { enabled: true },
+    colorDecorators: true,
+    readOnly: false,
+    theme: "vs-dark",
+  });
+
+  const model = codeEditor.getModel();
+  let decorationIds: string[] = [];
+
+  // 动态查找所有可编辑区域
+  function getEditableRanges(): monaco.Range[] {
+    const ranges: monaco.Range[] = [];
+    let startLine = 0;
+    for (let i = 1; i <= model.getLineCount(); i++) {
+      const line = model.getLineContent(i);
+      if (line.includes("code-edit-start")) startLine = i;
+      else if (line.includes("code-edit-end") && startLine) {
+        ranges.push(new monaco.Range(startLine + 1, 1, i - 1, model.getLineMaxColumn(i - 1)));
+        startLine = 0; // 重置
+      }
+    }
+    return ranges;
+  }
+
+  // 判断 change 是否在任意可编辑区
+  function isChangeAllowed(change: monaco.editor.IModelContentChange): boolean {
+    const editableRanges = getEditableRanges();
+    for (const range of editableRanges) {
+      if (range.containsRange(change.range)) return true;
+    }
+    return false;
+  }
+
+  // 动态更新装饰（只读行视觉提示）
+  function updateDecorations() {
+    const editableRanges = getEditableRanges();
+    const decs: monaco.editor.IModelDeltaDecoration[] = [];
+
+    let lastEnd = 0;
+    for (const range of editableRanges) {
+      // 上方不可编辑行
+      if (range.startLineNumber - 1 > lastEnd) {
+        decs.push({
+          range: new monaco.Range(lastEnd + 1, 1, range.startLineNumber - 1, 1),
+          options: { isWholeLine: true, className: "readonly-line" },
+        });
+      }
+      lastEnd = range.endLineNumber;
+    }
+    // 下方不可编辑行
+    if (lastEnd < model.getLineCount()) {
+      decs.push({
+        range: new monaco.Range(lastEnd + 1, 1, model.getLineCount(), 1),
+        options: { isWholeLine: true, className: "readonly-line" },
+      });
+    }
+
+    decorationIds = model.deltaDecorations(decorationIds, decs);
+  }
+
+  if (isContainReadOnly) {
+    // 初始化一次装饰
+    updateDecorations();
+    // 监听内容变化
+    model.onDidChangeContent((e) => {
+      for (const change of e.changes) {
+        if (!isChangeAllowed(change)) {
+          codeEditor.trigger("prevent-edit", "undo", null);
+        }
+      }
+      updateDecorations();
+    });
+  }
+};
+
 const onSelectLanguageChanged = (value: JudgeLanguage) => {
   if (!codeEditor) {
     return;
@@ -338,106 +442,7 @@ const fetchProblemData = async () => {
   problemDescription.value = problemData.value.description as string;
   await nextTick(() => {
     if (!codeEditor && codeEditRef.value) {
-
-
-      const codeTemplate = `#include <iostream>
-using namespace std;
-int main() {
-\tint a, b;
-// code-edit-start
-{{ code1 }}
-// code-edit-end
-
-\twhile (cin >> a >> b) {
-// code-edit-start
-{{ code2 }}
-// code-edit-end
-\t}
-\treturn 0;
-}`;
-
-      const codeEditor = monaco.editor.create(codeEditRef.value, {
-        value: codeTemplate,
-        language: "cpp",
-        minimap: { enabled: true },
-        colorDecorators: true,
-        readOnly: false,
-        theme: "vs-dark",
-      });
-
-      const model = codeEditor.getModel();
-      let decorationIds: string[] = [];
-
-// 动态查找所有可编辑区域
-      function getEditableRanges(): monaco.Range[] {
-        const ranges: monaco.Range[] = [];
-        let startLine = 0;
-        for (let i = 1; i <= model.getLineCount(); i++) {
-          const line = model.getLineContent(i);
-          if (line.includes("code-edit-start")) startLine = i;
-          else if (line.includes("code-edit-end") && startLine) {
-            ranges.push(
-              new monaco.Range(
-                startLine + 1, 1,
-                i - 1, model.getLineMaxColumn(i - 1)
-              )
-            );
-            startLine = 0; // 重置
-          }
-        }
-        return ranges;
-      }
-
-// 判断 change 是否在任意可编辑区
-      function isChangeAllowed(change: monaco.editor.IModelContentChange): boolean {
-        const editableRanges = getEditableRanges();
-        for (const range of editableRanges) {
-          if (range.containsRange(change.range)) return true;
-        }
-        return false;
-      }
-
-// 动态更新装饰（只读行视觉提示）
-      function updateDecorations() {
-        const editableRanges = getEditableRanges();
-        const decs: monaco.editor.IModelDeltaDecoration[] = [];
-
-        let lastEnd = 0;
-        for (const range of editableRanges) {
-          // 上方不可编辑行
-          if (range.startLineNumber - 1 > lastEnd) {
-            decs.push({
-              range: new monaco.Range(lastEnd + 1, 1, range.startLineNumber - 1, 1),
-              options: { isWholeLine: true, className: "readonly-line" },
-            });
-          }
-          lastEnd = range.endLineNumber;
-        }
-        // 下方不可编辑行
-        if (lastEnd < model.getLineCount()) {
-          decs.push({
-            range: new monaco.Range(lastEnd + 1, 1, model.getLineCount(), 1),
-            options: { isWholeLine: true, className: "readonly-line" },
-          });
-        }
-
-        decorationIds = model.deltaDecorations(decorationIds, decs);
-      }
-
-// 初始化一次装饰
-      updateDecorations();
-
-// 监听内容变化
-      model.onDidChangeContent((e) => {
-        for (const change of e.changes) {
-          if (!isChangeAllowed(change)) {
-            codeEditor.trigger("prevent-edit", "undo", null);
-          }
-        }
-        updateDecorations();
-      });
-
-
+      handleResetCode();
     }
     problemLoading.value = false;
   });
@@ -683,6 +688,7 @@ onBeforeUnmount(() => {
                 <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
               </t-select>
               <t-button @click="handleSubmitCode" :loading="problemSubmitting">提交</t-button>
+              <t-button @click="handleResetCode" theme="danger">重置</t-button>
             </t-space>
             <div class="dida-code-editor-div">
               <div ref="codeEditRef" class="dida-code-editor"></div>
