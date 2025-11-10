@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { GetProblemRecommend, ParseProblem, ProblemAttemptStatus } from "@/apis/problem.ts";
 import { Problem, ProblemTag, ProblemView } from "@/types/problem.ts";
+import { handleGotoProblem } from "@/util/router.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -19,12 +20,12 @@ let problemAttemptStatus = {} as { [key: string]: ProblemAttemptStatus };
 const listColumns = ref([
   {
     title: "ID",
-    colKey: "id",
+    colKey: "key",
     cell: (_: any, data: any) => {
       let theme = getProblemIdTheme(data.row.id);
       return (
-        <t-button variant="dashed" theme={theme} onClick={() => handleGotoProblem(data.row.id)}>
-          {data.row.id}
+        <t-button variant="dashed" theme={theme} onClick={() => handleGotoProblem(data.row.key)}>
+          {data.row.key}
         </t-button>
       );
     },
@@ -34,7 +35,7 @@ const listColumns = ref([
     colKey: "title",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoProblem(data.row.id)}>
+        <t-button variant="text" onClick={() => handleGotoProblem(data.row.key)}>
           {data.row.title}
         </t-button>
       );
@@ -73,13 +74,6 @@ const listColumns = ref([
 const dataLoading = ref(false);
 
 const problemViews = ref<ProblemView[]>();
-
-const handleGotoProblem = (id: string) => {
-  if (!id) {
-    return;
-  }
-  router.push({ path: "/problem/" + id });
-};
 
 const getProblemIdTheme = (id: string) => {
   if (!id) {
@@ -156,7 +150,6 @@ const fetchData = async (needLoading: boolean) => {
 
 // 初始化分页信息
 onMounted(async () => {
-
   dataLoading.value = true;
 
   watchHandle = watch(
@@ -174,7 +167,6 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-
   if (watchHandle) {
     watchHandle();
   }
