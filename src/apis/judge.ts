@@ -301,7 +301,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   return result;
 }
 
-export function PostJudgeJob(problemId: number, contestId: number, problemIndex: number, language: JudgeLanguage, code: string) {
+export function PostJudgeJob(problemId: number, contestId: number, problemIndex: number, language: JudgeLanguage, code: string, isPrivate: boolean) {
   return httpRequest({
     url: "/judge/approve",
     method: "post",
@@ -311,6 +311,7 @@ export function PostJudgeJob(problemId: number, contestId: number, problemIndex:
       problem_index: problemIndex,
       language: language,
       code: code,
+      is_private: isPrivate,
     },
   });
 }

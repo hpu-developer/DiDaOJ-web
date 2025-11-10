@@ -49,6 +49,7 @@ const tagsMap = {} as { [key: number]: ProblemTag };
 
 const selectLanguage = ref("");
 const languageOptions = ref([] as { label: string; value: JudgeLanguage | undefined }[]);
+const isPrivate = ref(false);
 
 const contestProblems = ref([]);
 
@@ -236,8 +237,8 @@ const handleClickCrawl = async () => {
 };
 
 const handleSubmitCode = async () => {
-  const selectValue = parseInt(selectLanguage.value);
-  if (!IsJudgeLanguageValid(selectValue)) {
+  const selectLanguageValue = parseInt(selectLanguage.value);
+  if (!IsJudgeLanguageValid(selectLanguageValue)) {
     ShowTextTipsError(globalProperties, "请选择所编写的语言");
     return;
   }
@@ -254,7 +255,7 @@ const handleSubmitCode = async () => {
   problemSubmitting.value = true;
 
   try {
-    const res = await PostJudgeJob(problemId, contestId, problemIndex.value, selectValue, code);
+    const res = await PostJudgeJob(problemId, contestId, problemIndex.value, selectLanguageValue, code, isPrivate.value);
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
@@ -686,13 +687,24 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="dida-code-submit-div" v-if="isLogin">
-            <t-space>
-              <t-select v-model="selectLanguage" label="语言：" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
-                <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
-              </t-select>
-              <t-button @click="handleSubmitCode" :loading="problemSubmitting">提交</t-button>
-              <t-button @click="handleResetCode" theme="danger">重置</t-button>
-            </t-space>
+            <t-form layout="inline">
+              <t-form-item>
+              </t-form-item>
+              <t-form-item label="是否隐藏代码">
+                <t-switch v-model="isPrivate"> </t-switch>
+              </t-form-item>
+              <t-form-item label="语言">
+                <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
+                  <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
+                </t-select>
+              </t-form-item>
+              <t-form-item>
+                <t-space>
+                  <t-button @click="handleSubmitCode" :loading="problemSubmitting">提交</t-button>
+                  <t-button @click="handleResetCode" theme="danger">重置</t-button>
+                </t-space>
+              </t-form-item>
+            </t-form>
             <div class="dida-code-editor-div">
               <div ref="codeEditRef" class="dida-code-editor"></div>
             </div>
