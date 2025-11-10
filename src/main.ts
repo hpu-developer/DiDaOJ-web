@@ -119,14 +119,33 @@ config({
           },
         },
       },
-    ];
+    ].map((item) => {
+      switch (item.type) {
+        case "katex": {
+          return {
+            ...item,
+            options: {
+              ...item.options,
+              inlineDelimiters: [{ open: "$", close: "$" }],
+              blockDelimiters: [
+                { open: "$$", close: "$$" },
+                { open: "$", close: "$" },
+              ],
+            },
+          };
+        }
+        default: {
+          return item;
+        }
+      }
+    });
   },
 });
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 
-initEChart()
+initEChart();
 
 const app = createApp(App);
 
