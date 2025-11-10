@@ -2,6 +2,7 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useUserStore } from "@/stores/user.ts";
 import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
 import { GetProblemRank, GetProblemRankTypes, GetProblemStatistics, ParseProblemRank, ProblemRankType } from "@/apis/problem.ts";
 import type { ProblemRank, ProblemRankView } from "@/types/rank.ts";
@@ -46,6 +47,8 @@ const showJudgeJob = ref<JudgeJobView | null>(null);
 
 const isCodeLoading = ref(false);
 
+const userStore = useUserStore();
+
 const searchForm = ref({
   language: undefined as JudgeLanguage | undefined,
   rankType: ProblemRankType.Time,
@@ -60,6 +63,13 @@ const listColumns = [
     title: "评测序号",
     colKey: "id",
     cell: (_: any, data: any) => {
+      if (data.row.private && data.row.inserter != userStore.getUserId ){
+        return (
+          <t-button variant="text">
+            {data.row.id}
+          </t-button>
+        );
+      }
       return (
         <t-button variant="text" onClick={() => handleGotoJudgeJob(data.row.id)}>
           {data.row.id}
@@ -84,7 +94,7 @@ const listColumns = [
       if (languageValid && data.row.codeLength > 0) {
         buttonText = buttonText + " / " + data.row.codeLength;
       }
-      let disabled = !languageValid;
+      let disabled = !languageValid || (data.row.private && data.row.inserter != userStore.getUserId );
       return (
         <t-button theme="default" onClick={() => handleShowCode(data.row)} disabled={disabled}>
           {buttonText}

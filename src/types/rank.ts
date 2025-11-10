@@ -23,6 +23,7 @@ export interface ProblemRank {
   inserter_email: string;
   language: JudgeLanguage;
   insert_time: string;
+  private: number
 }
 
 export interface ProblemRankView {
@@ -38,4 +39,5 @@ export interface ProblemRankView {
   inserterEmail: string;
   language: JudgeLanguage;
   insertTime: string;
+  private: number
 }

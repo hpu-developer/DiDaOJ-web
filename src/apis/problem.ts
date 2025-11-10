@@ -198,6 +198,7 @@ export function ParseProblemRank(item: ProblemRank) {
   result.inserterUsername = item.inserter_username;
   result.inserterNickname = item.inserter_nickname;
   result.inserterEmail = item.inserter_email;
+  result.private = item.private;
   return result;
 }
 

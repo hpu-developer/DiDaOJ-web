@@ -137,6 +137,10 @@ const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageJudge);
 });
 
+const hasEditPrivateAuth = computed(() => {
+  return userStore.hasAuth(AuthType.ManageJudge) || (judgeJob.value && userStore.getUserId == judgeJob.value.inserter);
+});
+
 const handleClickRejudge = async () => {
   if (isRejudging.value) {
     return;
@@ -352,7 +356,7 @@ onBeforeUnmount(() => {
           <t-descriptions-item label="判题机">{{ judgerName }}</t-descriptions-item>
           <t-descriptions-item label="判题时间">{{ judgeJob?.judgeTime }}</t-descriptions-item>
         </t-descriptions>
-        <t-card style="margin: 10px 0">
+        <t-card style="margin: 10px 0" v-if="hasEditPrivateAuth">
           <t-form layout="inline">
             <t-form-item label="是否隐藏代码">
               <t-switch v-model="isPrivate" :loading="dataLoading || isPrivateLoading" @change="handlePrivateChanged"></t-switch>
