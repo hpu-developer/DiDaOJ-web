@@ -392,6 +392,12 @@ const handleResetCode = () => {
   }
 };
 
+const handlePrivateChanged = (value: boolean) => {
+  isPrivate.value = value;
+  // 保存到本地存储
+  localStorage.setItem("problem_submit_private", value ? "1" : "0");
+};
+
 const onSelectLanguageChanged = (value: JudgeLanguage) => {
   if (!codeEditor) {
     return;
@@ -545,6 +551,15 @@ onMounted(async () => {
     },
     { immediate: true }
   );
+
+  // 从本地存储读取提交代码私有选项
+  const localIsPrivate = localStorage.getItem("problem_submit_private");
+  if (localIsPrivate === "1") {
+    isPrivate.value = true;
+  } else {
+    isPrivate.value = false;
+  }
+
   if (codeEditRef.value) {
     const resizeObserver = new ResizeObserver(() => {
       if (codeEditor) {
@@ -688,10 +703,9 @@ onBeforeUnmount(() => {
 
           <div class="dida-code-submit-div" v-if="isLogin">
             <t-form layout="inline">
-              <t-form-item>
-              </t-form-item>
+              <t-form-item> </t-form-item>
               <t-form-item label="是否隐藏代码">
-                <t-switch v-model="isPrivate"> </t-switch>
+                <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
               </t-form-item>
               <t-form-item label="语言">
                 <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
