@@ -129,7 +129,6 @@ config({
               inlineDelimiters: [{ open: "$", close: "$" }],
               blockDelimiters: [
                 { open: "$$", close: "$$" },
-                { open: "$", close: "$" },
               ],
             },
           };
