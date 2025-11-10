@@ -20,6 +20,7 @@ import { GetJudgeLanguageStr } from "@/apis/language.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import { GetAvatarUrl } from "@/util/avatar.ts";
+import { useUserStore } from "@/stores/user.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -36,6 +37,8 @@ const isCodeLoading = ref(false);
 
 let contestId = ref(-1);
 
+const userStore = useUserStore();
+
 const searchForm = ref({
   problemKey: "",
   username: "",
@@ -49,7 +52,7 @@ const listColumns = ref([
     colKey: "id",
     cell: (_: any, data: any) => {
       let clickFunction = null;
-      if (!data.row.private && IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
+      if ((!data.row.private || data.row.inserter == userStore.getUserId ) && IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
         clickFunction = () => {
           handleGotoJudgeJob(data.row.id, contestId.value);
         };
@@ -85,7 +88,7 @@ const listColumns = ref([
     align: "center",
     cell: (_: any, data: any) => {
       let clickFunction = null;
-      if (!data.row.private && IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
+      if ((!data.row.private || data.row.inserter == userStore.getUserId) && IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
         clickFunction = () => {
           handleGotoJudgeJob(data.row.id, contestId.value);
         };
@@ -127,7 +130,7 @@ const listColumns = ref([
       if (languageValid && data.row.codeLength > 0) {
         buttonText = buttonText + " / " + data.row.codeLength;
       }
-      let disabled = !languageValid || data.row.private;
+      let disabled = !languageValid || (data.row.private && data.row.inserter != userStore.getUserId );
       return (
         <t-button theme="default" onClick={() => handleShowCode(data.row)} disabled={disabled}>
           {buttonText}
