@@ -49,7 +49,7 @@ const listColumns = ref([
     colKey: "id",
     cell: (_: any, data: any) => {
       let clickFunction = null;
-      if (IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
+      if (!data.row.private && IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
         clickFunction = () => {
           handleGotoJudgeJob(data.row.id, contestId.value);
         };
@@ -85,7 +85,7 @@ const listColumns = ref([
     align: "center",
     cell: (_: any, data: any) => {
       let clickFunction = null;
-      if (IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
+      if (!data.row.private && IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
         clickFunction = () => {
           handleGotoJudgeJob(data.row.id, contestId.value);
         };
@@ -127,7 +127,7 @@ const listColumns = ref([
       if (languageValid && data.row.codeLength > 0) {
         buttonText = buttonText + " / " + data.row.codeLength;
       }
-      let disabled = !languageValid;
+      let disabled = !languageValid || data.row.private;
       return (
         <t-button theme="default" onClick={() => handleShowCode(data.row)} disabled={disabled}>
           {buttonText}

@@ -255,6 +255,7 @@ export function ParseJudgeJob(item: JudgeJob): JudgeJobView {
   result.inserterEmail = item.inserter_email;
   result.code = item.code;
   result.compileMessage = item.compile_message;
+  result.private = item.private;
   result.taskCurrent = item.task_current;
   result.taskTotal = item.task_total;
   result.task = [];
@@ -311,6 +312,17 @@ export function PostJudgeJob(problemId: number, contestId: number, problemIndex:
       problem_index: problemIndex,
       language: language,
       code: code,
+      is_private: isPrivate,
+    },
+  });
+}
+
+export function PostJudgeJobPrivate(judgeId: number, isPrivate: boolean) {
+  return httpRequest({
+    url: "/judge/private",
+    method: "post",
+    data: {
+      id: judgeId,
       is_private: isPrivate,
     },
   });

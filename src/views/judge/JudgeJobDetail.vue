@@ -10,6 +10,7 @@ import {
   IsJudgeStatusRunning,
   JudgeStatus,
   ParseJudgeJob,
+  PostJudgeJobPrivate,
   PostRejudgeJob,
 } from "@/apis/judge.ts";
 import { GetJudgeLanguageStr, GetHighlightKeyByJudgeLanguage } from "@/apis/language.ts";
@@ -127,6 +128,8 @@ const ListColumns = ref([
 
 const dataLoading = ref(false);
 const isRejudging = ref(false);
+const isPrivate = ref(false);
+const isPrivateLoading = ref(false);
 
 const judgeJobViews = ref<JudgeJobView[]>();
 
@@ -204,6 +207,23 @@ const taskRender = (task: any) => {
   );
 };
 
+const handlePrivateChanged = async (value: boolean) => {
+  isPrivateLoading.value = true;
+  try {
+    const res = await PostJudgeJobPrivate(judgeId, value);
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+    isPrivate.value = value;
+  } catch (err) {
+    console.error(err);
+    ShowErrorTips(globalProperties, GetCommonErrorCode());
+  } finally {
+    isPrivateLoading.value = false;
+  }
+};
+
 const fetchData = async (needLoading: boolean) => {
   if (needLoading) {
     dataLoading.value = true;
@@ -250,6 +270,8 @@ const fetchData = async (needLoading: boolean) => {
       }
 
       judgeJob.value = result;
+
+      isPrivate.value = judgeJob.value.private;
 
       if (IsJudgeStatusRunning(response.status)) {
         needRefresh = true;
@@ -330,6 +352,13 @@ onBeforeUnmount(() => {
           <t-descriptions-item label="判题机">{{ judgerName }}</t-descriptions-item>
           <t-descriptions-item label="判题时间">{{ judgeJob?.judgeTime }}</t-descriptions-item>
         </t-descriptions>
+        <t-card style="margin: 10px 0">
+          <t-form layout="inline">
+            <t-form-item label="是否隐藏代码">
+              <t-switch v-model="isPrivate" :loading="dataLoading || isPrivateLoading" @change="handlePrivateChanged"></t-switch>
+            </t-form-item>
+          </t-form>
+        </t-card>
         <t-card class="dida-card-tips">
           {{ dataLoading ? "数据正在加载，请等待" : GetJudgeStatusTips(judgeJob?.status) }}
         </t-card>

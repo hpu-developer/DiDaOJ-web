@@ -39,6 +39,7 @@ export interface JudgeJob {
   insert_time: string;
   code?: string;
   compile_message?: string;
+  private: boolean;
   task_current: number;
   task_total: number;
   task?: JudgeTask[];
@@ -66,6 +67,7 @@ export interface JudgeJobView {
   insertTime: string;
   code?: string;
   compileMessage?: string;
+  private: boolean;
   taskCurrent: number;
   taskTotal: number;
   task?: JudgeTaskView[];
