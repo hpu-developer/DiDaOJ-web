@@ -29,6 +29,7 @@ const formData = ref({
   slogan: "",
   gender: "",
   realName: "",
+  blog: "",
   organization: "",
 });
 
@@ -129,6 +130,7 @@ const onResetBaseInfo = () => {
   formData.value.slogan = loadedUserInfo.slogan;
   formData.value.gender = GetUserGenderKey(loadedUserInfo.gender);
   formData.value.realName = loadedUserInfo.real_name;
+  formData.value.blog = loadedUserInfo.blog;
   formData.value.organization = loadedUserInfo.organization;
 };
 
@@ -139,6 +141,7 @@ const onSubmitBaseInfo = async (_: any) => {
     slogan: formData.value.slogan,
     gender: formData.value.gender,
     real_name: formData.value.realName,
+    blog: formData.value.blog,
     organization: formData.value.organization,
   } as UserModifyInfoRequest;
   try {
@@ -502,6 +505,11 @@ onMounted(() => {
             </t-form-item>
             <t-form-item name="slogan" label="真实姓名">
               <t-input v-model="formData.realName" clearable placeholder="真实姓名仅用在部分需要实名的系统"></t-input>
+            </t-form-item>
+            <t-form-item name="blog" label="个人主页">
+              <t-tooltip content="可以使用 [名称](https://xxx.com) 的语法指定名称" placement="top">
+                <t-input v-model="formData.blog" clearable placeholder="可以填写博客网址等外链"></t-input>
+              </t-tooltip>
             </t-form-item>
             <t-form-item>
               <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>

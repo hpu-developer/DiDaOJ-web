@@ -38,13 +38,17 @@ export interface UserModifyInfo {
   organization: string;
   real_name: string;
   gender: number;
+  blog: string;
   vjudge_id: string;
 }
 
 export interface UserModifyInfoRequest {
   nickname?: string;
   slogan?: string;
+  gender: string;
+  real_name?: string;
   organization: string;
+  blog: string;
 }
 
 export interface UserModifyPasswordRequest {
