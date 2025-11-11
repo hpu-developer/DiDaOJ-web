@@ -214,10 +214,10 @@ const loadUserInfo = async (username: string) => {
         show: false, // 隐藏顶部图例
       },
       calendar: {
-        top: 30, // 上移日历位置
+        top: 50, // 上移日历位置
         left: 30,
         right: 30,
-        cellSize: ["auto", 13],
+        cellSize: ["auto", "auto"],
         range: new Date().getFullYear(),
         itemStyle: {
           borderWidth: 0.5,
@@ -244,6 +244,13 @@ const loadUserInfo = async (username: string) => {
     } as EChartsOption;
 
     myChart.setOption(option);
+
+    const resizeObserver = new ResizeObserver(() => {
+      myChart.resize({
+        height: 200
+      });
+    });
+    resizeObserver.observe(chartDom!);
 
     await loadProblemAttemptStatus();
   } catch (e) {
@@ -287,6 +294,12 @@ onMounted(async () => {
   <t-loading :loading="userLoading">
     <t-row class="dida-main-content">
       <t-col :span="8">
+        <t-card style="margin: 10px" >
+          <div style="text-align: right; margin-right: 20px">
+            <t-link :href="userLink" :underline="true">前往查看最近提交</t-link>
+          </div>
+          <div id="ojStaticsDiv" class="dida-statistics-chart"></div>
+        </t-card>
         <t-card style="margin: 10px" title="通过题目">
           <p v-if="!problemsAccept || problemsAccept.length === 0">
             <span>暂无通过题目</span>
@@ -380,12 +393,6 @@ onMounted(async () => {
             <t-descriptions-item label="通过数量">{{ userData?.accept }}</t-descriptions-item>
             <t-descriptions-item label="提交数量">{{ userData?.attempt }}</t-descriptions-item>
           </t-descriptions>
-        </div>
-        <div>
-          <div style="text-align: right; margin-right: 20px">
-            <t-link :href="userLink" :underline="true">前往查看最近提交</t-link>
-          </div>
-          <div id="ojStaticsDiv" class="dida-statistics-chart"></div>
         </div>
       </t-col>
     </t-row>
