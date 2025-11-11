@@ -21,6 +21,7 @@ import { GetContestProblemIndexStr } from "@/apis/contest.ts";
 import type { JudgeJob, JudgeJobView } from "@/types/judge.ts";
 import { GetAvatarUrl } from "@/util/avatar.ts";
 import { useUserStore } from "@/stores/user.ts";
+import { AuthType } from "@/auth";
 
 const route = useRoute();
 const router = useRouter();
@@ -46,13 +47,22 @@ const searchForm = ref({
   status: undefined as JudgeStatus | undefined,
 });
 
+let contestInserterId = -1;
+
 const listColumns = ref([
   {
     title: "ID",
     colKey: "id",
     cell: (_: any, data: any) => {
       let clickFunction = null;
-      if ((!data.row.private || data.row.inserter == userStore.getUserId ) && IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
+      if (
+        (!data.row.private ||
+          data.row.inserter == userStore.getUserId ||
+          contestInserterId == userStore.getUserId ||
+          userStore.hasAuth(AuthType.ManageJudge)) &&
+        IsJudgeStatusValid(data.row.status) &&
+        IsJudgeLanguageValid(data.row.language)
+      ) {
         clickFunction = () => {
           handleGotoJudgeJob(data.row.id, contestId.value);
         };
@@ -88,7 +98,14 @@ const listColumns = ref([
     align: "center",
     cell: (_: any, data: any) => {
       let clickFunction = null;
-      if ((!data.row.private || data.row.inserter == userStore.getUserId) && IsJudgeStatusValid(data.row.status) && IsJudgeLanguageValid(data.row.language)) {
+      if (
+        (!data.row.private ||
+          data.row.inserter == userStore.getUserId ||
+          contestInserterId == userStore.getUserId ||
+          userStore.hasAuth(AuthType.ManageJudge)) &&
+        IsJudgeStatusValid(data.row.status) &&
+        IsJudgeLanguageValid(data.row.language)
+      ) {
         clickFunction = () => {
           handleGotoJudgeJob(data.row.id, contestId.value);
         };
@@ -130,7 +147,12 @@ const listColumns = ref([
       if (languageValid && data.row.codeLength > 0) {
         buttonText = buttonText + " / " + data.row.codeLength;
       }
-      let disabled = !languageValid || (data.row.private && data.row.inserter != userStore.getUserId );
+      let disabled =
+        !languageValid ||
+        (data.row.private &&
+          data.row.inserter != userStore.getUserId &&
+          contestInserterId != userStore.getUserId &&
+          !userStore.hasAuth(AuthType.ManageJudge));
       return (
         <t-button theme="default" onClick={() => handleShowCode(data.row)} disabled={disabled}>
           {buttonText}
@@ -283,6 +305,12 @@ const fetchData = async (paginationInfo: { current: number; pageSize: number }, 
         }
         return;
       }
+
+      contestInserterId = -1;
+      if (res.data.contest) {
+        contestInserterId = res.data.contest.inserter;
+      }
+
       if (res.data.list && res.data.list.length > 0) {
         const responseList = res.data.list as JudgeJob[];
         responseList.forEach((item) => {
