@@ -36,6 +36,20 @@ export function ParseUser(item: UserInfo): UserInfoView {
   result.email = item.email;
   result.slogan = item.slogan;
   result.organization = item.organization;
+
+  if (item.blog != undefined) {
+    // 判断item.source是否符合[]()格式，是否赋值result.sourceUrl
+    const urlRegex = /\[([^\]]+)\]\(([^)]+)\)/;
+    const match = item.blog.match(urlRegex);
+    if (match) {
+      result.blog = match[1];
+      result.blogUrl = match[2];
+    } else {
+      result.blog = item.blog;
+      result.blogUrl = "";
+    }
+  }
+
   result.accept = item.accept;
   result.attempt = item.attempt;
   result.vjudgeId = item.vjudge_id;

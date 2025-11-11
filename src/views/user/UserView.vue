@@ -169,7 +169,7 @@ const loadUserInfo = async (username: string) => {
     webStyleStore.setTitle(userData.value.nickname + " - " + webStyleStore.getTitle);
 
     if (userData.value.vjudgeId) {
-      loadVjudgeInfo(userData.value.vjudgeId)
+      loadVjudgeInfo(userData.value.vjudgeId);
     }
 
     const statics = res.data.statics;
@@ -247,7 +247,7 @@ const loadUserInfo = async (username: string) => {
 
     const resizeObserver = new ResizeObserver(() => {
       myChart.resize({
-        height: 200
+        height: 200,
       });
     });
     resizeObserver.observe(chartDom!);
@@ -294,7 +294,7 @@ onMounted(async () => {
   <t-loading :loading="userLoading">
     <t-row class="dida-main-content">
       <t-col :span="8">
-        <t-card style="margin: 10px" >
+        <t-card style="margin: 10px">
           <div style="text-align: right; margin-right: 20px">
             <t-link :href="userLink" :underline="true">前往查看最近提交</t-link>
           </div>
@@ -337,7 +337,7 @@ onMounted(async () => {
             <t-link :href="'https://vjudge.net/user/' + userData?.vjudgeId" target="_blank">@{{ userData?.vjudgeId }} </t-link>
           </template>
           <t-loading :loading="vjudgeLoading" style="min-height: 200px">
-            <div style="margin: 10px;" v-if="vjudgeAcProblems && Object.keys(vjudgeAcProblems).length > 0">
+            <div style="margin: 10px" v-if="vjudgeAcProblems && Object.keys(vjudgeAcProblems).length > 0">
               <div style="margin: 5px">
                 <span>AC</span>
               </div>
@@ -390,6 +390,14 @@ onMounted(async () => {
             <t-descriptions-item label="Slogan">{{ userData?.slogan }}</t-descriptions-item>
             <t-descriptions-item label="邮箱">{{ userData?.email }}</t-descriptions-item>
             <t-descriptions-item label="组织">{{ userData?.organization }}</t-descriptions-item>
+            <t-descriptions-item label="个人主页">
+              <t-link v-if="userData?.blogUrl" :href="userData?.blogUrl" target="_blank">
+                {{ userData?.blog }}
+              </t-link>
+              <span v-else>
+                {{ userData?.blog }}
+              </span>
+            </t-descriptions-item>
             <t-descriptions-item label="通过数量">{{ userData?.accept }}</t-descriptions-item>
             <t-descriptions-item label="提交数量">{{ userData?.attempt }}</t-descriptions-item>
           </t-descriptions>

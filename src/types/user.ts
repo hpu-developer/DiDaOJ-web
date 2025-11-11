@@ -13,6 +13,7 @@ export interface UserInfo {
   slogan: string;
   email: string;
   organization: string;
+  blog: string;
   accept: number;
   attempt: number;
   vjudge_id: string;
@@ -25,6 +26,8 @@ export interface UserInfoView {
   slogan: string;
   email: string;
   organization: string;
+  blog: string;
+  blogUrl: string;
   accept: number;
   attempt: number;
   avatar: string;
