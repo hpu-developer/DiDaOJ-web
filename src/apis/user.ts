@@ -36,6 +36,7 @@ export function ParseUser(item: UserInfo): UserInfoView {
   result.email = item.email;
   result.slogan = item.slogan;
   result.organization = item.organization;
+  result.gender = item.gender;
 
   if (item.blog != undefined) {
     // 判断item.source是否符合[]()格式，是否赋值result.sourceUrl

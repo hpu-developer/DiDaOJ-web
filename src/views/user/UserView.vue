@@ -11,6 +11,7 @@ import { GetProblemAttemptStatus, ProblemAttemptStatus } from "@/apis/problem.ts
 import { useUserStore } from "@/stores/user.ts";
 import * as echarts from "echarts/core";
 import type { EChartsOption } from "echarts";
+import { GenderFemaleIcon, GenderMaleIcon, User1Icon, UserUnknownIcon } from "tdesign-icons-vue-next";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -386,7 +387,10 @@ onMounted(async () => {
             </t-descriptions-item>
             <t-descriptions-item label="用户序号">{{ userData?.id }}</t-descriptions-item>
             <t-descriptions-item label="用户名">{{ userData?.username }}</t-descriptions-item>
-            <t-descriptions-item label="昵称">{{ userData?.nickname }}</t-descriptions-item>
+            <t-descriptions-item label="昵称"
+              ><GenderFemaleIcon v-if="userData?.gender === 1" /><GenderMaleIcon v-else-if="userData?.gender === 2" /><User1Icon v-else />
+              {{ userData?.nickname }}</t-descriptions-item
+            >
             <t-descriptions-item label="Slogan">{{ userData?.slogan }}</t-descriptions-item>
             <t-descriptions-item label="邮箱">{{ userData?.email }}</t-descriptions-item>
             <t-descriptions-item label="组织">{{ userData?.organization }}</t-descriptions-item>

@@ -13,6 +13,7 @@ export interface UserInfo {
   slogan: string;
   email: string;
   organization: string;
+  gender: number;
   blog: string;
   accept: number;
   attempt: number;
@@ -26,6 +27,7 @@ export interface UserInfoView {
   slogan: string;
   email: string;
   organization: string;
+  gender: number;
   blog: string;
   blogUrl: string;
   accept: number;
