@@ -19,7 +19,9 @@ export interface UserInfo {
   attempt: number;
   vjudge_id: string;
   level: number;
+  experience: number;
   experience_current_level: number;
+  experience_upgrade: number;
 }
 
 export interface UserInfoView {
@@ -37,6 +39,7 @@ export interface UserInfoView {
   avatar: string;
   vjudgeId: string;
   level: number;
+  experience: number;
   experience_current_level: number;
   experience_upgrade: number;
 }
@@ -51,7 +54,9 @@ export interface UserModifyInfo {
   blog: string;
   vjudge_id: string;
   level: number;
+  experience: number;
   experience_current_level: number;
+  experience_upgrade: number;
 }
 
 export interface UserModifyInfoRequest {

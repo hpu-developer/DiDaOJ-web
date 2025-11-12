@@ -148,14 +148,17 @@ const loadUserInfo = async (username: string) => {
     
     // 确保等级和经验字段存在，设置默认值
     if (!userData.value.level) {
-      userData.value.level = 0;
-    }
-    if (!userData.value.experience_current_level) {
-      userData.value.experience_current_level = 0;
-    }
-    if (!userData.value.experience_upgrade) {
-      userData.value.experience_upgrade = 100; // 默认第一级需要100经验
-    }
+        userData.value.level = 0;
+      }
+      if (!userData.value.experience) {
+        userData.value.experience = 0;
+      }
+      if (!userData.value.experience_current_level) {
+        userData.value.experience_current_level = 0;
+      }
+      if (!userData.value.experience_upgrade) {
+        userData.value.experience_upgrade = 100; // 默认第一级需要100经验
+      }
 
     const compareFunc = (a: any, b: any) => {
       const problemKeyA = a.key as string;
