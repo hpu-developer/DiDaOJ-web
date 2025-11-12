@@ -25,9 +25,8 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-
     "types": [
-      "pinia-plugin-persist"
+      "pinia-plugin-persistedstate"
     ]
   },
   "include": ["env.d.ts", "src/**/*", "src/**/*.vue"]

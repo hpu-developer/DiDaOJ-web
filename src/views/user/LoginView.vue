@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useUserStore } from "@/stores/user.ts";
-import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo } from "@/util/tips";
 import { DesktopIcon, LockOnIcon } from "tdesign-icons-vue-next";
 import { RequestLogin } from "@/apis/user.ts";
 

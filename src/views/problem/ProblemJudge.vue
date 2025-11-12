@@ -3,7 +3,8 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetJudgeDataDownload, GetProblemJudge, ParseProblem, PostJudgeData } from "@/apis/problem.ts";
-import { ShowErrorParamTips, ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorParamTips, ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess } from "@/util/tips";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import { ProblemJudgeData, ProblemView } from "@/types/problem.ts";
 

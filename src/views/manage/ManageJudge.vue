@@ -1,6 +1,7 @@
 <script setup lang="tsx">
 import { ref } from "vue";
-import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo } from "@/util/tips";
 import { PostRejudgeRecently, PostRejudgeSearch, PostRejudgeAll, JudgeStatus, GetJudgeStatusOptions } from "@/apis/judge.ts";
 import router from "@/router";
 import { GetSubmitLanguages, JudgeLanguage } from "@/apis/language.ts";

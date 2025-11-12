@@ -4,7 +4,8 @@ import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetProblem, GetProblemDaily, ParseProblem, PostProblemCrawl } from "@/apis/problem.ts";
 import { GetHighlightKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
-import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import {  useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsInfo, ShowTextTipsError } from "@/util/tips";
 import { ProblemTag, ProblemView } from "@/types/problem.ts";
 import { PostJudgeJob } from "@/apis/judge.ts";
 

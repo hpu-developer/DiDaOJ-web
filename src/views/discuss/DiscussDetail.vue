@@ -2,7 +2,8 @@
 import { ref, computed, onMounted, watch, onBeforeUnmount, type WatchStopHandle } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess } from "@/util/tips";
 import {
   GetDiscuss,
   ParseDiscuss,

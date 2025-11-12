@@ -15,7 +15,8 @@ import FooterContent from "./components/FooterContent.vue";
 import ForceHiddenSidebarButton from "./components/ForceHiddenSidebarButton.vue";
 import View403 from "@/views/View403.vue";
 
-import { debounce, ShowErrorTips, useCurrentInstance } from "@/util/";
+import { debounce, useCurrentInstance } from "@/util/";
+import { ShowErrorTips } from "@/util/tips.ts";
 import { useRoute } from "vue-router";
 
 const { globalProperties } = useCurrentInstance();

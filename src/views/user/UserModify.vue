@@ -1,6 +1,7 @@
 <script setup lang="tsx">
 import { nextTick, onMounted, ref } from "vue";
-import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo } from "@/util/tips";
 
 import {
   GetUserGenderKey,

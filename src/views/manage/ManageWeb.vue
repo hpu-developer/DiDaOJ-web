@@ -2,7 +2,8 @@
 import { ref, onMounted } from "vue";
 import { GetWebAnnouncement, GetWebNotification, PostAnnouncementSave, PostNotificationSave } from "@/apis/system.ts";
 import { GetSystemImageToken } from "@/apis/system.ts";
-import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo } from "@/util/tips";
 import { HandleR2ImageUpload } from "@/util/md-editor-v3.ts";
 import type { UploadImageCallbackUrl } from "@/util/md-editor-v3.ts";
 import type { Notification, Announcement } from "@/types/system.ts";

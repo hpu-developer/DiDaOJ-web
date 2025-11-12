@@ -2,7 +2,8 @@
 import { computed, WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo } from "@/util/tips";
 import { ProblemAttemptStatus, GetProblemDailyList, ParseProblemDaily } from "@/apis/problem.ts";
 import { ProblemTag, ProblemDaily, ProblemDailyView } from "@/types/problem.ts";
 import { AuthType } from "@/auth";

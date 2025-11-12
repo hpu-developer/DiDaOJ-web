@@ -1,7 +1,8 @@
 <script setup lang="tsx">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { GetSystemStatus } from "@/apis/system.ts";
-import { ShowErrorTips, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorTips } from "@/util/tips";
 
 const { globalProperties } = useCurrentInstance();
 

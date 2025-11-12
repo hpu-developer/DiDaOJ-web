@@ -1,7 +1,8 @@
 <script setup lang="tsx">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, ShowErrorTips } from "@/util/tips";
 import {
   GetJudgeJob,
   GetJudgeStatusStr,

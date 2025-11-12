@@ -2,7 +2,8 @@
 import { nextTick, WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsInfo } from "@/util/tips";
 import { GetContestProblemIndexStr, GetContestStatistics } from "@/apis/contest.ts";
 
 import { GetJudgeStatusColor, GetJudgeStatusStr, IsJudgeStatusRunning, JudgeStatus } from "@/apis/judge.ts";

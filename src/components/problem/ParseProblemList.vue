@@ -1,6 +1,7 @@
-﻿<script lang="tsx" setup>
+<script lang="tsx" setup>
 import { ref, watch } from "vue";
-import { ShowErrorTips, SplitIdStringsFromText, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorTips, SplitIdStringsFromText } from "@/util/tips";
 import { PostProblemParse, PostProblemParseId } from "@/apis/problem.ts";
 import { ParseValidType } from "@/util/parse.ts";
 import type { Problem, ProblemView } from "@/types/problem.ts";

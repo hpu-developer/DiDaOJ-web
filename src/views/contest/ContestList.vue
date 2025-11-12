@@ -2,7 +2,8 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, GetEllipsisText, ShowErrorTips, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, GetEllipsisText, ShowErrorTips } from "@/util/tips";
 import { GetContestList, ParseContest } from "@/apis/contest.ts";
 import { handleGotoUsername } from "@/util/router.ts";
 import { Contest, ContestView } from "@/types/contest.ts";

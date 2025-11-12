@@ -2,7 +2,8 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, ShowErrorTips } from "@/util/tips";
 import { GetCollectionRank } from "@/apis/collection.ts";
 import type { CollectionRank, CollectionRankView } from "@/types/collection.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";

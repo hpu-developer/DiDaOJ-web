@@ -1,4 +1,4 @@
-import { CloseTips, ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo } from "@/util/index.ts";
+import { CloseTips, ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo } from "@/util/tips.ts";
 import type { ComponentCustomProperties } from "vue";
 import { GetText } from "@/text/library.ts";
 

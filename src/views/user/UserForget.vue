@@ -1,7 +1,8 @@
 <script setup lang="tsx">
 import { onMounted, onBeforeUnmount, ref, nextTick } from "vue";
 import { useUserStore } from "@/stores/user.ts";
-import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo } from "@/util/tips";
 import { PostUserLoginForget, PostUserPasswordForget } from "@/apis/user.ts";
 
 const { globalProperties } = useCurrentInstance();

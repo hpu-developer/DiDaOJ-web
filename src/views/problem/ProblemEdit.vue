@@ -5,7 +5,8 @@ import router from "@/router";
 import { ChevronDownIcon } from "tdesign-icons-vue-next";
 import { HandleR2ImageUpload } from "@/util/md-editor-v3.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
-import { useCurrentInstance, ShowErrorTips, ShowTextTipsSuccess } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsSuccess } from "@/util/tips";
 import { GetProblem, GetProblemTagList, ParseProblem, GetProblemImageToken, PostProblemCreate, PostProblemEdit } from "@/apis/problem.ts";
 import type { ProblemTag, ProblemView } from "@/types/problem.ts";
 

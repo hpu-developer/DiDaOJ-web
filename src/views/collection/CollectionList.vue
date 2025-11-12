@@ -2,7 +2,8 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, ShowErrorTips, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, ShowErrorTips } from "@/util/tips";
 import { GetCollectionList, ParseCollection } from "@/apis/collection.ts";
 import { Collection, CollectionEditRequest, CollectionView } from "@/types/collection.ts";
 import { handleGotoUsername } from "@/util/router.ts";

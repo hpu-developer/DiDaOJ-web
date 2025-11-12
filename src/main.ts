@@ -96,9 +96,9 @@ config({
     });
     mdit.use(shortcodeColorPlugin, {
       renderers: {
-        red: (_, c) => `<span class="dida-font-red">${c}</span>`,
-        green: (_, c) => `<span class="dida-font-green">${c}</span>`,
-        blue: (_, c) => `<span class="dida-font-blue">${c}</span>`,
+        red: (_: any, c: string) => `<span class="dida-font-red">${c}</span>`,
+        green: (_: any, c: string) => `<span class="dida-font-green">${c}</span>`,
+        blue:  (_: any, c: string) => `<span class="dida-font-blue">${c}</span>`,
       },
     });
   },

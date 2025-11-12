@@ -4,7 +4,8 @@ import { useRoute, onBeforeRouteUpdate } from "vue-router";
 import router from "@/router";
 import { GenderFemaleIcon, GenderMaleIcon, User1Icon, UserUnknownIcon } from "tdesign-icons-vue-next";
 import { GetUserInfo, GetVjudgeAcProblem, ParseUser } from "@/apis/user.ts";
-import { ShowErrorTips, ShowTextTipsError, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsError } from "@/util/tips";
 import { UserInfoView } from "@/types/user.ts";
 
 import { useWebStyleStore } from "@/stores/webStyle.ts";

@@ -2,7 +2,8 @@
 import type { WatchStopHandle } from "vue";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { LocationQuery, useRoute, useRouter } from "vue-router";
-import { GetCommonErrorCode, GetEllipsisText, ShowErrorTips, ShowTextTipsInfo, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { GetCommonErrorCode, GetEllipsisText, ShowErrorTips, ShowTextTipsInfo } from "@/util/tips";
 import { GetContestProblemIndexStr, GetContestRank } from "@/apis/contest.ts";
 import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { JudgeStatus } from "@/apis/judge.ts";

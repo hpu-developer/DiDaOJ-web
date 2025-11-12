@@ -2,7 +2,8 @@
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { ShowErrorTips, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
+import { ShowErrorTips, ShowTextTipsSuccess } from "@/util/tips";
 import { GetDiscussEdit, GetDiscussImageToken, ParseDiscuss, PostDiscussCreate, PostDiscussEdit } from "@/apis/discuss.ts";
 import { HandleR2ImageUpload, UploadImageCallbackUrl } from "@/util/md-editor-v3.ts";
 import type { WatchStopHandle } from "vue";
