@@ -43,7 +43,7 @@ const handleReloadStatus = async () => {
 // 处理签到
 const handleCheckin = async (e?: Event) => {
   if (!userStore.isLogin()) {
-    router.push({ name: 'user-login' });
+    await router.push({ name: "login" });
     return;
   }
   
