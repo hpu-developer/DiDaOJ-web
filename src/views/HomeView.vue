@@ -6,7 +6,7 @@ import Hitokoto from "@/components/Hitokoto.vue";
 import { GetWebAnnouncement, GetWebNotification } from "@/apis/system.ts";
 import { PostCheckin, GetCheckinToday } from "@/apis/user.ts";
 import type { Notification, Announcement } from "@/types/system.ts";
-import { ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
+import { ShowTextTipsError, ShowTextTipsSuccess, ShowTextTipsWarn, useCurrentInstance } from "@/util";
 import { GetJudgeStaticsRecently } from "@/apis/judge.ts";
 import { GetProblemDailyRecently, ProblemAttemptStatus } from "@/apis/problem.ts";
 import * as echarts from "echarts/core";
@@ -40,7 +40,7 @@ const handleReloadStatus = async () => {
 };
 
 // 处理签到
-const handleCheckin = async () => {
+const handleCheckin = async (e?: Event) => {
   if (!userStore.isLogin()) {
     router.push({ name: 'user-login' });
     return;
@@ -49,16 +49,197 @@ const handleCheckin = async () => {
   try {
     const res = await PostCheckin();
     if (res.code === 0) {
+
+      if (res.data){
+        ShowTextTipsWarn(globalProperties, "您今天已签到过了");
+        isCheckedIn.value = true;
+        return;
+      }
+
       ShowTextTipsSuccess(globalProperties, "签到成功！");
       isCheckedIn.value = true;
       // 更新签到人数
       checkinCount.value++;
+      
+      // 从事件对象中获取点击位置
+      let position = null;
+      if (e instanceof MouseEvent) {
+        // 鼠标事件
+        position = { x: e.clientX, y: e.clientY };
+      } else if (lastInteractionPosition.value.x > 0 && lastInteractionPosition.value.y > 0) {
+        // 如果没有事件，使用最后记录的交互位置
+        position = lastInteractionPosition.value;
+      }
+      
+      // 触发礼花特效
+      createFireworks(position);
     } else {
       ShowTextTipsError(globalProperties, `签到失败：${res.code}`);
     }
   } catch (e) {
     ShowTextTipsError(globalProperties, "签到请求失败，请稍后重试");
   }
+};
+
+// 处理触摸事件
+const handleTouchCheckin = async (e: TouchEvent) => {
+  e.preventDefault();
+  if (e.touches.length > 0) {
+    const touch = e.touches[0];
+    // 创建一个模拟的鼠标事件对象，包含触摸位置信息
+    const mockEvent = { 
+      clientX: touch.clientX, 
+      clientY: touch.clientY 
+    } as MouseEvent;
+    
+    // 调用handleCheckin并传入位置信息
+    await handleCheckin(mockEvent);
+  }
+};
+
+// 记录最后一次交互位置（鼠标或触摸）
+const lastInteractionPosition = ref({ x: -1, y: -1 });
+
+// 监听全局鼠标移动
+const handleMouseMove = (e: MouseEvent) => {
+  lastInteractionPosition.value = { x: e.clientX, y: e.clientY };
+};
+
+// 监听全局触摸移动（支持移动设备）
+const handleTouchMove = (e: TouchEvent) => {
+  if (e.touches.length > 0) {
+    const touch = e.touches[0];
+    lastInteractionPosition.value = { x: touch.clientX, y: touch.clientY };
+  }
+};
+
+onMounted(() => {
+  // 添加鼠标事件监听
+  document.addEventListener('mousemove', handleMouseMove);
+  // 添加触摸事件监听
+  document.addEventListener('touchmove', handleTouchMove, { passive: true });
+});
+
+onUnmounted(() => {
+  // 移除鼠标事件监听
+  document.removeEventListener('mousemove', handleMouseMove);
+  // 移除触摸事件监听
+  document.removeEventListener('touchmove', handleTouchMove);
+});
+
+onMounted(() => {
+  document.addEventListener('mousemove', handleMouseMove);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('mousemove', handleMouseMove);
+});
+
+// 创建礼花特效
+const createFireworks = (position?: { x: number; y: number } | null) => {
+  // 创建画布元素
+  const canvas = document.createElement('canvas');
+  canvas.style.position = 'fixed';
+  canvas.style.top = '0';
+  canvas.style.left = '0';
+  canvas.style.pointerEvents = 'none';
+  canvas.style.zIndex = '9999';
+  document.body.appendChild(canvas);
+  
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  
+  // 设置画布大小
+  const resizeCanvas = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  
+  // 礼花爆炸位置（优先使用传入的位置，其次是记录的最后交互位置，最后是屏幕中心）
+  let x, y;
+  
+  // 检查是否有有效的位置信息
+  if (position && position.x > 0 && position.y > 0) {
+    x = position.x;
+    y = position.y;
+  } else if (lastInteractionPosition.value.x > 0 && lastInteractionPosition.value.y > 0) {
+    x = lastInteractionPosition.value.x;
+    y = lastInteractionPosition.value.y;
+  } else {
+    // 如果没有位置信息，使用屏幕中心
+    x = canvas.width / 2;
+    y = canvas.height / 2;
+  }
+  
+  // 创建粒子
+  const particles: { x: number; y: number; vx: number; vy: number; color: string; radius: number; alpha: number; gravity: number; friction: number }[] = [];
+  const particleCount = 150;
+  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'];
+  
+  for (let i = 0; i < particleCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 2 + Math.random() * 6;
+    
+    particles.push({
+      x: x,
+      y: y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      radius: 1 + Math.random() * 3,
+      alpha: 1,
+      gravity: 0.05,
+      friction: 0.98
+    });
+  }
+  
+  // 动画循环
+  const animate = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    let activeParticles = false;
+    
+    particles.forEach(particle => {
+      // 更新位置
+      particle.vy += particle.gravity;
+      particle.vx *= particle.friction;
+      particle.vy *= particle.friction;
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      
+      // 淡出效果
+      particle.alpha -= 0.01;
+      
+      if (particle.alpha > 0) {
+        activeParticles = true;
+        
+        // 绘制粒子
+        ctx.save();
+        ctx.globalAlpha = particle.alpha;
+        ctx.fillStyle = particle.color;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    });
+    
+    if (activeParticles) {
+      requestAnimationFrame(animate);
+    } else {
+      // 清理画布
+      window.removeEventListener('resize', resizeCanvas);
+      setTimeout(() => {
+        if (document.body.contains(canvas)) {
+          document.body.removeChild(canvas);
+        }
+      }, 100);
+    }
+  };
+  
+  animate();
 };
 
 // 加载签到数据
@@ -315,11 +496,13 @@ onUnmounted(() => {
           <t-loading :loading="checkinLoading && !stateLoading">
             <div style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;">
               <div style="margin-bottom: 20px; font-size: 18px; color: #409EFF;">
-                今日已有 <span style="font-weight: bold; color: #F56C6C;">{{ checkinCount }}</span> 人签到
+                <span v-if="checkinCount === 0">今日暂未有人签到</span>
+                <span v-else>今日已有 <span style="font-weight: bold; color: #F56C6C;">{{ checkinCount }}</span> 人签到</span>
               </div>
               <t-button 
-                type="primary" 
-                @click="handleCheckin"
+                type="primary"  
+                @click="(e: MouseEvent) => handleCheckin(e)"
+                @touchstart="(e: TouchEvent) => handleTouchCheckin(e)"
                 :disabled="isCheckedIn"
                 style="width: 120px;"
               >

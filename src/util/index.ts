@@ -40,6 +40,13 @@ export function ShowTextTipsInfo(properties: ComponentCustomProperties & Record<
   });
 }
 
+export function ShowTextTipsWarn(properties: ComponentCustomProperties & Record<string, any>, tips: string, duration = 3000) {
+  return properties.$message.warn({
+    duration,
+    content: tips,
+  });
+}
+
 export function ShowTextTipsError(properties: ComponentCustomProperties & Record<string, any>, tips: string, duration = 3000) {
   return properties.$message.error({
     duration,
