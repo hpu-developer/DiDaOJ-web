@@ -11,7 +11,6 @@ import { GetProblemAttemptStatus, ProblemAttemptStatus } from "@/apis/problem.ts
 import { useUserStore } from "@/stores/user.ts";
 import * as echarts from "echarts/core";
 import type { EChartsOption } from "echarts";
-import { GenderFemaleIcon, GenderMaleIcon, User1Icon, UserUnknownIcon } from "tdesign-icons-vue-next";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -101,7 +100,7 @@ const loadProblemAttemptStatus = async () => {
 const loadVjudgeInfo = async (vjudgeId: string) => {
   vjudgeLoading.value = true;
   try {
-    const vjudgeInfo = await GetVjudgeAcProblem(userData.value.vjudgeId);
+    const vjudgeInfo = await GetVjudgeAcProblem(vjudgeId);
     if (vjudgeInfo) {
       vjudgeAcProblems.value = vjudgeInfo.acRecords;
       for (const oj in vjudgeAcProblems.value) {
@@ -145,6 +144,17 @@ const loadUserInfo = async (username: string) => {
     }
 
     userData.value = ParseUser(res.data.user);
+    
+    // 确保等级和经验字段存在，设置默认值
+    if (!userData.value.level) {
+      userData.value.level = 0;
+    }
+    if (!userData.value.experience) {
+      userData.value.experience = 0;
+    }
+    if (!userData.value.nextLevelExperience) {
+      userData.value.nextLevelExperience = 100; // 默认第一级需要100经验
+    }
 
     const compareFunc = (a: any, b: any) => {
       const problemKeyA = a.key as string;
@@ -386,11 +396,29 @@ onMounted(async () => {
               <t-avatar shape="round" size="100px" :image="userData?.avatar" :hide-on-load-failed="false" />
             </t-descriptions-item>
             <t-descriptions-item label="用户序号">{{ userData?.id }}</t-descriptions-item>
-            <t-descriptions-item label="用户名">{{ userData?.username }}</t-descriptions-item>
-            <t-descriptions-item label="昵称"
-              ><GenderFemaleIcon v-if="userData?.gender === 1" /><GenderMaleIcon v-else-if="userData?.gender === 2" /><User1Icon v-else />
-              {{ userData?.nickname }}</t-descriptions-item
-            >
+           <t-descriptions-item label="用户名">
+              <t-space>
+                {{ userData?.username }}
+                <div class="level-container">
+                  <span class="level-text">Lv.{{ userData?.level }}</span>
+                  <div class="level-badge"></div>
+                </div>
+              </t-space>
+            </t-descriptions-item>
+            <t-descriptions-item label="经验值" style="padding-top: 0;">
+              <div class="experience-container">
+                <div class="experience-progress">
+                  <div 
+                    class="experience-bar" 
+                    :style="{ width: Math.min(((userData?.experience || 0) / (userData?.nextLevelExperience || 100)) * 100, 100) + '%' }"
+                  ></div>
+                </div>
+                <div class="experience-text">
+                  {{ userData?.experience }} / {{ userData?.nextLevelExperience }}
+                </div>
+              </div>
+            </t-descriptions-item>
+            <t-descriptions-item label="昵称">{{ userData?.nickname }}</t-descriptions-item>
             <t-descriptions-item label="Slogan">{{ userData?.slogan }}</t-descriptions-item>
             <t-descriptions-item label="邮箱">{{ userData?.email }}</t-descriptions-item>
             <t-descriptions-item label="组织">{{ userData?.organization }}</t-descriptions-item>
@@ -420,5 +448,60 @@ onMounted(async () => {
   margin: 10px;
   width: 100%;
   min-height: 220px;
+}
+
+/* 等级样式 */
+.level-container {
+  position: relative;
+  display: inline-block;
+}
+
+.level-text {
+  font-size: 1.0rem;
+  color: #1677ff;
+  padding: 0 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.level-badge {
+  position: absolute;
+  top: -2px;
+  left: -4px;
+  right: -4px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #66b1ff 0%, #1e88e5 100%);
+  border-radius: 12px;
+  z-index: 0;
+  opacity: 0.2;
+}
+
+/* 经验条样式 */
+.experience-container {
+  width: 100%;
+}
+
+.experience-progress {
+  width: 100%;
+  height: 12px;
+  background-color: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 4px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.experience-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #1677ff 0%, #36cfc9 100%);
+  border-radius: 6px;
+  transition: width 0.3s ease-in-out;
+  box-shadow: 0 0 10px rgba(22, 119, 255, 0.4);
+}
+
+.experience-text {
+  font-size: 0.9rem;
+  color: #666;
+  text-align: right;
 }
 </style>

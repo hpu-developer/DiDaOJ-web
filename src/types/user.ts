@@ -18,6 +18,8 @@ export interface UserInfo {
   accept: number;
   attempt: number;
   vjudge_id: string;
+  level: number;
+  experience: number;
 }
 
 export interface UserInfoView {
@@ -34,6 +36,9 @@ export interface UserInfoView {
   attempt: number;
   avatar: string;
   vjudgeId: string;
+  level: number;
+  experience: number;
+  nextLevelExperience: number;
 }
 
 export interface UserModifyInfo {
@@ -45,6 +50,8 @@ export interface UserModifyInfo {
   gender: number;
   blog: string;
   vjudge_id: string;
+  level: number;
+  experience: number;
 }
 
 export interface UserModifyInfoRequest {

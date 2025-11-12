@@ -55,6 +55,15 @@ export function ParseUser(item: UserInfo): UserInfoView {
   result.attempt = item.attempt;
   result.vjudgeId = item.vjudge_id;
   result.avatar = GetAvatarUrl(item.username, item.email);
+  
+  // 添加等级和经验相关字段
+  result.level = item.level || 0;
+  result.experience = item.experience || 0;
+  
+  // 计算升级所需经验值（简单示例：每级需要的经验 = 100 * 当前等级 + 100）
+  // 可以根据需要调整这个算法
+  result.nextLevelExperience = 100 * (result.level + 1);
+  
   return result;
 }
 
