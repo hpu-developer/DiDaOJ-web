@@ -21,7 +21,7 @@ const onReset = () => {
   ShowTextTipsInfo(globalProperties, "重置成功");
 };
 
-const onSubmit = ({ validateResult, firstError }: any) => {
+const onSubmit = () => {
   if (isLoginRunning.value) {
     return;
   }

@@ -7,7 +7,7 @@ import { GetWebAnnouncement, GetWebNotification } from "@/apis/system.ts";
 import { PostCheckin, GetCheckinToday } from "@/apis/user.ts";
 import type { Notification, Announcement } from "@/types/system.ts";
 import { useCurrentInstance } from "@/util";
-import { ShowTextTipsSuccess, ShowTextTipsError, ShowTextTipsWarn } from "@/util/tips";
+import { ShowTextTipsSuccess, ShowTextTipsError, ShowTextTipsWarn, ShowTextTipsTopRight, ShowEnhancedExpTips } from "@/util/tips";
 import { GetJudgeStaticsRecently } from "@/apis/judge.ts";
 import { GetProblemDailyRecently, ProblemAttemptStatus } from "@/apis/problem.ts";
 import * as echarts from "echarts/core";
@@ -74,6 +74,8 @@ const handleCheckin = async (e?: Event) => {
       
       // 触发礼花特效
       createFireworks(position);
+
+      ShowEnhancedExpTips(globalProperties, 20, 4000)
     } else {
       ShowTextTipsError(globalProperties, `签到失败：${res.code}`);
     }
@@ -501,10 +503,10 @@ onUnmounted(() => {
                 <span v-else>今日已有 <span style="font-weight: bold; color: #F56C6C;">{{ checkinCount }}</span> 人签到</span>
               </div>
               <t-button 
-                type="primary"  
+                theme="primary"  
                 @click="(e: MouseEvent) => handleCheckin(e)"
                 @touchstart="(e: TouchEvent) => handleTouchCheckin(e)"
-                :disabled="isCheckedIn"
+                :disabled="checkinLoading || stateLoading || isCheckedIn"
                 style="width: 120px;"
               >
                 {{ isCheckedIn ? '已签到' : '立即签到' }}

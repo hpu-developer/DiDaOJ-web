@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { createApp, h, ref, onMounted, computed } from "vue";
+// @ts-ignore
 import pangu from "pangu";
 import { PostLoginRefresh } from "@/apis/user.ts";
 import { useLoginStore } from "@/stores/login";
 import { useUserStore } from "@/stores/user.ts";
 import { useWebStyleStore } from "@/stores/webStyle";
 import { useSidebarStyleStore } from "@/stores/sidebarStyle";
-import { GetProblemAttemptStatus, GetProblemAttemptStatusByKey, ProblemAttemptStatus } from "@/apis/problem.ts";
+import { GetProblemAttemptStatusByKey, ProblemAttemptStatus } from "@/apis/problem.ts";
+import { Button } from "tdesign-vue-next";
 
 import HeaderContent from "./components/HeaderContent.vue";
 import SidebarContent from "./components/SidebarContent.vue";
@@ -96,14 +98,14 @@ const processProblemTags = async () => {
     }
     const app = createApp({
       render: () =>
-        h(TButton, {
+        h(Button, {
           innerHTML: problemId,
           onClick: () => {
             window.open(`/problem/${key}`, "_blank");
           },
           size: "small",
           variant: "outline",
-          theme: theme.value,
+          theme: theme.value as "default" | "primary" | "success" | "warning" | "danger" | undefined,
         }),
     });
     app.mount(mountNode);

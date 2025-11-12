@@ -1,4 +1,5 @@
 import { GetText } from "@/text/library.ts";
+import { pad } from "echarts/types/src/util/time.js";
 
 import type { ComponentCustomProperties } from "vue";
 
@@ -80,6 +81,111 @@ export function ShowErrorParamTips(
   });
 }
 
+export function ShowTextTipsBottomLeft(properties: ComponentCustomProperties & Record<string, any>, tips: string, duration = 3000) {
+  return properties.$message.success({
+    duration,
+    content: tips,
+    placement: "bottom-left",
+  });
+}
+
+/**
+ * 增强版经验提醒函数（绿色主题）
+ * @param properties 组件属性
+ * @param expValue 经验值
+ * @param duration 显示时长
+ * @param customContent 自定义内容（可选），支持string或TNode类型
+ */
+export function ShowEnhancedExpTips(
+  properties: ComponentCustomProperties & Record<string, any>, 
+  expValue: number = 20,
+  duration = 4000,
+  customContent?: string | ((h: any) => any)
+) {
+  // 添加简单的动画样式到页面
+  addAnimationStyle();
+  
+  // 创建TNode函数来渲染HTML内容
+  const renderContent = (h: any) => {
+    // 如果提供了自定义内容函数，使用它
+    if (typeof customContent === 'function') {
+      return customContent(h);
+    }
+    // 如果提供了自定义字符串内容，创建一个简单的元素
+    if (typeof customContent === 'string') {
+      return h('div', {}, [customContent]);
+    }
+    // 默认渲染绿色主题的经验提示，只显示经验和数值
+    return h('div', {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+      }
+    }, [
+      h('span', {
+        style: {
+          fontSize: '14px',
+          fontWeight: 'bold',
+          color: '#00b42a'
+        }
+      }, ['✨']),
+      h('div', {
+        style: {
+          fontSize: '14px',
+          fontWeight: 'bold',
+          color: '#00b42a',
+          animation: 'pulse 1.5s infinite'
+        }
+      }, ['经验 + ' + expValue])
+    ]);
+  };
+  
+  return properties.$message.info({
+    duration,
+    content: renderContent, // 使用TNode函数渲染内容
+    placement: "top-right",
+    closeBtn: false,
+    offset: 20,
+    showIcon: false,
+    theme: "gradient",
+    className: "enhanced-exp-tips"
+  });
+}
+
+// 添加动画样式的辅助函数
+function addAnimationStyle() {
+  if (!document.getElementById('enhanced-exp-animation-style')) {
+    const style = document.createElement('style');
+    style.id = 'enhanced-exp-animation-style';
+    style.textContent = 
+      '@keyframes pulse {' +
+      '  0% {' +
+      '    transform: scale(1);' +
+      '    opacity: 1;' +
+      '  }' +
+      '  50% {' +
+      '    transform: scale(1.1);' +
+      '    opacity: 0.8;' +
+      '  }' +
+      '  100% {' +
+      '    transform: scale(1);' +
+      '    opacity: 1;' +
+      '  }' +
+      '}' +
+      '.enhanced-exp-tips {' +
+      '  background: linear-gradient(135deg, #e6f7ee 0%, #f6ffed 100%);' +
+      '  border: 1px solid #b7eb8f;' +
+      '  box-shadow: 0 4px 12px rgba(0, 180, 42, 0.15);' +
+      '  margin-bottom: 10px;' +
+      '  font-size: 16px;' +
+      '  padding: 12px 16px;' +
+      '  border-radius: 8px;' +
+      '}';
+    document.head.appendChild(style);
+  }
+}
+
 export function CloseTips(properties: ComponentCustomProperties & Record<string, any>, tip: any) {
   if (properties.$message) {
     properties.$message.close(tip);
@@ -118,7 +224,7 @@ export function formatDate(date: Date | string | number): string {
   const minute = pad(date.getMinutes());
   const second = pad(date.getSeconds());
 
-  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+  return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
 }
 
 export function SplitIdStringsFromText(text: string): string[] {
