@@ -150,11 +150,11 @@ const loadUserInfo = async (username: string) => {
     if (!userData.value.level) {
       userData.value.level = 0;
     }
-    if (!userData.value.experience) {
-      userData.value.experience = 0;
+    if (!userData.value.experience_current_level) {
+      userData.value.experience_current_level = 0;
     }
-    if (!userData.value.nextLevelExperience) {
-      userData.value.nextLevelExperience = 100; // 默认第一级需要100经验
+    if (!userData.value.experience_upgrade) {
+      userData.value.experience_upgrade = 100; // 默认第一级需要100经验
     }
 
     const compareFunc = (a: any, b: any) => {
@@ -411,11 +411,11 @@ onMounted(async () => {
                 <div class="experience-progress">
                   <div 
                     class="experience-bar" 
-                    :style="{ width: Math.min(((userData?.experience || 0) / (userData?.nextLevelExperience || 100)) * 100, 100) + '%' }"
+                    :style="{ width: Math.min(((userData?.experience_current_level || 0) / (userData?.experience_upgrade || 100)) * 100, 100) + '%' }"
                   ></div>
                 </div>
                 <div class="experience-text">
-                  {{ userData?.experience }} / {{ userData?.nextLevelExperience }}
+                  {{ userData?.experience_current_level }} / {{ userData?.experience_upgrade }}
                 </div>
               </div>
             </t-descriptions-item>

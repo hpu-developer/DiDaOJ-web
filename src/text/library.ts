@@ -185,6 +185,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100043": {
         zh: "代码过短，请检查输入",
       },
+      "100044": {
+        zh: "今日已经签到过了",
+      },
     });
   });
 }
