@@ -293,7 +293,7 @@ onBeforeUnmount(() => {
     <t-col :span="3">
       <div style="margin: 10px">
         <t-card class="sh-card">
-          <t-form :model="discussSearchForm">
+          <t-form :model="discussSearchForm" @submit="handleSearchDiscuss">
             <t-form-item label="问题标识">
               <t-input v-model="discussSearchForm.problemKey" placeholder="请输入完整问题标识"></t-input>
             </t-form-item>
@@ -304,7 +304,7 @@ onBeforeUnmount(() => {
               <t-input v-model="discussSearchForm.username" placeholder="仅支持输入完整用户名"></t-input>
             </t-form-item>
             <t-form-item>
-              <t-button theme="primary" @click="handleSearchDiscuss">提交</t-button>
+              <t-button theme="primary" type="submit">提交</t-button>
             </t-form-item>
           </t-form>
         </t-card>
