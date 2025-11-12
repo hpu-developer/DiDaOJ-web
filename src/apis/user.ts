@@ -240,3 +240,19 @@ export function PostUserPasswordForget(username: string, password: string, key: 
     },
   });
 }
+
+// 签到接口
+export function PostCheckin() {
+  return httpRequest({
+    url: "/user/checkin",
+    method: "post",
+  });
+}
+
+// 获取今日签到人数
+export function GetCheckinToday() {
+  return httpRequest({
+    url: "/user/checkin/today",
+    method: "get",
+  });
+}

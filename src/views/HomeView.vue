@@ -1,12 +1,21 @@
 <script setup lang="tsx">
 import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/user.ts";
 import Hitokoto from "@/components/Hitokoto.vue";
 import { GetWebAnnouncement, GetWebNotification } from "@/apis/system.ts";
+import { PostCheckin, GetCheckinToday } from "@/apis/user.ts";
 import type { Notification, Announcement } from "@/types/system.ts";
-import { ShowTextTipsError, useCurrentInstance } from "@/util";
+import { ShowTextTipsError, ShowTextTipsSuccess, useCurrentInstance } from "@/util";
 import { GetJudgeStaticsRecently } from "@/apis/judge.ts";
 import { GetProblemDailyRecently, ProblemAttemptStatus } from "@/apis/problem.ts";
 import * as echarts from "echarts/core";
+
+const router = useRouter();
+const userStore = useUserStore();
+const checkinCount = ref(0);
+const isCheckedIn = ref(false);
+const checkinLoading = ref(false);
 
 const { globalProperties } = useCurrentInstance();
 
@@ -28,6 +37,53 @@ const ojAnnouncementLoading = ref(false);
 
 const handleReloadStatus = async () => {
   notification.value = await GetWebNotification();
+};
+
+// 处理签到
+const handleCheckin = async () => {
+  if (!userStore.isLogin()) {
+    router.push({ name: 'user-login' });
+    return;
+  }
+  
+  try {
+    const res = await PostCheckin();
+    if (res.code === 0) {
+      ShowTextTipsSuccess(globalProperties, "签到成功！");
+      isCheckedIn.value = true;
+      // 更新签到人数
+      checkinCount.value++;
+    } else {
+      ShowTextTipsError(globalProperties, `签到失败：${res.code}`);
+    }
+  } catch (e) {
+    ShowTextTipsError(globalProperties, "签到请求失败，请稍后重试");
+  }
+};
+
+// 加载签到数据
+const loadCheckinData = async () => {
+  checkinLoading.value = true;
+  try {
+    const res = await GetCheckinToday();
+    if (res.code === 0) {
+      // 服务器返回 {count:1,check_in:false} 结构
+      checkinCount.value = res.data?.count || 0;
+      isCheckedIn.value = res.data?.check_in || false;
+    } else {
+      ShowTextTipsError(globalProperties, `获取签到人数失败：${res.code}`);
+      // 设置默认值
+      checkinCount.value = 0;
+      isCheckedIn.value = false;
+    }
+  } catch (e) {
+    console.error("获取签到数据失败：", e);
+    // 设置默认值
+    checkinCount.value = 0;
+    isCheckedIn.value = false;
+  } finally {
+    checkinLoading.value = false;
+  }
 };
 
 const loadWebAnnouncement = async () => {
@@ -205,6 +261,10 @@ onMounted(async () => {
     problemDailyLoading.value = false;
   })();
 
+  void (async () => {
+    await loadCheckinData();
+  })();
+
   stateLoading.value = false;
 });
 
@@ -251,6 +311,26 @@ onUnmounted(() => {
           <img src="https://api.jysafe.cn/ip/" alt="Welcome" style="width: 100%" />
         </t-card>
         <Hitokoto style="margin: 10px" />
+        <t-card style="margin: 10px" :bordered="true" title="每日签到">
+          <t-loading :loading="checkinLoading && !stateLoading">
+            <div style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;">
+              <div style="margin-bottom: 20px; font-size: 18px; color: #409EFF;">
+                今日已有 <span style="font-weight: bold; color: #F56C6C;">{{ checkinCount }}</span> 人签到
+              </div>
+              <t-button 
+                type="primary" 
+                @click="handleCheckin"
+                :disabled="isCheckedIn"
+                style="width: 120px;"
+              >
+                {{ isCheckedIn ? '已签到' : '立即签到' }}
+              </t-button>
+              <div v-if="isCheckedIn" style="margin-top: 10px; color: #67C23A; font-size: 14px;">
+                签到成功，开始解题吧！
+              </div>
+            </div>
+          </t-loading>
+        </t-card>
 
         <t-card style="margin: 10px" :bordered="true" title="每日一题">
           <template #actions>
