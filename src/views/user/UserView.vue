@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, onBeforeRouteUpdate } from "vue-router";
 import router from "@/router";
+import { GenderFemaleIcon, GenderMaleIcon, User1Icon, UserUnknownIcon } from "tdesign-icons-vue-next";
 import { GetUserInfo, GetVjudgeAcProblem, ParseUser } from "@/apis/user.ts";
 import { ShowErrorTips, ShowTextTipsError, useCurrentInstance } from "@/util";
 import { UserInfoView } from "@/types/user.ts";
@@ -418,7 +419,10 @@ onMounted(async () => {
                 </div>
               </div>
             </t-descriptions-item>
-            <t-descriptions-item label="昵称">{{ userData?.nickname }}</t-descriptions-item>
+            <t-descriptions-item label="昵称"
+              ><GenderFemaleIcon v-if="userData?.gender === 1" /><GenderMaleIcon v-else-if="userData?.gender === 2" /><User1Icon v-else />
+              {{ userData?.nickname }}</t-descriptions-item
+            >
             <t-descriptions-item label="Slogan">{{ userData?.slogan }}</t-descriptions-item>
             <t-descriptions-item label="邮箱">{{ userData?.email }}</t-descriptions-item>
             <t-descriptions-item label="组织">{{ userData?.organization }}</t-descriptions-item>
