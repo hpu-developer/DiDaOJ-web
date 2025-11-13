@@ -642,7 +642,7 @@ onUnmounted(() => {
           <ul>
             <li><t-link href="https://www.hello-algo.com/" target="_blank">Hello 算法</t-link></li>
             <li><t-link href="https://oi-wiki.org/" target="_blank">OI Wiki</t-link></li>
-            <li><t-link href="https://boiltask.com" target="_blank">BoilTask Blog</t-link></li>
+            <li><t-link href="https://boiltask.com" target="_blank">BoilTask's Blog</t-link></li>
           </ul>
         </t-card>
       </t-col>

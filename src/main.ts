@@ -29,6 +29,7 @@ import { MdEditor, MdPreview } from "md-editor-v3";
 
 import { config } from "md-editor-v3";
 import LinkAttr from "markdown-it-link-attributes";
+import MultimdTable from "markdown-it-multimd-table";
 import container from "markdown-it-container";
 
 import { shortcodeInlinePlugin, shortcodeColorPlugin } from "@/util/shortcode.ts";
@@ -117,6 +118,17 @@ config({
           attrs: {
             target: "_blank",
           },
+        },
+      },
+      {
+        type: "markdown-it-multimd-table",
+        plugin: MultimdTable,
+        options: {
+            multiline:  true,
+            rowspan:    true,
+            headerless: true,
+            multibody:  true,
+            autolabel:  true,
         },
       },
     ].map((item) => {
