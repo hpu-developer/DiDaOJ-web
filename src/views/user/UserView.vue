@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, onBeforeRouteUpdate } from "vue-router";
 import router from "@/router";
-import { GenderFemaleIcon, GenderMaleIcon, User1Icon, UserUnknownIcon } from "tdesign-icons-vue-next";
+import { Compass1Icon, GenderFemaleIcon, GenderMaleIcon, User1Icon, UserUnknownIcon } from "tdesign-icons-vue-next";
 import { GetUserInfo, GetVjudgeAcProblem, ParseUser } from "@/apis/user.ts";
 import { useCurrentInstance } from "@/util";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsWarn } from "@/util/tips";
@@ -513,10 +513,9 @@ onMounted(async () => {
         <!-- 只有当前查看的是登录用户时，才显示奖励窗口 -->
         <!-- 货币栏 -->
         <t-card style="margin: 10px" v-if="userStore.getUserId === userData?.id">
-          <div class="flex items-center justify-center space-x-2 py-2">
-            <t-icon name="cash" size="24" class="text-yellow-500" />
-            <span class="text-xl font-bold text-yellow-500">{{ userData?.coin || 0 }}</span>
-            <span class="text-gray-600 dark:text-gray-400">金币</span>
+          <div class="coin-display">
+            <Compass1Icon size="24" class="coin-icon"/>
+            <span class="coin-value">{{ userData?.coin || 0 }}</span>
           </div>
         </t-card>
         
@@ -609,5 +608,37 @@ onMounted(async () => {
   font-size: 0.9rem;
   color: #666;
   text-align: right;
+}
+
+/* 金币展示样式 */
+.coin-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.coin-icon {
+  color: #fa8c16;
+  filter: drop-shadow(0 1px 2px rgba(250, 140, 22, 0.3));
+}
+
+.coin-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fa8c16;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.coin-display:hover .coin-value {
+  transform: scale(1.05);
+  text-shadow: 0 2px 4px rgba(250, 140, 22, 0.4);
+}
+
+/* 深色模式适配 */
+:deep(.dark) .coin-label {
+  color: #d9d9d9;
 }
 </style>
