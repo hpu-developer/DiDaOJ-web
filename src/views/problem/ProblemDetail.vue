@@ -20,6 +20,7 @@ import { AuthType } from "@/auth";
 import { GetContestProblemIndexStr, GetContestProblemRealKey, GetContestProblems } from "@/apis/contest.ts";
 import { handleGotoContestProblem, handleGotoLogin } from "@/util/router.ts";
 import SecretPanel from "@/components/SecretPanel.vue";
+import { useFooterStyleStore } from "@/stores/footerStyle";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -27,6 +28,8 @@ let watchHandle: WatchStopHandle | null = null;
 
 const webStyleStore = useWebStyleStore();
 const userStore = useUserStore();
+
+const footerStyleStore = useFooterStyleStore();
 
 let problemDescription = ref("");
 
@@ -60,6 +63,8 @@ const dailyCodeUnlockCountdown = ref(-1);
 const dailySolution = ref("");
 const dailyCode = ref("");
 let serverTimeOffset = 0;
+
+const isZenMode = ref(false);
 
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
@@ -164,6 +169,11 @@ const handleClickDailyEdit = async () => {
     },
   });
 };
+
+const handleZenMode = () => {
+  isZenMode.value = !isZenMode.value;
+  footerStyleStore.setFooterShow(!isZenMode.value);
+}
 
 const handleClickEdit = async () => {
   let realProblemKey = problemKey;
@@ -597,8 +607,42 @@ onBeforeUnmount(() => {
 
 <template>
   <t-loading :loading="problemLoading">
-    <t-row class="dida-main-content">
-      <t-col :span="8">
+    <div class="dida-main-content" :class="{ 'zen-mode': isZenMode }">
+      <div class="dida-col-code">
+        <div class="dida-code-submit-div" v-if="isLogin">
+          <t-form layout="inline">
+            <t-form-item>
+              <t-button @click="handleZenMode">禅模式</t-button>
+            </t-form-item>
+            <t-form-item label="是否隐藏代码">
+              <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
+            </t-form-item>
+            <t-form-item label="语言">
+              <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable
+                @change="onSelectLanguageChanged">
+                <t-option v-for="item in languageOptions" :key="item.value" :value="item.value"
+                  :label="item.label"></t-option>
+              </t-select>
+            </t-form-item>
+            <t-form-item>
+              <t-space>
+                <t-button @click="handleSubmitCode" :loading="problemSubmitting">提交</t-button>
+                <t-button @click="handleResetCode" theme="danger">重置</t-button>
+              </t-space>
+            </t-form-item>
+          </t-form>
+          <div class="dida-code-editor-div">
+            <div ref="codeEditRef" class="dida-code-editor"></div>
+          </div>
+        </div>
+        <div style="text-align: center" v-else>
+          <t-space>
+            <t-button @click="() => handleGotoLogin(router, route.fullPath)">登录后提交本题</t-button>
+          </t-space>
+        </div>
+        <div ref="codeEditRef" class="dida-code-editor"></div>
+      </div>
+      <div class="dida-col-left">
         <t-card style="margin: 10px">
           <md-preview :model-value="problemDescription" previewTheme="cyanosis" />
         </t-card>
@@ -610,13 +654,10 @@ onBeforeUnmount(() => {
             <div>
               <t-space>
                 <p>距离解锁百分比</p>
-                <t-progress
-                  theme="circle"
-                  :color="{ from: '#0052D9', to: '#00A870' }"
-                  :percentage="100 - (dailySolutionUnlockCountdown / (18 * 60 * 60)) * 100"
-                  :status="'active'"
-                >
-                  <template #label>{{ (100 - (dailySolutionUnlockCountdown / (18 * 60 * 60)) * 100).toFixed(3) }}% </template>
+                <t-progress theme="circle" :color="{ from: '#0052D9', to: '#00A870' }"
+                  :percentage="100 - (dailySolutionUnlockCountdown / (18 * 60 * 60)) * 100" :status="'active'">
+                  <template #label>{{ (100 - (dailySolutionUnlockCountdown / (18 * 60 * 60)) * 100).toFixed(3) }}%
+                  </template>
                 </t-progress>
               </t-space>
             </div>
@@ -630,28 +671,22 @@ onBeforeUnmount(() => {
             <div>
               <t-space style="margin: 0 auto">
                 <p>距离解锁百分比</p>
-                <t-progress
-                  theme="circle"
-                  :color="{ from: '#0052D9', to: '#00A870' }"
-                  :percentage="100 - (dailyCodeUnlockCountdown / (24 * 60 * 60)) * 100"
-                  :status="'active'"
-                >
-                  <template #label>{{ (100 - (dailyCodeUnlockCountdown / (24 * 60 * 60)) * 100).toFixed(3) }}% </template>
+                <t-progress theme="circle" :color="{ from: '#0052D9', to: '#00A870' }"
+                  :percentage="100 - (dailyCodeUnlockCountdown / (24 * 60 * 60)) * 100" :status="'active'">
+                  <template #label>{{ (100 - (dailyCodeUnlockCountdown / (24 * 60 * 60)) * 100).toFixed(3) }}%
+                  </template>
                 </t-progress>
               </t-space>
             </div>
           </div>
         </t-card>
-      </t-col>
-      <t-col :span="4">
+      </div>
+      <div class="dida-col-right">
         <div class="dida-problems-container" v-if="contestId">
           <t-space style="flex-wrap: wrap">
-            <t-button
-              v-for="(item, index) in contestProblems"
-              :key="index"
+            <t-button v-for="(item, index) in contestProblems" :key="index"
               :theme="item == problemIndex ? 'primary' : 'default'"
-              @click="async () => await handleGotoContestProblem(contestId, item)"
-            >
+              @click="async () => await handleGotoContestProblem(contestId, item)">
               {{ GetContestProblemIndexStr(item) }}
             </t-button>
           </t-space>
@@ -678,7 +713,8 @@ onBeforeUnmount(() => {
                 {{ problemData?.source }}
               </span>
             </t-descriptions-item>
-            <t-descriptions-item label="是否私有" v-if="hasEditAuth">{{ problemData?.private ? "私有" : "公开" }} </t-descriptions-item>
+            <t-descriptions-item label="是否私有" v-if="hasEditAuth">{{ problemData?.private ? "私有" : "公开" }}
+            </t-descriptions-item>
             <t-descriptions-item v-if="problemData?.originUrl" label="原题链接">
               <t-link :href="problemData?.originUrl" target="_blank">
                 {{ problemData?.originOj }} -
@@ -686,14 +722,8 @@ onBeforeUnmount(() => {
               </t-link>
             </t-descriptions-item>
             <t-descriptions-item label="标签" v-if="problemKey">
-              <t-button
-                class="dida-tag-button"
-                v-for="tag in problemData?.tags"
-                :key="tag.id"
-                variant="dashed"
-                size="small"
-                @click="() => handleClickTag(tag)"
-              >
+              <t-button class="dida-tag-button" v-for="tag in problemData?.tags" :key="tag.id" variant="dashed"
+                size="small" @click="() => handleClickTag(tag)">
                 {{ tag.name }}
               </t-button>
             </t-descriptions-item>
@@ -707,23 +737,29 @@ onBeforeUnmount(() => {
               <t-button @click="handleClickRecommend" v-if="problemKey">题目推荐</t-button>
             </t-space>
           </div>
-          <div class="dida-operation-container" v-if="(isDailyProblem && hasEditDailyAuth) || hasEditAuth || problemData?.originId">
+          <div class="dida-operation-container"
+            v-if="(isDailyProblem && hasEditDailyAuth) || hasEditAuth || problemData?.originId">
             <t-space>
               <t-button v-if="isDailyProblem && hasEditDailyAuth" @click="handleClickDailyEdit">每日一题</t-button>
               <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
-              <t-button v-if="problemData?.originId" @click="handleClickCrawl" :loading="problemCrawlLoading">更新描述 </t-button>
+              <t-button v-if="problemData?.originId" @click="handleClickCrawl" :loading="problemCrawlLoading">更新描述
+              </t-button>
             </t-space>
           </div>
 
           <div class="dida-code-submit-div" v-if="isLogin">
             <t-form layout="inline">
-              <t-form-item> </t-form-item>
+              <t-form-item>
+                <t-button @click="handleZenMode">禅模式</t-button>
+              </t-form-item>
               <t-form-item label="是否隐藏代码">
                 <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
               </t-form-item>
               <t-form-item label="语言">
-                <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
-                  <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
+                <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable
+                  @change="onSelectLanguageChanged">
+                  <t-option v-for="item in languageOptions" :key="item.value" :value="item.value"
+                    :label="item.label"></t-option>
                 </t-select>
               </t-form-item>
               <t-form-item>
@@ -743,14 +779,69 @@ onBeforeUnmount(() => {
             </t-space>
           </div>
         </div>
-      </t-col>
-    </t-row>
+      </div>
+    </div>
   </t-loading>
 </template>
 
 <style scoped>
 .dida-main-content {
-  min-height: 800px;
+  display: flex;
+  overflow-y: auto;
+}
+
+.dida-main-content.zen-mode {
+  height: calc(100vh - 57px);
+}
+
+.dida-col-code {
+  flex: 0;
+  min-width: 0;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dida-main-content.zen-mode .dida-col-code {
+  flex: 4;
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dida-col-left {
+  flex: 8;
+  min-width: 0;
+  transition: flex 0.3s ease;
+}
+
+/* 禅模式下的布局 */
+.dida-main-content.zen-mode .dida-col-left {
+  flex: 4;
+}
+
+.dida-col-right {
+  flex: 4;
+  min-width: 0;
+  transition: flex 0.3s ease;
+}
+
+.dida-main-content.zen-mode .dida-col-right {
+  flex: 0;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+/* 正常模式下恢复可见性 */
+.dida-col-right {
+  visibility: visible;
+  opacity: 1;
+  transition: all 0.3s ease;
 }
 
 .dida-operation-container {
