@@ -17,6 +17,7 @@ const userStore = useUserStore();
 const checkinCount = ref(0);
 const isCheckedIn = ref(false);
 const checkinLoading = ref(false);
+const showCheckinHint = ref(false);
 
 const { globalProperties } = useCurrentInstance();
 
@@ -251,20 +252,30 @@ const loadCheckinData = async () => {
   try {
     const res = await GetCheckinToday();
     if (res.code === 0) {
-      // 服务器返回 {count:1,check_in:false} 结构
-      checkinCount.value = res.data?.count || 0;
-      isCheckedIn.value = res.data?.check_in || false;
+      if (!res.data) {
+        // 服务器返回false，表示未签到且不显示人数
+        checkinCount.value = 0;
+        isCheckedIn.value = false;
+        showCheckinHint.value = true;
+      } else {
+        // 服务器返回 {count:1,check_in:false} 结构
+        checkinCount.value = res.data?.count || 0;
+        isCheckedIn.value = res.data?.check_in || false;
+        showCheckinHint.value = false;
+      }
     } else {
       ShowTextTipsError(globalProperties, `获取签到人数失败：${res.code}`);
       // 设置默认值
       checkinCount.value = 0;
       isCheckedIn.value = false;
+      showCheckinHint.value = false;
     }
   } catch (e) {
     console.error("获取签到数据失败：", e);
     // 设置默认值
     checkinCount.value = 0;
     isCheckedIn.value = false;
+    showCheckinHint.value = false;
   } finally {
     checkinLoading.value = false;
   }
@@ -499,7 +510,8 @@ onUnmounted(() => {
           <t-loading :loading="checkinLoading && !stateLoading">
             <div style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;">
               <div style="margin-bottom: 20px; font-size: 18px; color: #409EFF;">
-                <span v-if="checkinCount === 0">今日暂未有人签到</span>
+                <span v-if="showCheckinHint">点击按钮完成今日签到</span>
+                <span v-else-if="checkinCount === 0">今日暂未有人签到</span>
                 <span v-else>今日已有 <span style="font-weight: bold; color: #F56C6C;">{{ checkinCount }}</span> 人签到</span>
               </div>
               <t-button 
