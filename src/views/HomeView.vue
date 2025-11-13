@@ -7,10 +7,11 @@ import { GetWebAnnouncement, GetWebNotification } from "@/apis/system.ts";
 import { PostCheckin, GetCheckinToday } from "@/apis/user.ts";
 import type { Notification, Announcement } from "@/types/system.ts";
 import { useCurrentInstance } from "@/util";
-import { ShowTextTipsSuccess, ShowTextTipsError, ShowTextTipsWarn, ShowTextTipsTopRight, ShowEnhancedExpTips } from "@/util/tips";
+import { ShowTextTipsSuccess, ShowTextTipsError, ShowTextTipsWarn, ShowEnhancedExpTips } from "@/util/tips";
 import { GetJudgeStaticsRecently } from "@/apis/judge.ts";
 import { GetProblemDailyRecently, ProblemAttemptStatus } from "@/apis/problem.ts";
 import * as echarts from "echarts/core";
+import { handleGotoLogin } from "@/util/router";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -18,6 +19,18 @@ const checkinCount = ref(0);
 const isCheckedIn = ref(false);
 const checkinLoading = ref(false);
 const showCheckinHint = ref(false);
+
+// 记录点击位置
+let mousePosition: { x: number; y: number } | null = null;
+const getClickPosition = (e: MouseEvent) => {
+  mousePosition = {
+    x: e.clientX,
+    y: e.clientY,
+  };
+  setTimeout(() => {
+    mousePosition = null;
+  }, 100);
+};
 
 const { globalProperties } = useCurrentInstance();
 
@@ -43,8 +56,9 @@ const handleReloadStatus = async () => {
 
 // 处理签到
 const handleCheckin = async (e?: Event) => {
+
   if (!userStore.isLogin()) {
-    await router.push({ name: "login" });
+    handleGotoLogin(router, globalProperties.$router.currentRoute.value.fullPath);
     return;
   }
   
@@ -63,18 +77,8 @@ const handleCheckin = async (e?: Event) => {
       // 更新签到人数
       checkinCount.value++;
       
-      // 从事件对象中获取点击位置
-      let position = null;
-      if (e instanceof MouseEvent) {
-        // 鼠标事件
-        position = { x: e.clientX, y: e.clientY };
-      } else if (lastInteractionPosition.value.x > 0 && lastInteractionPosition.value.y > 0) {
-        // 如果没有事件，使用最后记录的交互位置
-        position = lastInteractionPosition.value;
-      }
-      
-      // 触发礼花特效
-      createFireworks(position);
+      // 使用记录的点击位置触发礼花特效
+      createFireworks(mousePosition);
 
       ShowEnhancedExpTips(globalProperties, 20, 4000)
     } else {
@@ -252,7 +256,7 @@ const loadCheckinData = async () => {
   try {
     const res = await GetCheckinToday();
     if (res.code === 0) {
-      if (!res.data) {
+      if (!res.data.check_in) {
         // 服务器返回false，表示未签到且不显示人数
         checkinCount.value = 0;
         isCheckedIn.value = false;
@@ -436,6 +440,11 @@ onMounted(async () => {
   ojNotifyLoading.value = true;
   ojAnnouncementLoading.value = true;
 
+  // 添加点击位置监听
+  if (typeof window !== 'undefined' && window.document && window.document.documentElement) {
+    document.documentElement.addEventListener('click', getClickPosition, true);
+  }
+
   void (async () => {
     await handleReloadStatus();
     ojNotifyLoading.value = false;
@@ -465,6 +474,10 @@ onMounted(async () => {
 
 onUnmounted(() => {
   clearInterval(intervalId);
+  // 移除点击位置监听
+  if (typeof window !== 'undefined' && window.document && window.document.documentElement) {
+    document.documentElement.removeEventListener('click', getClickPosition, true);
+  }
 });
 </script>
 
