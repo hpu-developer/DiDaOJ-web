@@ -70,6 +70,6 @@ export const handleGotoProblem = async (problemKey: string) => {
   });
 };
 
-export const handleGotoContestProblem = async (contestId: number, problemIndex: string) => {
-  await router.push({ name: "contest-problem-detail", params: { contestId: contestId, problemIndex: problemIndex } });
+export const handleGotoContestProblem = async (contestId: number, problemIndex: number) => {
+  await router.push({ name: "contest-problem-detail", params: { contestId: contestId, problemIndex: String(problemIndex) } });
 };

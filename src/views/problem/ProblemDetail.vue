@@ -4,7 +4,7 @@ import { useRoute } from "vue-router";
 import router from "@/router";
 import { GetProblem, GetProblemDaily, ParseProblem, PostProblemCrawl } from "@/apis/problem.ts";
 import { GetHighlightKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageValid, JudgeLanguage } from "@/apis/language.ts";
-import {  useCurrentInstance } from "@/util";
+import { useCurrentInstance } from "@/util";
 import { ShowErrorTips, ShowTextTipsInfo, ShowTextTipsError } from "@/util/tips";
 import { ProblemTag, ProblemView } from "@/types/problem.ts";
 import { PostJudgeJob } from "@/apis/judge.ts";
@@ -48,11 +48,11 @@ const problemSubmitting = ref(false);
 
 const tagsMap = {} as { [key: number]: ProblemTag };
 
-const selectLanguage = ref("");
+const selectLanguage = ref<string>("");
 const languageOptions = ref([] as { label: string; value: JudgeLanguage | undefined }[]);
 const isPrivate = ref(false);
 
-const contestProblems = ref([]);
+const contestProblems = ref<number[]>([]);
 
 const dailyUpdateProgressTimer = ref<number | null>(null);
 const dailySolutionUnlockCountdown = ref(-1);
@@ -72,6 +72,42 @@ const hasEditDailyAuth = computed(() => {
 const isLogin = computed(() => {
   return userStore.isLogin();
 });
+
+const loadDailyData = async () => {
+  clearDailyTimer();
+  isDailyProblem.value = false;
+  const res = await GetProblemDaily(dailyId);
+  if (res.code !== 0) {
+    return;
+  }
+  isDailyProblem.value = true;
+  const daily = res.data.problem_daily;
+  problemKey = daily.problem_key;
+  dailySolution.value = daily.solution;
+  dailyCode.value = daily.code;
+
+  const serverTime = new Date(res.data.time);
+  serverTimeOffset = serverTime.getTime() - new Date().getTime();
+  const localTime = new Date(serverTime.getTime());
+  const year = localTime.getFullYear();
+  const month = String(localTime.getMonth() + 1).padStart(2, "0");
+  const day = String(localTime.getDate()).padStart(2, "0");
+  const timeId = `${year}-${month}-${day}`;
+  if (dailyId === timeId) {
+    // 如果是当日的每日一题，则获取距离18点的倒计时
+    const duration = serverTime.getHours() * 60 * 60 + serverTime.getMinutes() * 60 + serverTime.getSeconds();
+    const duration18 = 18 * 60 * 60;
+    if (duration < duration18) {
+      dailySolutionUnlockCountdown.value = duration18 - duration;
+    } else {
+      dailySolutionUnlockCountdown.value = -1;
+    }
+    dailyCodeUnlockCountdown.value = 24 * 60 * 60 - duration;
+  }
+  if (dailySolutionUnlockCountdown.value >= 0 || dailyCodeUnlockCountdown.value >= 0) {
+    createDailyTimer();
+  }
+};
 
 const createDailyTimer = () => {
   if (dailyUpdateProgressTimer.value) {
@@ -214,6 +250,55 @@ const handleClickRecommend = () => {
   });
 };
 
+const fetchProblemData = async () => {
+  contestProblems.value = [];
+
+  let res = await GetProblem(problemKey, contestId, problemIndex.value);
+
+  if (res.code !== 0) {
+    problemLoading.value = false;
+    ShowErrorTips(globalProperties, res.code);
+    await router.push({ name: "problem" });
+    return;
+  }
+
+  res.data.problem.tags = [];
+  if (res.data.tags) {
+    res.data.tags.forEach((tag: ProblemTag) => {
+      tagsMap[tag.id] = tag;
+    });
+    res.data.problem.tags = res.data.tags.map((tag: ProblemTag) => tag.id);
+  }
+
+  problemData.value = ParseProblem(res.data.problem, tagsMap);
+
+  problemId = problemData.value.id;
+  problemKey = problemData.value.key;
+
+  webStyleStore.setTitle(problemData.value.title + " - " + webStyleStore.getRouteTitle);
+
+  if (contestId) {
+    res = await GetContestProblems(contestId);
+    if (res.code === 0) {
+      res.data.problems.sort((a: number, b: number) => a - b);
+      contestProblems.value = res.data.problems;
+    } else {
+      ShowErrorTips(globalProperties, res.code);
+    }
+  }
+
+  const originOj = problemData.value.originOj;
+  languageOptions.value = GetSubmitLanguages(originOj);
+
+  problemDescription.value = problemData.value.description as string;
+  await nextTick(() => {
+    if (!codeEditor && codeEditRef.value) {
+      handleResetCode();
+    }
+    problemLoading.value = false;
+  });
+};
+
 const handleClickCrawl = async () => {
   const originOj = problemData.value?.originOj;
   const originId = problemData.value?.originId;
@@ -315,91 +400,106 @@ const handleResetCode = () => {
     codeEditor.dispose();
   }
 
-  codeEditor = monaco.editor.create(codeEditRef.value, {
-    value: codeTemplate,
-    language: "cpp",
-    minimap: { enabled: true },
-    colorDecorators: true,
-    readOnly: false,
-    theme: "vs-dark",
-  });
+  // 确保codeEditRef.value不为null
+  if (codeEditRef.value) {
+    codeEditor = monaco.editor.create(codeEditRef.value, {
+      value: codeTemplate,
+      language: "cpp",
+      minimap: { enabled: true },
+      colorDecorators: true,
+      readOnly: false,
+      theme: "vs-dark",
+    });
+  }
 
-  const model = codeEditor.getModel();
-  let decorationIds: string[] = [];
+  // 确保codeEditor不为null再进行后续操作
+  if (codeEditor) {
+    const model = codeEditor.getModel();
+    let decorationIds: string[] = [];
 
-  // 动态查找所有可编辑区域
-  function getEditableRanges(): monaco.Range[] {
-    const ranges: monaco.Range[] = [];
-    let startLine = 0;
-    for (let i = 1; i <= model.getLineCount(); i++) {
-      const line = model.getLineContent(i);
-      if (line.includes("code-edit-start")) startLine = i;
-      else if (line.includes("code-edit-end") && startLine) {
-        ranges.push(new monaco.Range(startLine + 1, 1, i - 1, model.getLineMaxColumn(i - 1)));
-        startLine = 0; // 重置
+    // 动态查找所有可编辑区域
+    function getEditableRanges(): monaco.Range[] {
+      // 确保model不为null
+      if (!model) return [];
+
+      const ranges: monaco.Range[] = [];
+      let startLine = 0;
+      for (let i = 1; i <= model.getLineCount(); i++) {
+        const line = model.getLineContent(i);
+        if (line.includes("code-edit-start")) startLine = i;
+        else if (line.includes("code-edit-end") && startLine) {
+          ranges.push(new monaco.Range(startLine + 1, 1, i - 1, model.getLineMaxColumn(i - 1)));
+          startLine = 0; // 重置
+        }
       }
+      return ranges;
     }
-    return ranges;
-  }
 
-  // 判断 change 是否在任意可编辑区
-  function isChangeAllowed(change: monaco.editor.IModelContentChange): boolean {
-    const editableRanges = getEditableRanges();
-    for (const range of editableRanges) {
-      if (range.containsRange(change.range)) return true;
+    // 判断 change 是否在任意可编辑区
+    function isChangeAllowed(change: monaco.editor.IModelContentChange): boolean {
+      const editableRanges = getEditableRanges();
+      for (const range of editableRanges) {
+        if (range.containsRange(change.range)) return true;
+      }
+      return false;
     }
-    return false;
-  }
 
-  // 动态更新装饰（只读行视觉提示）
-  function updateDecorations() {
-    const editableRanges = getEditableRanges();
-    const decs: monaco.editor.IModelDeltaDecoration[] = [];
+    // 动态更新装饰（只读行视觉提示）
+    function updateDecorations() {
+      // 确保model不为null
+      if (!model) return;
 
-    let lastEnd = 0;
-    for (const range of editableRanges) {
-      // 上方不可编辑行
-      if (range.startLineNumber - 1 > lastEnd) {
+      const editableRanges = getEditableRanges();
+      const decs: monaco.editor.IModelDeltaDecoration[] = [];
+
+      let lastEnd = 0;
+      for (const range of editableRanges) {
+        // 上方不可编辑行
+        if (range.startLineNumber - 1 > lastEnd) {
+          decs.push({
+            range: new monaco.Range(lastEnd + 1, 1, range.startLineNumber - 1, 1),
+            options: { isWholeLine: true, className: "readonly-line" },
+          });
+        }
+        lastEnd = range.endLineNumber;
+      }
+      // 下方不可编辑行
+      if (lastEnd < model.getLineCount()) {
         decs.push({
-          range: new monaco.Range(lastEnd + 1, 1, range.startLineNumber - 1, 1),
+          range: new monaco.Range(lastEnd + 1, 1, model.getLineCount(), 1),
           options: { isWholeLine: true, className: "readonly-line" },
         });
       }
-      lastEnd = range.endLineNumber;
+
+      decorationIds = model.deltaDecorations(decorationIds, decs);
     }
-    // 下方不可编辑行
-    if (lastEnd < model.getLineCount()) {
-      decs.push({
-        range: new monaco.Range(lastEnd + 1, 1, model.getLineCount(), 1),
-        options: { isWholeLine: true, className: "readonly-line" },
+
+    if (isContainReadOnly && model) {
+      // 初始化一次装饰
+      updateDecorations();
+      // 监听内容变化
+      model.onDidChangeContent((e) => {
+        if (!codeEditor) {
+          return;
+        }
+        for (const change of e.changes) {
+          if (!isChangeAllowed(change)) {
+            codeEditor.trigger("prevent-edit", "undo", null);
+          }
+        }
+        updateDecorations();
       });
     }
-
-    decorationIds = model.deltaDecorations(decorationIds, decs);
-  }
-
-  if (isContainReadOnly) {
-    // 初始化一次装饰
-    updateDecorations();
-    // 监听内容变化
-    model.onDidChangeContent((e) => {
-      for (const change of e.changes) {
-        if (!isChangeAllowed(change)) {
-          codeEditor.trigger("prevent-edit", "undo", null);
-        }
-      }
-      updateDecorations();
-    });
   }
 };
 
-const handlePrivateChanged = (value: boolean) => {
+const handlePrivateChanged = (value: boolean): void => {
   isPrivate.value = value;
   // 保存到本地存储
   localStorage.setItem("problem_submit_private", value ? "1" : "0");
 };
 
-const onSelectLanguageChanged = (value: JudgeLanguage) => {
+const onSelectLanguageChanged = (value: JudgeLanguage): void => {
   if (!codeEditor) {
     return;
   }
@@ -408,91 +508,6 @@ const onSelectLanguageChanged = (value: JudgeLanguage) => {
     return;
   }
   monaco.editor.setModelLanguage(model, GetHighlightKeyByJudgeLanguage(value));
-};
-
-const fetchProblemData = async () => {
-  contestProblems.value = [];
-
-  let res = await GetProblem(problemKey, contestId, problemIndex.value);
-
-  if (res.code !== 0) {
-    problemLoading.value = false;
-    ShowErrorTips(globalProperties, res.code);
-    await router.push({ name: "problem" });
-    return;
-  }
-
-  res.data.problem.tags = [];
-  if (res.data.tags) {
-    res.data.tags.forEach((tag: ProblemTag) => {
-      tagsMap[tag.id] = tag;
-    });
-    res.data.problem.tags = res.data.tags.map((tag) => tag.id);
-  }
-
-  problemData.value = ParseProblem(res.data.problem, tagsMap);
-
-  problemId = problemData.value.id;
-  problemKey = problemData.value.key;
-
-  webStyleStore.setTitle(problemData.value.title + " - " + webStyleStore.getRouteTitle);
-
-  if (contestId) {
-    res = await GetContestProblems(contestId);
-    if (res.code === 0) {
-      res.data.problems.sort((a: number, b: number) => a - b);
-      contestProblems.value = res.data.problems;
-    } else {
-      ShowErrorTips(globalProperties, res.code);
-    }
-  }
-
-  const originOj = problemData.value.originOj;
-  languageOptions.value = GetSubmitLanguages(originOj);
-
-  problemDescription.value = problemData.value.description as string;
-  await nextTick(() => {
-    if (!codeEditor && codeEditRef.value) {
-      handleResetCode();
-    }
-    problemLoading.value = false;
-  });
-};
-
-const loadDailyData = async () => {
-  clearDailyTimer();
-  isDailyProblem.value = false;
-  const res = await GetProblemDaily(dailyId);
-  if (res.code !== 0) {
-    return;
-  }
-  isDailyProblem.value = true;
-  const daily = res.data.problem_daily;
-  problemKey = daily.problem_key;
-  dailySolution.value = daily.solution;
-  dailyCode.value = daily.code;
-
-  const serverTime = new Date(res.data.time);
-  serverTimeOffset = serverTime.getTime() - new Date().getTime();
-  const localTime = new Date(serverTime.getTime());
-  const year = localTime.getFullYear();
-  const month = String(localTime.getMonth() + 1).padStart(2, "0");
-  const day = String(localTime.getDate()).padStart(2, "0");
-  const timeId = `${year}-${month}-${day}`;
-  if (dailyId === timeId) {
-    // 如果是当日的每日一题，则获取距离18点的倒计时
-    const duration = serverTime.getHours() * 60 * 60 + serverTime.getMinutes() * 60 + serverTime.getSeconds();
-    const duration18 = 18 * 60 * 60;
-    if (duration < duration18) {
-      dailySolutionUnlockCountdown.value = duration18 - duration;
-    } else {
-      dailySolutionUnlockCountdown.value = -1;
-    }
-    dailyCodeUnlockCountdown.value = 24 * 60 * 60 - duration;
-  }
-  if (dailySolutionUnlockCountdown.value >= 0 || dailyCodeUnlockCountdown.value >= 0) {
-    createDailyTimer();
-  }
 };
 
 onMounted(async () => {
@@ -602,7 +617,6 @@ onBeforeUnmount(() => {
                   :status="'active'"
                 >
                   <template #label>{{ (100 - (dailySolutionUnlockCountdown / (18 * 60 * 60)) * 100).toFixed(3) }}% </template>
-                  >
                 </t-progress>
               </t-space>
             </div>
@@ -623,7 +637,6 @@ onBeforeUnmount(() => {
                   :status="'active'"
                 >
                   <template #label>{{ (100 - (dailyCodeUnlockCountdown / (24 * 60 * 60)) * 100).toFixed(3) }}% </template>
-                  >
                 </t-progress>
               </t-space>
             </div>
@@ -726,14 +739,7 @@ onBeforeUnmount(() => {
           </div>
           <div style="text-align: center" v-else>
             <t-space>
-              <t-button
-                @click="
-                  () => {
-                    handleGotoLogin(router, globalProperties.$router.currentRoute.value.fullPath);
-                  }
-                "
-                >登录后提交本题</t-button
-              >
+              <t-button @click="() => handleGotoLogin(router, route.fullPath)">登录后提交本题</t-button>
             </t-space>
           </div>
         </div>
