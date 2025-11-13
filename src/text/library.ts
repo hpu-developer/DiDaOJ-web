@@ -188,6 +188,9 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100044": {
         zh: "今日已经签到过了",
       },
+      "100045": {
+        zh: "该问题的首通奖励已经领取过了",
+      },
     });
   });
 }
