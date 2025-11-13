@@ -105,7 +105,7 @@ onMounted(() => {
 
 <style scoped>
 .sh-menu-container {
-  height: calc(100vh - 65px) !important;
+  height: calc(100vh - 56px) !important;
 }
 
 .move-left-enter-active,

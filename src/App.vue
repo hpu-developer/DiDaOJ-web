@@ -7,6 +7,7 @@ import { useLoginStore } from "@/stores/login";
 import { useUserStore } from "@/stores/user.ts";
 import { useWebStyleStore } from "@/stores/webStyle";
 import { useSidebarStyleStore } from "@/stores/sidebarStyle";
+import { useFooterStyleStore } from "@/stores/footerStyle";
 import { GetProblemAttemptStatusByKey, ProblemAttemptStatus } from "@/apis/problem.ts";
 import { Button } from "tdesign-vue-next";
 
@@ -29,6 +30,7 @@ const loginStore = useLoginStore();
 const userStore = useUserStore();
 const webStyleStore = useWebStyleStore();
 const sidebarStyleStore = useSidebarStyleStore();
+const footerStyleStore = useFooterStyleStore();
 
 loginStore.$patch({
   Loaded: false,
@@ -38,6 +40,8 @@ const token = userStore.getToken;
 
 const showSidebar = ref(false);
 const realShowSidebar = ref(false);
+const showFooter = ref(false);
+const realShowFooter = ref(false);
 
 const titleBase = "DidaOJ";
 
@@ -58,6 +62,11 @@ webStyleStore.$subscribe((_, state) => {
 sidebarStyleStore.$subscribe((_, state) => {
   showSidebar.value = state.showSidebar;
   realShowSidebar.value = showSidebar.value && !state.forceHiddenSidebar;
+});
+
+footerStyleStore.$subscribe((_, state) => {
+  showFooter.value = state.showFooter;
+  realShowFooter.value = showFooter.value && !state.forceHiddenFooter;
 });
 
 const route = useRoute();
@@ -226,7 +235,7 @@ onUnmounted(() => {
           <View403 v-if="hasNotAuth" />
           <RouterView v-else />
         </t-content>
-        <FooterContent />
+        <FooterContent v-if="realShowFooter" />
       </t-layout>
     </t-layout>
   </t-layout>
