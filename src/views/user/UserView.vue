@@ -16,7 +16,6 @@ import type { EChartsOption } from "echarts";
 import { GetJudgeReward, PostJudgeReward } from "@/apis/judge";
 import { createFireworks } from "@/util/fireworks";
 import { ShowTextTipsSuccess, ShowEnhancedExpTips } from "@/util/tips";
-import { getCurrentClickPosition } from "@/util/click-position";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -118,7 +117,6 @@ const handleClaimReward = async (problemId: number, problemKey: string) => {
       }
     }else{
       ShowErrorTips(globalProperties, res.code);
-      createFireworks();
     }
   } catch (error) {
     console.error("领取评测奖励失败:", error);
