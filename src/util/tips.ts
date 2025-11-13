@@ -1,5 +1,4 @@
 import { GetText } from "@/text/library.ts";
-import { pad } from "echarts/types/src/util/time.js";
 
 import type { ComponentCustomProperties } from "vue";
 
@@ -191,14 +190,14 @@ export function ShowEnhancedCoinTips(
         style: {
           fontSize: '14px',
           fontWeight: 'bold',
-          color: '#fadb14'
+          color: '#fa8c16'
         }
       }, ['💰']),
       h('div', {
         style: {
           fontSize: '14px',
           fontWeight: 'bold',
-          color: '#fadb14',
+          color: '#fa8c16',
           animation: 'pulse 1.5s infinite'
         }
       }, ['金币 + ' + coinValue])

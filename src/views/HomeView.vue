@@ -69,9 +69,7 @@ const handleCheckin = async (e?: Event) => {
       createFireworks(getCurrentClickPosition());
 
       // 处理服务器返回的奖励
-      if (res.data && res.data.award) {
-        ShowEnhancedAwardTips(globalProperties, res.data.award, 4000);
-      }
+      ShowEnhancedAwardTips(globalProperties, res.data, 4000);
     } else {
       if (res.data) {
         ShowTextTipsWarn(globalProperties, "您今天已签到过了");
