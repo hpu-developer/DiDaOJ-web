@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "format": "prettier --write .",
-    "dev": "vite",
+    "dev": "set VITE_CJS_IGNORE_WARNING=true && node --no-deprecation node_modules/vite/bin/vite.js",
     "build": "run-p type-check build-only",
     "preview": "vite preview --port 4173",
     "build-only": "vite build",

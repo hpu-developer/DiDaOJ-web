@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, onBeforeRouteUpdate } from "vue-router";
 import router from "@/router";
-import { Compass1Icon, GenderFemaleIcon, GenderMaleIcon, User1Icon, UserUnknownIcon } from "tdesign-icons-vue-next";
+import { Compass1Icon, GenderFemaleIcon, GenderMaleIcon, User1Icon } from "tdesign-icons-vue-next";
 import { GetUserInfo, GetVjudgeAcProblem, ParseUser } from "@/apis/user.ts";
 import { useCurrentInstance } from "@/util";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsWarn } from "@/util/tips";

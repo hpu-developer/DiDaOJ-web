@@ -2,7 +2,7 @@
 import { createApp, h, ref, onMounted, onUnmounted, computed } from "vue";
 // @ts-ignore
 import pangu from "pangu";
-import { PostLoginRefresh } from "@/apis/user.ts";
+import { PostCheckin, PostLoginRefresh } from "@/apis/user.ts";
 import { useLoginStore } from "@/stores/login";
 import { useUserStore } from "@/stores/user.ts";
 import { useWebStyleStore } from "@/stores/webStyle";
@@ -18,9 +18,10 @@ import ForceHiddenSidebarButton from "./components/ForceHiddenSidebarButton.vue"
 import View403 from "@/views/View403.vue";
 
 import { debounce, useCurrentInstance } from "@/util/";
-import { ShowErrorTips } from "@/util/tips.ts";
+import { ShowEnhancedAwardTips, ShowErrorTips, ShowTextTipsSuccess } from "@/util/tips.ts";
 import { enableClickPositionTracking, disableClickPositionTracking } from "@/util/click-position";
 import { useRoute } from "vue-router";
+import { createFireworks as CreateFireworks } from "./util/fireworks";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -141,6 +142,19 @@ const processProblemTags = async () => {
   }
 };
 
+const postCheckin = async () => {
+  try {
+    const res = await PostCheckin();
+    if (res.code === 0) {
+      ShowTextTipsSuccess(globalProperties, "每日签到成功！");
+      CreateFireworks();
+      ShowEnhancedAwardTips(globalProperties, res.data, 4000);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 onMounted(() => {
   // 启用全局点击位置跟踪
   enableClickPositionTracking();
@@ -168,6 +182,8 @@ onMounted(() => {
           loginStore.$patch({
             Loaded: true,
           });
+
+          postCheckin();
         } else {
           ShowErrorTips(globalProperties, res.code);
           loginStore.$patch({
