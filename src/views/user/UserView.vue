@@ -511,6 +511,15 @@ onMounted(async () => {
           </t-descriptions>
         </div>
         <!-- 只有当前查看的是登录用户时，才显示奖励窗口 -->
+        <!-- 货币栏 -->
+        <t-card style="margin: 10px" v-if="userStore.getUserId === userData?.id">
+          <div class="flex items-center justify-center space-x-2 py-2">
+            <t-icon name="cash" size="24" class="text-yellow-500" />
+            <span class="text-xl font-bold text-yellow-500">{{ userData?.coin || 0 }}</span>
+            <span class="text-gray-600 dark:text-gray-400">金币</span>
+          </div>
+        </t-card>
+        
         <t-card title="首通奖励" style="margin: 10px" v-if="userStore.getUserId === userData?.id">
           <t-loading :loading="rewardLoading">
             <p v-if="judgeRewards.length === 0">

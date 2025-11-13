@@ -7,9 +7,9 @@ import { GetWebAnnouncement, GetWebNotification } from "@/apis/system.ts";
 import { PostCheckin, GetCheckinToday } from "@/apis/user.ts";
 import type { Notification, Announcement } from "@/types/system.ts";
 import { useCurrentInstance } from "@/util";
-import { ShowTextTipsSuccess, ShowTextTipsError, ShowTextTipsWarn, ShowEnhancedExpTips } from "@/util/tips";
+import { ShowTextTipsSuccess, ShowTextTipsError, ShowTextTipsWarn, ShowEnhancedAwardTips, ShowErrorTips } from "@/util/tips";
 import { createFireworks } from "@/util/fireworks";
-import { GetJudgeStaticsRecently, GetJudgeReward } from "@/apis/judge.ts";
+import { GetJudgeStaticsRecently } from "@/apis/judge.ts";
 import { GetProblemDailyRecently, ProblemAttemptStatus } from "@/apis/problem.ts";
 import * as echarts from "echarts/core";
 import { handleGotoLogin } from "@/util/router";
@@ -22,7 +22,7 @@ const checkinLoading = ref(false);
 const showCheckinHint = ref(false);
 
 // 导入点击位置工具函数
-import { getCurrentClickPosition } from '@/util/click-position';
+import { getCurrentClickPosition } from "@/util/click-position";
 
 const { globalProperties } = useCurrentInstance();
 
@@ -60,12 +60,6 @@ const handleCheckin = async (e?: Event) => {
   try {
     const res = await PostCheckin();
     if (res.code === 0) {
-      if (res.data) {
-        ShowTextTipsWarn(globalProperties, "您今天已签到过了");
-        isCheckedIn.value = true;
-        return;
-      }
-
       ShowTextTipsSuccess(globalProperties, "签到成功！");
       isCheckedIn.value = true;
       // 更新签到人数
@@ -74,9 +68,17 @@ const handleCheckin = async (e?: Event) => {
       // 使用记录的点击位置触发礼花特效
       createFireworks(getCurrentClickPosition());
 
-      ShowEnhancedExpTips(globalProperties, 20, 4000);
+      // 处理服务器返回的奖励
+      if (res.data && res.data.award) {
+        ShowEnhancedAwardTips(globalProperties, res.data.award, 4000);
+      }
     } else {
-      ShowTextTipsError(globalProperties, `签到失败：${res.code}`);
+      if (res.data) {
+        ShowTextTipsWarn(globalProperties, "您今天已签到过了");
+        isCheckedIn.value = true;
+        return;
+      }
+      ShowErrorTips(globalProperties, res.code);
     }
   } catch (e) {
     ShowTextTipsError(globalProperties, "签到请求失败，请稍后重试");

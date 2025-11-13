@@ -62,6 +62,9 @@ export function ParseUser(item: UserInfo): UserInfoView {
   result.experience_current_level = item.experience_current_level || 0;
   result.experience_upgrade = item.experience_upgrade || 100;
   
+  // 添加货币字段
+  result.coin = item.coin || 0;
+  
   return result;
 }
 

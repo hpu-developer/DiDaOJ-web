@@ -153,6 +153,92 @@ export function ShowEnhancedExpTips(
   });
 }
 
+/**
+ * 增强版金币提醒函数（黄色主题）
+ * @param properties 组件属性
+ * @param coinValue 金币值
+ * @param duration 显示时长
+ * @param customContent 自定义内容（可选），支持string或TNode类型
+ */
+export function ShowEnhancedCoinTips(
+  properties: ComponentCustomProperties & Record<string, any>, 
+  coinValue: number = 1,
+  duration = 4000,
+  customContent?: string | ((h: any) => any)
+) {
+  // 添加简单的动画样式到页面
+  addAnimationStyle();
+  
+  // 创建TNode函数来渲染HTML内容
+  const renderContent = (h: any) => {
+    // 如果提供了自定义内容函数，使用它
+    if (typeof customContent === 'function') {
+      return customContent(h);
+    }
+    // 如果提供了自定义字符串内容，创建一个简单的元素
+    if (typeof customContent === 'string') {
+      return h('div', {}, [customContent]);
+    }
+    // 默认渲染黄色主题的金币提示，只显示金币和数值
+    return h('div', {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+      }
+    }, [
+      h('span', {
+        style: {
+          fontSize: '14px',
+          fontWeight: 'bold',
+          color: '#fadb14'
+        }
+      }, ['💰']),
+      h('div', {
+        style: {
+          fontSize: '14px',
+          fontWeight: 'bold',
+          color: '#fadb14',
+          animation: 'pulse 1.5s infinite'
+        }
+      }, ['金币 + ' + coinValue])
+    ]);
+  };
+  
+  return properties.$message.info({
+    duration,
+    content: renderContent, // 使用TNode函数渲染内容
+    placement: "top-right",
+    closeBtn: false,
+    offset: 20,
+    showIcon: false,
+    theme: "gradient",
+    className: "enhanced-coin-tips"
+  });
+}
+
+/**
+ * 增强版奖励提醒函数（通用接口）
+ * @param properties 组件属性
+ * @param award 奖励对象，包含coin和experience字段
+ * @param duration 显示时长
+ */
+export function ShowEnhancedAwardTips(
+  properties: ComponentCustomProperties & Record<string, any>, 
+  award: { coin?: number; experience?: number },
+  duration = 4000
+) {
+  // 先处理经验提示
+  if (award.experience && award.experience > 0) {
+    ShowEnhancedExpTips(properties, award.experience, duration);
+  }
+
+  // 再处理金币提示
+  if (award.coin && award.coin > 0) {
+    ShowEnhancedCoinTips(properties, award.coin, duration);
+  }
+}
+
 // 添加动画样式的辅助函数
 function addAnimationStyle() {
   if (!document.getElementById('enhanced-exp-animation-style')) {
@@ -177,6 +263,15 @@ function addAnimationStyle() {
       '  background: linear-gradient(135deg, #e6f7ee 0%, #f6ffed 100%);' +
       '  border: 1px solid #b7eb8f;' +
       '  box-shadow: 0 4px 12px rgba(0, 180, 42, 0.15);' +
+      '  margin-bottom: 10px;' +
+      '  font-size: 16px;' +
+      '  padding: 12px 16px;' +
+      '  border-radius: 8px;' +
+      '}' +
+      '.enhanced-coin-tips {' +
+      '  background: linear-gradient(135deg, #fffbe6 0%, #fff7e6 100%);' +
+      '  border: 1px solid #ffe58f;' +
+      '  box-shadow: 0 4px 12px rgba(250, 173, 20, 0.15);' +
       '  margin-bottom: 10px;' +
       '  font-size: 16px;' +
       '  padding: 12px 16px;' +

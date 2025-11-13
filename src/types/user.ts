@@ -22,6 +22,7 @@ export interface UserInfo {
   experience: number;
   experience_current_level: number;
   experience_upgrade: number;
+  coin: number;
 }
 
 export interface UserInfoView {
@@ -42,6 +43,7 @@ export interface UserInfoView {
   experience: number;
   experience_current_level: number;
   experience_upgrade: number;
+  coin: number;
 }
 
 export interface UserModifyInfo {
