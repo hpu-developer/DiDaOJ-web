@@ -92,31 +92,35 @@ const handleClaimReward = async (problemId: number, problemKey: string) => {
         judgeRewards.value.splice(index, 1);
       }
 
-      // 检查是否有重复领取
-      if (res.data?.has_duplicate) {
-        // 奖励已领取，显示警告提示
-        ShowTextTipsWarn(globalProperties, `题目 ${problemKey} 的奖励已领取！`);
-      } else {
-        // 领取成功
-        ShowTextTipsSuccess(globalProperties, `成功领取题目 ${problemKey} 的奖励！`);
-        createFireworks();
-        ShowEnhancedExpTips(globalProperties, 50, 4000);
+      // 领取成功
+      ShowTextTipsSuccess(globalProperties, `成功领取题目 ${problemKey} 的奖励！`);
+      createFireworks();
+      ShowEnhancedExpTips(globalProperties, 50, 4000);
 
-        // 更新用户等级和经验值信息
-        if (res.data && userData.value) {
-          if (res.data.level !== undefined) {
-            userData.value.level = res.data.level;
-          }
-          if (res.data.experience_current_level !== undefined) {
-            userData.value.experience_current_level = res.data.experience_current_level;
-          }
-          if (res.data.experience_upgrade !== undefined) {
-            userData.value.experience_upgrade = res.data.experience_upgrade;
-          }
+      // 更新用户等级和经验值信息
+      if (res.data && userData.value) {
+        if (res.data.level !== undefined) {
+          userData.value.level = res.data.level;
+        }
+        if (res.data.experience_current_level !== undefined) {
+          userData.value.experience_current_level = res.data.experience_current_level;
+        }
+        if (res.data.experience_upgrade !== undefined) {
+          userData.value.experience_upgrade = res.data.experience_upgrade;
         }
       }
-    }else{
-      ShowErrorTips(globalProperties, res.code);
+    } else {
+      // 奖励已领取，显示警告提示
+      if (res.data) {
+        // 从列表中移除该奖励
+        const index = judgeRewards.value.findIndex((item) => item.id === problemId);
+        if (index > -1) {
+          judgeRewards.value.splice(index, 1);
+        }
+        ShowTextTipsWarn(globalProperties, `题目 ${problemKey} 的奖励已领取！`);
+      } else {
+        ShowErrorTips(globalProperties, res.code);
+      }
     }
   } catch (error) {
     console.error("领取评测奖励失败:", error);
@@ -325,7 +329,7 @@ const loadUserInfo = async (username: string) => {
         const res = await GetJudgeReward();
         if (res.code === 0) {
           judgeRewards.value = res.data || [];
-          
+
           // 对奖励列表进行排序，使用与其他列表相同的排序逻辑
           judgeRewards.value.sort(compareFunc);
         }
@@ -512,11 +516,11 @@ onMounted(async () => {
         <!-- 货币栏 -->
         <t-card style="margin: 10px" v-if="userStore.getUserId === userData?.id">
           <div class="coin-display">
-            <Compass1Icon size="24" class="coin-icon"/>
+            <Compass1Icon size="24" class="coin-icon" />
             <span class="coin-value">{{ userData?.coin || 0 }}</span>
           </div>
         </t-card>
-        
+
         <t-card title="首通奖励" style="margin: 10px" v-if="userStore.getUserId === userData?.id">
           <t-loading :loading="rewardLoading">
             <p v-if="judgeRewards.length === 0">
