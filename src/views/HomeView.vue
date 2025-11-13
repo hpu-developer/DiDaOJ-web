@@ -8,7 +8,8 @@ import { PostCheckin, GetCheckinToday } from "@/apis/user.ts";
 import type { Notification, Announcement } from "@/types/system.ts";
 import { useCurrentInstance } from "@/util";
 import { ShowTextTipsSuccess, ShowTextTipsError, ShowTextTipsWarn, ShowEnhancedExpTips } from "@/util/tips";
-import { GetJudgeStaticsRecently } from "@/apis/judge.ts";
+import { createFireworks } from "@/util/fireworks";
+import { GetJudgeStaticsRecently, GetJudgeReward } from "@/apis/judge.ts";
 import { GetProblemDailyRecently, ProblemAttemptStatus } from "@/apis/problem.ts";
 import * as echarts from "echarts/core";
 import { handleGotoLogin } from "@/util/router";
@@ -20,17 +21,8 @@ const isCheckedIn = ref(false);
 const checkinLoading = ref(false);
 const showCheckinHint = ref(false);
 
-// 记录点击位置
-let mousePosition: { x: number; y: number } | null = null;
-const getClickPosition = (e: MouseEvent) => {
-  mousePosition = {
-    x: e.clientX,
-    y: e.clientY,
-  };
-  setTimeout(() => {
-    mousePosition = null;
-  }, 100);
-};
+// 导入点击位置工具函数
+import { getCurrentClickPosition } from '@/util/click-position';
 
 const { globalProperties } = useCurrentInstance();
 
@@ -80,7 +72,7 @@ const handleCheckin = async (e?: Event) => {
       checkinCount.value++;
 
       // 使用记录的点击位置触发礼花特效
-      createFireworks(mousePosition);
+      createFireworks(getCurrentClickPosition());
 
       ShowEnhancedExpTips(globalProperties, 20, 4000);
     } else {
@@ -145,122 +137,7 @@ onUnmounted(() => {
   document.removeEventListener("mousemove", handleMouseMove);
 });
 
-// 创建礼花特效
-const createFireworks = (position?: { x: number; y: number } | null) => {
-  // 创建画布元素
-  const canvas = document.createElement("canvas");
-  canvas.style.position = "fixed";
-  canvas.style.top = "0";
-  canvas.style.left = "0";
-  canvas.style.pointerEvents = "none";
-  canvas.style.zIndex = "9999";
-  document.body.appendChild(canvas);
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-
-  // 设置画布大小
-  const resizeCanvas = () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  };
-  resizeCanvas();
-  window.addEventListener("resize", resizeCanvas);
-
-  // 礼花爆炸位置（优先使用传入的位置，其次是记录的最后交互位置，最后是屏幕中心）
-  let x, y;
-
-  // 检查是否有有效的位置信息
-  if (position && position.x > 0 && position.y > 0) {
-    x = position.x;
-    y = position.y;
-  } else if (lastInteractionPosition.value.x > 0 && lastInteractionPosition.value.y > 0) {
-    x = lastInteractionPosition.value.x;
-    y = lastInteractionPosition.value.y;
-  } else {
-    // 如果没有位置信息，使用屏幕中心
-    x = canvas.width / 2;
-    y = canvas.height / 2;
-  }
-
-  // 创建粒子
-  const particles: {
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    color: string;
-    radius: number;
-    alpha: number;
-    gravity: number;
-    friction: number;
-  }[] = [];
-  const particleCount = 150;
-  const colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E9"];
-
-  for (let i = 0; i < particleCount; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 2 + Math.random() * 6;
-
-    particles.push({
-      x: x,
-      y: y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      radius: 1 + Math.random() * 3,
-      alpha: 1,
-      gravity: 0.05,
-      friction: 0.98,
-    });
-  }
-
-  // 动画循环
-  const animate = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    let activeParticles = false;
-
-    particles.forEach((particle) => {
-      // 更新位置
-      particle.vy += particle.gravity;
-      particle.vx *= particle.friction;
-      particle.vy *= particle.friction;
-      particle.x += particle.vx;
-      particle.y += particle.vy;
-
-      // 淡出效果
-      particle.alpha -= 0.01;
-
-      if (particle.alpha > 0) {
-        activeParticles = true;
-
-        // 绘制粒子
-        ctx.save();
-        ctx.globalAlpha = particle.alpha;
-        ctx.fillStyle = particle.color;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-    });
-
-    if (activeParticles) {
-      requestAnimationFrame(animate);
-    } else {
-      // 清理画布
-      window.removeEventListener("resize", resizeCanvas);
-      setTimeout(() => {
-        if (document.body.contains(canvas)) {
-          document.body.removeChild(canvas);
-        }
-      }, 100);
-    }
-  };
-
-  animate();
-};
+// 使用从util导入的createFireworks函数
 
 // 加载签到数据
 const loadCheckinData = async () => {
@@ -452,11 +329,6 @@ onMounted(async () => {
   ojNotifyLoading.value = true;
   ojAnnouncementLoading.value = true;
 
-  // 添加点击位置监听
-  if (typeof window !== "undefined" && window.document && window.document.documentElement) {
-    document.documentElement.addEventListener("click", getClickPosition, true);
-  }
-
   void (async () => {
     await handleReloadStatus();
     ojNotifyLoading.value = false;
@@ -486,10 +358,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   clearInterval(intervalId);
-  // 移除点击位置监听
-  if (typeof window !== "undefined" && window.document && window.document.documentElement) {
-    document.documentElement.removeEventListener("click", getClickPosition, true);
-  }
 });
 </script>
 

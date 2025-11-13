@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createApp, h, ref, onMounted, computed } from "vue";
+import { createApp, h, ref, onMounted, onUnmounted, computed } from "vue";
 // @ts-ignore
 import pangu from "pangu";
 import { PostLoginRefresh } from "@/apis/user.ts";
@@ -19,6 +19,7 @@ import View403 from "@/views/View403.vue";
 
 import { debounce, useCurrentInstance } from "@/util/";
 import { ShowErrorTips } from "@/util/tips.ts";
+import { enableClickPositionTracking, disableClickPositionTracking } from "@/util/click-position";
 import { useRoute } from "vue-router";
 
 const { globalProperties } = useCurrentInstance();
@@ -141,6 +142,9 @@ const processProblemTags = async () => {
 };
 
 onMounted(() => {
+  // 启用全局点击位置跟踪
+  enableClickPositionTracking();
+
   document.addEventListener("DOMContentLoaded", () => {
     // listen to any DOM change and automatically perform spacing via MutationObserver()
 
@@ -181,6 +185,11 @@ onMounted(() => {
       Loaded: true,
     });
   }
+});
+
+// 组件卸载时禁用点击位置跟踪
+onUnmounted(() => {
+  disableClickPositionTracking();
 });
 </script>
 

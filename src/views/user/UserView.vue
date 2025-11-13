@@ -5,7 +5,7 @@ import router from "@/router";
 import { GenderFemaleIcon, GenderMaleIcon, User1Icon, UserUnknownIcon } from "tdesign-icons-vue-next";
 import { GetUserInfo, GetVjudgeAcProblem, ParseUser } from "@/apis/user.ts";
 import { useCurrentInstance } from "@/util";
-import { ShowErrorTips, ShowTextTipsError } from "@/util/tips";
+import { ShowErrorTips, ShowTextTipsError, ShowTextTipsWarn } from "@/util/tips";
 import { UserInfoView } from "@/types/user.ts";
 
 import { useWebStyleStore } from "@/stores/webStyle.ts";
@@ -13,6 +13,10 @@ import { GetProblemAttemptStatus, ProblemAttemptStatus } from "@/apis/problem.ts
 import { useUserStore } from "@/stores/user.ts";
 import * as echarts from "echarts/core";
 import type { EChartsOption } from "echarts";
+import { GetJudgeReward, PostJudgeReward } from "@/apis/judge";
+import { createFireworks } from "@/util/fireworks";
+import { ShowTextTipsSuccess, ShowEnhancedExpTips } from "@/util/tips";
+import { getCurrentClickPosition } from "@/util/click-position";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -34,6 +38,10 @@ const vjudgeAcProblems = ref({} as Record<string, string[]>);
 const vjudgeFailProblems = ref({} as Record<string, string[]>);
 
 const userLink = ref("");
+
+// 评测奖励相关
+const judgeRewards = ref([] as Array<{ id: number; key: string }>);
+const rewardLoading = ref(false);
 
 const getProblemTheme = (problemId: number) => {
   let theme = "default";
@@ -71,6 +79,50 @@ const getProblemThemeAttempt = (problemId: number) => {
 const handleGotoVjudgeProblem = (oj: string, problemId: string) => {
   const url = `https://vjudge.net/problem/${oj}-${problemId}`;
   window.open(url, "_blank");
+};
+
+// 领取评测奖励
+const handleClaimReward = async (problemId: number, problemKey: string) => {
+  try {
+    // 只发送问题id给服务器
+    const res = await PostJudgeReward(problemId);
+    if (res.code === 0) {
+      // 从列表中移除该奖励
+      const index = judgeRewards.value.findIndex((item) => item.id === problemId);
+      if (index > -1) {
+        judgeRewards.value.splice(index, 1);
+      }
+
+      // 检查是否有重复领取
+      if (res.data?.has_duplicate) {
+        // 奖励已领取，显示警告提示
+        ShowTextTipsWarn(globalProperties, `题目 ${problemKey} 的奖励已领取！`);
+      } else {
+        // 领取成功
+        ShowTextTipsSuccess(globalProperties, `成功领取题目 ${problemKey} 的奖励！`);
+        createFireworks();
+        ShowEnhancedExpTips(globalProperties, 50, 4000);
+
+        // 更新用户等级和经验值信息
+        if (res.data && userData.value) {
+          if (res.data.level !== undefined) {
+            userData.value.level = res.data.level;
+          }
+          if (res.data.experience_current_level !== undefined) {
+            userData.value.experience_current_level = res.data.experience_current_level;
+          }
+          if (res.data.experience_upgrade !== undefined) {
+            userData.value.experience_upgrade = res.data.experience_upgrade;
+          }
+        }
+      }
+    }else{
+      ShowErrorTips(globalProperties, res.code);
+      createFireworks();
+    }
+  } catch (error) {
+    console.error("领取评测奖励失败:", error);
+  }
 };
 
 const loadProblemAttemptStatus = async () => {
@@ -146,20 +198,20 @@ const loadUserInfo = async (username: string) => {
     }
 
     userData.value = ParseUser(res.data.user);
-    
+
     // 确保等级和经验字段存在，设置默认值
     if (!userData.value.level) {
-        userData.value.level = 0;
-      }
-      if (!userData.value.experience) {
-        userData.value.experience = 0;
-      }
-      if (!userData.value.experience_current_level) {
-        userData.value.experience_current_level = 0;
-      }
-      if (!userData.value.experience_upgrade) {
-        userData.value.experience_upgrade = 100; // 默认第一级需要100经验
-      }
+      userData.value.level = 0;
+    }
+    if (!userData.value.experience) {
+      userData.value.experience = 0;
+    }
+    if (!userData.value.experience_current_level) {
+      userData.value.experience_current_level = 0;
+    }
+    if (!userData.value.experience_upgrade) {
+      userData.value.experience_upgrade = 100; // 默认第一级需要100经验
+    }
 
     const compareFunc = (a: any, b: any) => {
       const problemKeyA = a.key as string;
@@ -267,6 +319,24 @@ const loadUserInfo = async (username: string) => {
       });
     });
     resizeObserver.observe(chartDom!);
+
+    // 获取评测奖励信息（仅当当前查看的用户是登录用户时）
+    if (userStore.getUserId === userData.value.id) {
+      try {
+        rewardLoading.value = true;
+        const res = await GetJudgeReward();
+        if (res.code === 0) {
+          judgeRewards.value = res.data || [];
+          
+          // 对奖励列表进行排序，使用与其他列表相同的排序逻辑
+          judgeRewards.value.sort(compareFunc);
+        }
+      } catch (error) {
+        console.error("获取评测奖励信息失败:", error);
+      } finally {
+        rewardLoading.value = false;
+      }
+    }
 
     await loadProblemAttemptStatus();
   } catch (e) {
@@ -401,7 +471,7 @@ onMounted(async () => {
               <t-avatar shape="round" size="100px" :image="userData?.avatar" :hide-on-load-failed="false" />
             </t-descriptions-item>
             <t-descriptions-item label="用户序号">{{ userData?.id }}</t-descriptions-item>
-           <t-descriptions-item label="用户名">
+            <t-descriptions-item label="用户名">
               <t-space>
                 {{ userData?.username }}
                 <div class="level-container">
@@ -410,17 +480,15 @@ onMounted(async () => {
                 </div>
               </t-space>
             </t-descriptions-item>
-            <t-descriptions-item label="经验值" style="padding-top: 0;">
+            <t-descriptions-item label="经验值" style="padding-top: 0">
               <div class="experience-container">
                 <div class="experience-progress">
-                  <div 
-                    class="experience-bar" 
+                  <div
+                    class="experience-bar"
                     :style="{ width: Math.min(((userData?.experience_current_level || 0) / (userData?.experience_upgrade || 100)) * 100, 100) + '%' }"
                   ></div>
                 </div>
-                <div class="experience-text">
-                  {{ userData?.experience_current_level }} / {{ userData?.experience_upgrade }}
-                </div>
+                <div class="experience-text">{{ userData?.experience_current_level }} / {{ userData?.experience_upgrade }}</div>
               </div>
             </t-descriptions-item>
             <t-descriptions-item label="昵称"
@@ -442,6 +510,27 @@ onMounted(async () => {
             <t-descriptions-item label="提交数量">{{ userData?.attempt }}</t-descriptions-item>
           </t-descriptions>
         </div>
+        <!-- 只有当前查看的是登录用户时，才显示奖励窗口 -->
+        <t-card title="首通奖励" style="margin: 10px" v-if="userStore.getUserId === userData?.id">
+          <t-loading :loading="rewardLoading">
+            <p v-if="judgeRewards.length === 0">
+              <span>暂无未领取奖励的题目</span>
+            </p>
+            <template v-else>
+              <t-button
+                class="dida-tag-button"
+                v-for="reward in judgeRewards"
+                :key="reward.id"
+                size="small"
+                variant="dashed"
+                theme="success"
+                @click="handleClaimReward(reward.id, reward.key)"
+              >
+                {{ reward.key }}
+              </t-button>
+            </template>
+          </t-loading>
+        </t-card>
       </t-col>
     </t-row>
   </t-loading>
@@ -465,7 +554,7 @@ onMounted(async () => {
 }
 
 .level-text {
-  font-size: 1.0rem;
+  font-size: 1rem;
   color: #1677ff;
   padding: 0 12px;
   position: relative;

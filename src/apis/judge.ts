@@ -428,3 +428,22 @@ export function PostRejudgeJob(id: number) {
     },
   });
 }
+
+// 获取评测奖励信息
+export function GetJudgeReward() {
+  return httpRequest({
+    url: "/judge/reward",
+    method: "get",
+  });
+}
+
+// 领取评测奖励
+export function PostJudgeReward(problemId: number) {
+  return httpRequest({
+    url: "/judge/reward",
+    method: "post",
+    data: {
+      id: Number(problemId),
+    },
+  });
+}
