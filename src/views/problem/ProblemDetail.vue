@@ -67,6 +67,8 @@ let serverTimeOffset = 0;
 
 const isZenMode = ref(false);
 
+const submitCode = ref("");
+
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
 });
@@ -877,6 +879,8 @@ onBeforeUnmount(() => {
 /* 禅模式下的布局 */
 .dida-main-content.zen-mode .dida-col-left {
   width: 50%;
+  overflow-y: auto;
+  height: calc(100vh - 57px);
 }
 
 .dida-col-right {
@@ -888,13 +892,21 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
+/* 禅模式下隐藏右侧栏 - 完全隐藏并释放空间 */
 .dida-main-content.zen-mode .dida-col-right {
   width: 0;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
   overflow: hidden;
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
+  transform: translateX(100%);
   transition: all 0.3s ease;
+  position: absolute;
+  z-index: -1;
 }
 
 /* 正常模式下恢复可见性 */
@@ -920,8 +932,7 @@ onBeforeUnmount(() => {
 .dida-code-editor-div {
   width: 100%;
   margin-top: 10px;
-  min-height: 500px;
-  height: calc(100vh - 300px);
+  height: 500px;
   position: relative;
 }
 
@@ -929,7 +940,7 @@ onBeforeUnmount(() => {
   width: 100%;
   margin-top: 10px;
   min-height: 500px;
-  height: calc(100vh - 300px);
+  height: calc(100vh - 56px);
   position: relative;
 }
 </style>
