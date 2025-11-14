@@ -171,9 +171,37 @@ const handleClickDailyEdit = async () => {
   });
 };
 
+let resizeObserver: ResizeObserver | null = null;
+
 const handleZenMode = () => {
+  const wasZenMode = isZenMode.value;
   isZenMode.value = !isZenMode.value;
   footerStyleStore.setFooterShow(!isZenMode.value);
+  
+  // 如果模式发生了变化，需要重新创建编辑器
+  if (wasZenMode !== isZenMode.value) {
+    // 先清理之前的 resizeObserver
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+      resizeObserver = null;
+    }
+    
+    nextTick(() => {
+      // 获取当前模式下的编辑器容器
+      const currentContainerRef = isZenMode.value ? codeEditRefZen : codeEditRef;
+      handleResetCode(currentContainerRef);
+      
+      // 重新设置 resizeObserver
+      if (currentContainerRef.value) {
+        resizeObserver = new ResizeObserver(() => {
+          if (codeEditor) {
+            codeEditor.layout();
+          }
+        });
+        resizeObserver.observe(currentContainerRef.value);
+      }
+    });
+  }
 }
 
 const handleClickEdit = async () => {
@@ -303,8 +331,20 @@ const fetchProblemData = async () => {
 
   problemDescription.value = problemData.value.description as string;
   await nextTick(() => {
-    if (!codeEditor && codeEditRef.value) {
-      handleResetCode();
+    if (!codeEditor) {
+      // 根据当前模式选择容器
+      const initialContainerRef = isZenMode.value ? codeEditRefZen : codeEditRef;
+      handleResetCode(initialContainerRef);
+      
+      // 初始化 resizeObserver
+      if (initialContainerRef.value) {
+        resizeObserver = new ResizeObserver(() => {
+          if (codeEditor) {
+            codeEditor.layout();
+          }
+        });
+        resizeObserver.observe(initialContainerRef.value);
+      }
     }
     problemLoading.value = false;
   });
@@ -382,7 +422,7 @@ const handleSubmitCode = async () => {
   }
 };
 
-const handleResetCode = () => {
+const handleResetCode = (containerRef?: Ref<HTMLElement | null>) => {
   //   const codeTemplate = `#include <iostream>
   // using namespace std;
   // int main() {
@@ -411,10 +451,13 @@ const handleResetCode = () => {
     codeEditor.dispose();
   }
 
-  // 确保codeEditRef.value不为null
-  if (codeEditRef.value) {
+  // 确定使用哪个容器
+  const targetContainer = containerRef ? containerRef.value : codeEditRef.value;
+  
+  // 确保目标容器不为null
+  if (targetContainer) {
     // 清空现有内容
-    codeEditRef.value.innerHTML = '';
+    targetContainer.innerHTML = '';
     
     // 创建编辑器容器
     const editorContainer = document.createElement("div");
@@ -431,11 +474,11 @@ const handleResetCode = () => {
       automaticLayout: true,
     });
     
-    codeEditRef.value.appendChild(editorContainer);
+    targetContainer.appendChild(editorContainer);
     
     // 确保编辑器正确布局
     nextTick(() => {
-      if (codeEditor && codeEditRef.value) {
+      if (codeEditor && targetContainer) {
         codeEditor.layout();
       }
     });
@@ -603,15 +646,6 @@ onMounted(async () => {
     isPrivate.value = true;
   } else {
     isPrivate.value = false;
-  }
-
-  if (codeEditRef.value) {
-    const resizeObserver = new ResizeObserver(() => {
-      if (codeEditor) {
-        codeEditor.layout();
-      }
-    });
-    resizeObserver.observe(codeEditRef.value);
   }
 });
 
