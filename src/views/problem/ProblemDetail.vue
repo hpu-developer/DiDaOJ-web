@@ -46,6 +46,7 @@ const problemLoading = ref(false);
 const problemData = ref<ProblemView | null>(null);
 let codeEditor = null as IStandaloneCodeEditor | null;
 const codeEditRef = ref<HTMLElement | null>(null);
+const codeEditRefZen = ref<HTMLElement | null>(null);
 const problemCrawlLoading = ref(false);
 const problemSubmitting = ref(false);
 
@@ -649,7 +650,7 @@ onBeforeUnmount(() => {
               </t-space>
             </t-form-item>
           </t-form>
-          <div class="dida-code-editor-div" ref="codeEditRef">
+          <div class="dida-code-editor-zen-div" ref="codeEditRefZen">
           </div>
         </div>
         <div style="text-align: center" v-else>
@@ -883,6 +884,14 @@ onBeforeUnmount(() => {
 }
 
 .dida-code-editor-div {
+  width: 100%;
+  margin-top: 10px;
+  min-height: 500px;
+  height: calc(100vh - 300px);
+  position: relative;
+}
+
+.dida-code-editor-zen-div {
   width: 100%;
   margin-top: 10px;
   min-height: 500px;
