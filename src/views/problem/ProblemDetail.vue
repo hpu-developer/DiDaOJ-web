@@ -66,9 +66,6 @@ let serverTimeOffset = 0;
 
 const isZenMode = ref(false);
 
-// ResizeObserver用于监听布局变化，确保代码编辑器始终适应容器大小
-let resizeObserver: ResizeObserver | null = null;
-
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
 });
@@ -305,7 +302,7 @@ const fetchProblemData = async () => {
 
   problemDescription.value = problemData.value.description as string;
   await nextTick(() => {
-    if ((!codeEditor && codeEditRef.value)) {
+    if (!codeEditor && codeEditRef.value) {
       handleResetCode();
     }
     problemLoading.value = false;
@@ -384,61 +381,142 @@ const handleSubmitCode = async () => {
   }
 };
 
-const handleResetCode = async () => {
-  // 确保DOM渲染完成
-  await nextTick();
+const handleResetCode = () => {
+  //   const codeTemplate = `#include <iostream>
+  // using namespace std;
+  // int main() {
+  // \tint a, b;
+  // // code-edit-start
+  // {{ code1 }}
+  // // code-edit-end
+  //
+  // \twhile (cin >> a >> b) {
+  // // code-edit-start
+  // {{ code2 }}
+  // // code-edit-end
+  // \t}
+  // \treturn 0;
+  // }`;
 
-  // 查找目标位置的容器
-  let container: HTMLElement | null = null;
+  const codeTemplate = "";
 
-  if (isZenMode.value && isLogin.value) {
-    // 禅模式下查找禅模式区域的容器
-    const zenCodeDivs = document.querySelectorAll('.dida-col-code .dida-code-editor');
-    if (zenCodeDivs.length > 0) {
-      container = zenCodeDivs[0] as HTMLElement;
-    }
-  } else if (!isZenMode.value && isLogin.value) {
-    // 正常模式下查找右侧区域的容器
-    const normalCodeDivs = document.querySelectorAll('.dida-col-right .dida-code-editor');
-    if (normalCodeDivs.length > 0) {
-      container = normalCodeDivs[0] as HTMLElement;
-    }
+  let isContainReadOnly = false;
+  if (codeTemplate) {
+    isContainReadOnly = true;
   }
 
-  if (container) {
+  // 如果已有 editor，先销毁旧实例
+  if (codeEditor) {
+    codeEditor.dispose();
+  }
 
-    if (!codeEditor) {
-      // 如果还没有编辑器实例，创建新的
-      codeEditor = monaco.editor.create(container, {
-        value: "",
-        language: "cpp",
-        minimap: { enabled: true },
-        colorDecorators: true,
-        readOnly: false,
-        theme: "vs-dark",
-        automaticLayout: true,
-      });
+  // 确保codeEditRef.value不为null
+  if (codeEditRef.value) {
+    // 清空现有内容
+    codeEditRef.value.innerHTML = '';
+    
+    // 创建编辑器容器
+    const editorContainer = document.createElement("div");
+    editorContainer.style.width = "100%";
+    editorContainer.style.height = "100%";
+    
+    codeEditor = monaco.editor.create(editorContainer, {
+      value: codeTemplate,
+      language: "cpp",
+      minimap: { enabled: true },
+      colorDecorators: true,
+      readOnly: false,
+      theme: "vs-dark",
+      automaticLayout: true,
+    });
+    
+    codeEditRef.value.appendChild(editorContainer);
+    
+    // 确保编辑器正确布局
+    nextTick(() => {
+      if (codeEditor && codeEditRef.value) {
+        codeEditor.layout();
+      }
+    });
+  }
 
-      // 设置默认语言
-      if (selectLanguage.value) {
-        const model = codeEditor.getModel();
-        if (model) {
-          monaco.editor.setModelLanguage(model, GetHighlightKeyByJudgeLanguage(parseInt(selectLanguage.value)));
+  // 确保codeEditor不为null再进行后续操作
+  if (codeEditor) {
+    const model = codeEditor.getModel();
+    let decorationIds: string[] = [];
+
+    // 动态查找所有可编辑区域
+    function getEditableRanges(): monaco.Range[] {
+      // 确保model不为null
+      if (!model) return [];
+
+      const ranges: monaco.Range[] = [];
+      let startLine = 0;
+      for (let i = 1; i <= model.getLineCount(); i++) {
+        const line = model.getLineContent(i);
+        if (line.includes("code-edit-start")) startLine = i;
+        else if (line.includes("code-edit-end") && startLine) {
+          ranges.push(new monaco.Range(startLine + 1, 1, i - 1, model.getLineMaxColumn(i - 1)));
+          startLine = 0; // 重置
         }
       }
+      return ranges;
+    }
 
-      // 监听内容变化
-      codeEditor.onDidChangeModelContent(() => {
-        // 这里可以添加一些逻辑来处理代码变化
-      });
-    } else {
-      // 如果已经有编辑器实例，将其移动到新位置
-      const domNode = codeEditor.getDomNode();
-      if (domNode && domNode.parentNode !== container) {
-        // 将编辑器DOM节点移动到新容器
-        container.appendChild(domNode);
-        codeEditor.layout
+    // 判断 change 是否在任意可编辑区
+    function isChangeAllowed(change: monaco.editor.IModelContentChange): boolean {
+      const editableRanges = getEditableRanges();
+      for (const range of editableRanges) {
+        if (range.containsRange(change.range)) return true;
       }
+      return false;
+    }
+
+    // 动态更新装饰（只读行视觉提示）
+    function updateDecorations() {
+      // 确保model不为null
+      if (!model) return;
+
+      const editableRanges = getEditableRanges();
+      const decs: monaco.editor.IModelDeltaDecoration[] = [];
+
+      let lastEnd = 0;
+      for (const range of editableRanges) {
+        // 上方不可编辑行
+        if (range.startLineNumber - 1 > lastEnd) {
+          decs.push({
+            range: new monaco.Range(lastEnd + 1, 1, range.startLineNumber - 1, 1),
+            options: { isWholeLine: true, className: "readonly-line" },
+          });
+        }
+        lastEnd = range.endLineNumber;
+      }
+      // 下方不可编辑行
+      if (lastEnd < model.getLineCount()) {
+        decs.push({
+          range: new monaco.Range(lastEnd + 1, 1, model.getLineCount(), 1),
+          options: { isWholeLine: true, className: "readonly-line" },
+        });
+      }
+
+      decorationIds = model.deltaDecorations(decorationIds, decs);
+    }
+
+    if (isContainReadOnly && model) {
+      // 初始化一次装饰
+      updateDecorations();
+      // 监听内容变化
+      model.onDidChangeContent((e) => {
+        if (!codeEditor) {
+          return;
+        }
+        for (const change of e.changes) {
+          if (!isChangeAllowed(change)) {
+            codeEditor.trigger("prevent-edit", "undo", null);
+          }
+        }
+        updateDecorations();
+      });
     }
   }
 };
@@ -518,17 +596,6 @@ onMounted(async () => {
     { immediate: true }
   );
 
-  // 监听禅模式状态变化，当进入禅模式时重新初始化代码编辑器
-  watch([isZenMode, isLogin], async ([newZenVal, newLoginVal]) => {
-    if (newLoginVal) {
-      // 使用setTimeout确保DOM渲染完成
-      setTimeout(async () => {
-        await nextTick();
-        handleResetCode();
-      }, 100);
-    }
-  }, { immediate: false });
-
   // 从本地存储读取提交代码私有选项
   const localIsPrivate = localStorage.getItem("problem_submit_private");
   if (localIsPrivate === "1") {
@@ -537,70 +604,20 @@ onMounted(async () => {
     isPrivate.value = false;
   }
 
-  // 初始代码编辑器初始化
-  if (isLogin.value) {
-    setTimeout(() => {
-      handleResetCode();
-    }, 100);
-  }
-
-  // 启动布局监听
-  const startLayoutWatching = () => {
-    if (resizeObserver) {
-      resizeObserver.disconnect();
-    }
-
-    resizeObserver = new ResizeObserver(() => {
-      if (codeEditor) {
-        // 使用requestAnimationFrame确保DOM更新完成后再layout
-        requestAnimationFrame(() => {
-          codeEditor?.layout();
-        });
-      }
-    });
-
-    // 监听所有可能的父容器
-    const targets = [
-      '.dida-main-content',
-      '.dida-col-code', 
-      '.dida-col-right'
-    ];
-
-    targets.forEach(selector => {
-      const element = document.querySelector(selector);
-      if (element) {
-        resizeObserver!.observe(element);
-      }
-    });
-  };
-
-  // 初始启动监听
-  setTimeout(startLayoutWatching, 200);
-
-  // 监听禅模式变化，重新启动布局监听
-  watch(isZenMode, () => {
-    setTimeout(() => {
-      startLayoutWatching();
+  if (codeEditRef.value) {
+    const resizeObserver = new ResizeObserver(() => {
       if (codeEditor) {
         codeEditor.layout();
       }
-    }, 100);
-  });
+    });
+    resizeObserver.observe(codeEditRef.value);
+  }
 });
 
 onBeforeUnmount(() => {
   if (watchHandle) {
     watchHandle();
     watchHandle = null;
-  }
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-    resizeObserver = null;
-  }
-  // 销毁Monaco编辑器实例
-  if (codeEditor) {
-    codeEditor.dispose();
-    codeEditor = null;
   }
   clearDailyTimer();
 });
@@ -609,20 +626,37 @@ onBeforeUnmount(() => {
 <template>
   <t-loading :loading="problemLoading">
     <div class="dida-main-content" :class="{ 'zen-mode': isZenMode }">
-      <!-- 禅模式切换按钮 - 始终显示 -->
-      <div class="dida-zen-toggle">
-        <t-button @click="handleZenMode">
-          {{ isZenMode ? '退出禅模式' : '禅模式' }}
-        </t-button>
-      </div>
-
       <div class="dida-col-code">
-        <div style="text-align: center" v-if="!isLogin">
+        <div class="dida-code-submit-div" v-if="isLogin">
+          <t-form layout="inline">
+            <t-form-item>
+              <t-button @click="handleZenMode">禅模式</t-button>
+            </t-form-item>
+            <t-form-item label="是否隐藏代码">
+              <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
+            </t-form-item>
+            <t-form-item label="语言">
+              <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable
+                @change="onSelectLanguageChanged">
+                <t-option v-for="item in languageOptions" :key="item.value" :value="item.value"
+                  :label="item.label"></t-option>
+              </t-select>
+            </t-form-item>
+            <t-form-item>
+              <t-space>
+                <t-button @click="handleSubmitCode" :loading="problemSubmitting">提交</t-button>
+                <t-button @click="handleResetCode" theme="danger">重置</t-button>
+              </t-space>
+            </t-form-item>
+          </t-form>
+          <div class="dida-code-editor-div" ref="codeEditRef">
+          </div>
+        </div>
+        <div style="text-align: center" v-else>
           <t-space>
             <t-button @click="() => handleGotoLogin(router, route.fullPath)">登录后提交本题</t-button>
           </t-space>
         </div>
-        <div v-else class="dida-code-editor"></div>
       </div>
       <div class="dida-col-left">
         <t-card style="margin: 10px">
@@ -731,6 +765,9 @@ onBeforeUnmount(() => {
 
           <div class="dida-code-submit-div" v-if="isLogin">
             <t-form layout="inline">
+              <t-form-item>
+                <t-button @click="handleZenMode">禅模式</t-button>
+              </t-form-item>
               <t-form-item label="是否隐藏代码">
                 <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
               </t-form-item>
@@ -748,8 +785,7 @@ onBeforeUnmount(() => {
                 </t-space>
               </t-form-item>
             </t-form>
-            <div class="dida-code-editor-div">
-              <div class="dida-code-editor"></div>
+            <div class="dida-code-editor-div" ref="codeEditRef" >
             </div>
           </div>
           <div style="text-align: center" v-else>
@@ -765,8 +801,9 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .dida-main-content {
-  display: flex;
+  display: block;
   overflow-y: auto;
+  height: calc(100vh - 57px);
 }
 
 .dida-main-content.zen-mode {
@@ -774,41 +811,50 @@ onBeforeUnmount(() => {
 }
 
 .dida-col-code {
-  flex: 0;
+  width: 0;
   min-width: 0;
   transition: all 0.3s ease;
   overflow: hidden;
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
+  float: left;
+  height: 100%;
+  position: relative;
 }
 
 .dida-main-content.zen-mode .dida-col-code {
-  flex: 4;
+  width: 50%;
   visibility: visible;
   opacity: 1;
   pointer-events: auto;
 }
 
 .dida-col-left {
-  flex: 8;
+  width: 60%;
   min-width: 0;
-  transition: flex 0.3s ease;
+  transition: width 0.3s ease;
+  float: left;
+  height: 100%;
+  position: relative;
 }
 
 /* 禅模式下的布局 */
 .dida-main-content.zen-mode .dida-col-left {
-  flex: 4;
+  width: 50%;
 }
 
 .dida-col-right {
-  flex: 4;
-  min-width: 0;
-  transition: flex 0.3s ease;
+  width: 40%;
+  min-width: 300px;
+  transition: width 0.3s ease;
+  float: left;
+  height: 100%;
+  position: relative;
 }
 
 .dida-main-content.zen-mode .dida-col-right {
-  flex: 0;
+  width: 0;
   overflow: hidden;
   visibility: hidden;
   opacity: 0;
@@ -839,21 +885,8 @@ onBeforeUnmount(() => {
 .dida-code-editor-div {
   width: 100%;
   margin-top: 10px;
-}
-
-.dida-code-editor {
   min-height: 500px;
-}
-
-/* 禅模式切换按钮样式 */
-.dida-zen-toggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 8px;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: calc(100vh - 300px);
+  position: relative;
 }
 </style>
