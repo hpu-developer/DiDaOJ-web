@@ -178,6 +178,10 @@ let resizeObserver: ResizeObserver | null = null;
 const handleZenMode = () => {
   const wasZenMode = isZenMode.value;
   isZenMode.value = !isZenMode.value;
+
+  // 保存 zen 模式设置
+  localStorage.setItem("problem_zen_mode", isZenMode.value ? "1" : "0");
+
   footerStyleStore.setFooterShow(!isZenMode.value);
 
   // 如果模式发生了变化，需要重新创建编辑器
@@ -588,6 +592,13 @@ const onSelectLanguageChanged = (value: JudgeLanguage): void => {
 };
 
 onMounted(async () => {
+
+  // 读取zen模式设置
+  const isZenMode = localStorage.getItem("problem_zen_mode") === "1";
+  if (isZenMode) {
+    handleZenMode();
+  }
+
   watchHandle = watch(
     () => route.params,
     async () => {
@@ -670,7 +681,7 @@ onBeforeUnmount(() => {
         <div class="dida-code-submit-div" v-if="isLogin">
           <t-form layout="inline">
             <t-form-item>
-              <t-button @click="handleZenMode">禅模式</t-button>
+              <t-button @click="handleZenMode" theme="danger">退出禅模式</t-button>
             </t-form-item>
             <t-form-item label="是否隐藏代码">
               <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
@@ -699,6 +710,9 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="dida-col-left">
+
+        <!-- 在这里需要在zen模式下增加一些题目描述（显隐可以用vue3的动画做一个从上方下移，移除的时候再上移） -->
+
         <t-card style="margin: 10px">
           <md-preview :model-value="problemDescription" previewTheme="cyanosis" />
         </t-card>
@@ -805,18 +819,18 @@ onBeforeUnmount(() => {
 
           <div class="dida-code-submit-div" v-if="isLogin">
             <t-form layout="inline">
-              <t-form-item>
-                <t-button @click="handleZenMode">禅模式</t-button>
-              </t-form-item>
-              <t-form-item label="是否隐藏代码">
-                <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
-              </t-form-item>
               <t-form-item label="语言">
                 <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable
                   @change="onSelectLanguageChanged">
                   <t-option v-for="item in languageOptions" :key="item.value" :value="item.value"
                     :label="item.label"></t-option>
                 </t-select>
+              </t-form-item>
+              <t-form-item label="是否隐藏代码">
+                <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
+              </t-form-item>
+              <t-form-item>
+                <t-button @click="handleZenMode">禅模式</t-button>
               </t-form-item>
               <t-form-item>
                 <t-space>
