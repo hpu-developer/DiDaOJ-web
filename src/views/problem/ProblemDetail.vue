@@ -179,7 +179,7 @@ const handleZenMode = () => {
   const wasZenMode = isZenMode.value;
   isZenMode.value = !isZenMode.value;
   footerStyleStore.setFooterShow(!isZenMode.value);
-  
+
   // 如果模式发生了变化，需要重新创建编辑器
   if (wasZenMode !== isZenMode.value) {
     // 先清理之前的 resizeObserver
@@ -187,12 +187,12 @@ const handleZenMode = () => {
       resizeObserver.disconnect();
       resizeObserver = null;
     }
-    
+
     nextTick(() => {
       // 获取当前模式下的编辑器容器
       const currentContainerRef = isZenMode.value ? codeEditRefZen : codeEditRef;
       handleResetCode(currentContainerRef);
-      
+
       // 重新设置 resizeObserver
       if (currentContainerRef.value) {
         resizeObserver = new ResizeObserver(() => {
@@ -337,7 +337,7 @@ const fetchProblemData = async () => {
       // 根据当前模式选择容器
       const initialContainerRef = isZenMode.value ? codeEditRefZen : codeEditRef;
       handleResetCode(initialContainerRef);
-      
+
       // 初始化 resizeObserver
       if (initialContainerRef.value) {
         resizeObserver = new ResizeObserver(() => {
@@ -448,26 +448,29 @@ const handleResetCode = (containerRef?: Ref<HTMLElement | null>) => {
     isContainReadOnly = true;
   }
 
+  let oldCodeValue = codeTemplate;
+
   // 如果已有 editor，先销毁旧实例
   if (codeEditor) {
+    oldCodeValue = codeEditor.getValue();
     codeEditor.dispose();
   }
 
   // 确定使用哪个容器
   const targetContainer = containerRef ? containerRef.value : codeEditRef.value;
-  
+
   // 确保目标容器不为null
   if (targetContainer) {
     // 清空现有内容
     targetContainer.innerHTML = '';
-    
+
     // 创建编辑器容器
     const editorContainer = document.createElement("div");
     editorContainer.style.width = "100%";
     editorContainer.style.height = "100%";
-    
+
     codeEditor = monaco.editor.create(editorContainer, {
-      value: codeTemplate,
+      value: oldCodeValue,
       language: "cpp",
       minimap: { enabled: true },
       colorDecorators: true,
@@ -475,9 +478,9 @@ const handleResetCode = (containerRef?: Ref<HTMLElement | null>) => {
       theme: "vs-dark",
       automaticLayout: true,
     });
-    
+
     targetContainer.appendChild(editorContainer);
-    
+
     // 确保编辑器正确布局
     nextTick(() => {
       if (codeEditor && targetContainer) {
@@ -840,7 +843,6 @@ onBeforeUnmount(() => {
 .dida-main-content {
   display: block;
   overflow-y: auto;
-  height: calc(100vh - 57px);
 }
 
 .dida-main-content.zen-mode {
