@@ -337,7 +337,18 @@ const fetchProblemData = async () => {
   }
 
   const originOj = problemData.value.originOj;
-  languageOptions.value = GetSubmitLanguages(originOj);
+  languageOptions.value = GetSubmitLanguages(originOj) as { label: string; value: JudgeLanguage | undefined }[];
+
+  // 从本地缓存读取selectLanguage
+  const localSelectLanguageStr = localStorage.getItem("problem_select_language");
+  if (localSelectLanguageStr) {
+    // 转换为JudgeLanguage类型并判断是否在语言选项中
+    const parsedLanguage = parseInt(localSelectLanguageStr);
+    if (!isNaN(parsedLanguage) && languageOptions.value.some((lang) => lang.value === parsedLanguage)) {
+      selectLanguage.value = parsedLanguage as JudgeLanguage;
+    }
+  }
+
 
   problemDescription.value = problemData.value.description as string;
   await nextTick(() => {
@@ -612,6 +623,9 @@ const onSelectLanguageChanged = (value: JudgeLanguage): void => {
     return;
   }
   monaco.editor.setModelLanguage(model, GetHighlightKeyByJudgeLanguage(value));
+
+  // 保存到本地存储
+  localStorage.setItem("problem_select_language", String(value));
 };
 
 onMounted(async () => {
@@ -702,7 +716,7 @@ onBeforeUnmount(() => {
     <div class="dida-main-content" :class="{ 'zen-mode': isZenMode }">
 
       <div class="dida-col-code">
-        <div class="dida-code-submit-div" v-if="isLogin">
+        <div class="dida-code-submit-div">
           <t-form layout="inline">
             <t-form-item>
               <t-button @click="handleZenMode" theme="danger">退出禅模式</t-button>
@@ -726,11 +740,6 @@ onBeforeUnmount(() => {
           </t-form>
           <div class="dida-code-editor-zen-div" ref="codeEditRefZen">
           </div>
-        </div>
-        <div style="text-align: center" v-else>
-          <t-space>
-            <t-button @click="() => handleGotoLogin(router, route.fullPath)">登录后提交本题</t-button>
-          </t-space>
         </div>
       </div>
       <div class="dida-col-left">
