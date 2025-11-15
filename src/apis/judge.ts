@@ -447,17 +447,3 @@ export function PostJudgeReward(problemId: number) {
     },
   });
 }
-
-// 测试运行函数
-export function PostJudgeTestRun(problemId: number, language: JudgeLanguage, code: string, input: string) {
-  return httpRequest({
-    url: "/judge/test-run",
-    method: "post",
-    data: {
-      problem_id: problemId,
-      language: language,
-      code: code,
-      input: input,
-    },
-  });
-}

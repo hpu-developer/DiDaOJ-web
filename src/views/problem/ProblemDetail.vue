@@ -7,7 +7,7 @@ import { GetHighlightKeyByJudgeLanguage, GetSubmitLanguages, IsJudgeLanguageVali
 import { useCurrentInstance } from "@/util";
 import { ShowErrorTips, ShowTextTipsInfo, ShowTextTipsError } from "@/util/tips";
 import { ProblemTag, ProblemView } from "@/types/problem.ts";
-import { PostJudgeJob, PostJudgeTestRun } from "@/apis/judge.ts";
+import { PostJudgeJob } from "@/apis/judge.ts";
 
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 
@@ -73,20 +73,10 @@ let serverTimeOffset = 0;
 
 const isZenMode = ref(false);
 
-// 测试运行相关变量
+// 测试运行相关数据
 const testInput = ref("");
 const testOutput = ref("");
 const testRunning = ref(false);
-
-// 高度管理相关变量
-const testRunContainerHeight = ref(120);
-const testRunContainerRef = ref<HTMLElement | null>(null);
-let testRunResizeObserver: ResizeObserver | null = null;
-
-// 拖拽相关变量
-let isDragging = ref(false);
-let dragStartY = 0;
-let dragStartHeight = 0;
 
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
@@ -194,84 +184,6 @@ const handleClickDailyEdit = async () => {
 
 let resizeObserver: ResizeObserver | null = null;
 
-// 高度调整相关方法
-const calculateEditorHeight = () => {
-  if (!isZenMode.value || !testRunContainerRef.value) return;
-  
-  // 计算代码编辑器的高度 = 总高度 - 测试运行框高度 - 其他元素高度
-  const totalHeight = window.innerHeight - 56; // 减去头部高度
-  const testRunHeight = testRunContainerRef.value.offsetHeight;
-  const otherElementsHeight = 100; // 其他元素(头部、边距等)的预估高度
-  
-  const editorHeight = Math.max(300, totalHeight - testRunHeight - otherElementsHeight);
-  
-  // 设置代码编辑器高度
-  const editorElement = document.querySelector('.dida-code-editor-zen-div') as HTMLElement;
-  if (editorElement) {
-    editorElement.style.height = `${editorHeight}px`;
-  }
-};
-
-const initTestRunContainerObserver = () => {
-  if (testRunResizeObserver) {
-    testRunResizeObserver.disconnect();
-    testRunResizeObserver = null;
-  }
-
-  if (testRunContainerRef.value) {
-    testRunResizeObserver = new ResizeObserver(() => {
-      // 测试运行框高度变化时，重新计算代码编辑器高度
-      calculateEditorHeight();
-    });
-    testRunResizeObserver.observe(testRunContainerRef.value);
-  }
-};
-
-// 拖拽处理方法
-const startDrag = (event: MouseEvent) => {
-  isDragging.value = true;
-  dragStartY = event.clientY;
-  dragStartHeight = testRunContainerRef.value?.offsetHeight || 200;
-  
-  // 添加拖拽状态类
-  const handleElement = event.currentTarget as HTMLElement;
-  handleElement.classList.add('dragging');
-  
-  document.addEventListener('mousemove', drag);
-  document.addEventListener('mouseup', endDrag);
-  document.body.style.userSelect = 'none';
-  document.body.style.cursor = 'ns-resize';
-};
-
-const drag = (event: MouseEvent) => {
-  if (!isDragging.value || !testRunContainerRef.value) return;
-  
-  const deltaY = event.clientY - dragStartY;
-  // 向上拖动时，deltaY为负，应该减少高度；向下拖动时，deltaY为正，应该增加高度
-  const newHeight = Math.max(60, Math.min(500, dragStartHeight - deltaY));
-  
-  testRunContainerRef.value.style.height = `${newHeight}px`;
-  testRunContainerHeight.value = newHeight;
-  
-  // 实时调整代码编辑器高度
-  calculateEditorHeight();
-};
-
-const endDrag = () => {
-  isDragging.value = false;
-  
-  // 移除拖拽状态类
-  const handleElements = document.querySelectorAll('.drag-resize-handle.dragging');
-  handleElements.forEach(element => {
-    element.classList.remove('dragging');
-  });
-  
-  document.removeEventListener('mousemove', drag);
-  document.removeEventListener('mouseup', endDrag);
-  document.body.style.userSelect = '';
-  document.body.style.cursor = '';
-};
-
 const handleZenMode = () => {
   const wasZenMode = isZenMode.value;
   isZenMode.value = !isZenMode.value;
@@ -289,12 +201,6 @@ const handleZenMode = () => {
       resizeObserver = null;
     }
 
-    // 清理测试运行框观察者
-    if (testRunResizeObserver) {
-      testRunResizeObserver.disconnect();
-      testRunResizeObserver = null;
-    }
-
     nextTick(() => {
       // 获取当前模式下的编辑器容器
       const currentContainerRef = isZenMode.value ? codeEditRefZen : codeEditRef;
@@ -308,15 +214,6 @@ const handleZenMode = () => {
           }
         });
         resizeObserver.observe(currentContainerRef.value);
-      }
-
-      // 初始化测试运行框观察者（仅在禅模式下）
-      if (isZenMode.value) {
-        initTestRunContainerObserver();
-        // 延迟计算高度，确保DOM更新完成
-        setTimeout(() => {
-          calculateEditorHeight();
-        }, 100);
       }
     });
   }
@@ -722,60 +619,6 @@ const handlePrivateChanged = (value: boolean): void => {
   localStorage.setItem("problem_submit_private", value ? "1" : "0");
 };
 
-// 测试运行处理函数
-const handleTestRun = async () => {
-  if (!problemData.value) {
-    ShowTextTipsError(globalProperties, "题目数据未加载");
-    return;
-  }
-
-  const selectLanguageValue = parseInt(selectLanguage.value);
-  if (!IsJudgeLanguageValid(selectLanguageValue)) {
-    ShowTextTipsError(globalProperties, "请选择编程语言");
-    return;
-  }
-
-  if (!codeEditor) {
-    ShowTextTipsError(globalProperties, "代码编辑器未初始化");
-    return;
-  }
-
-  const code = codeEditor.getValue();
-  if (!code.trim()) {
-    ShowTextTipsError(globalProperties, "请输入要测试的代码");
-    return;
-  }
-
-  if (!testInput.value.trim()) {
-    ShowTextTipsError(globalProperties, "请输入测试数据");
-    return;
-  }
-
-  try {
-    testRunning.value = true;
-    testOutput.value = "测试运行中...";
-
-    const res = await PostJudgeTestRun(
-      problemData.value.id,
-      selectLanguageValue as JudgeLanguage,
-      code,
-      testInput.value
-    );
-
-    if (res.code === 0) {
-      testOutput.value = res.data.output || "无输出";
-    } else {
-      ShowErrorTips(globalProperties, res.code);
-      testOutput.value = "测试运行失败";
-    }
-  } catch (error) {
-    ShowTextTipsError(globalProperties, "测试运行失败，请稍后再试");
-    testOutput.value = "测试运行失败";
-  } finally {
-    testRunning.value = false;
-  }
-};
-
 const onSelectLanguageChanged = (value: JudgeLanguage): void => {
   if (!codeEditor) {
     return;
@@ -788,6 +631,39 @@ const onSelectLanguageChanged = (value: JudgeLanguage): void => {
 
   // 保存到本地存储
   localStorage.setItem("problem_select_language", String(value));
+};
+
+// 测试运行处理方法
+const handleRunTest = async () => {
+  const selectLanguageValue = parseInt(selectLanguage.value);
+  if (!IsJudgeLanguageValid(selectLanguageValue)) {
+    ShowTextTipsError(globalProperties, "请选择所编写的语言");
+    return;
+  }
+  const code = codeEditor?.getValue();
+  if (!code) {
+    ShowTextTipsError(globalProperties, "请输入所需运行的代码");
+    return;
+  }
+  if (!testInput.value.trim()) {
+    ShowTextTipsError(globalProperties, "请输入测试数据");
+    return;
+  }
+
+  testRunning.value = true;
+  testOutput.value = "";
+
+  try {
+    // 这里可以调用测试运行的API，目前先模拟一个简单的返回
+    // TODO: 实现真正的测试运行逻辑
+    setTimeout(() => {
+      testOutput.value = `运行时间: 2024-01-01 12:00:00\n运行状态: 成功\n输入数据:\n${testInput.value}\n\n输出结果:\nHello, World!`;
+      testRunning.value = false;
+    }, 2000);
+  } catch (error) {
+    ShowTextTipsError(globalProperties, "运行失败，请稍后再试");
+    testRunning.value = false;
+  }
 };
 
 onMounted(async () => {
@@ -862,20 +738,6 @@ onMounted(async () => {
   } else {
     isPrivate.value = false;
   }
-
-  // 延迟初始化测试运行框观察者（仅在禅模式下）
-  if (isZenMode) {
-    nextTick(() => {
-      initTestRunContainerObserver();
-      // 延迟计算高度，确保DOM更新完成
-      setTimeout(() => {
-        calculateEditorHeight();
-      }, 200);
-    });
-  }
-
-  // 监听窗口大小变化
-  window.addEventListener('resize', calculateEditorHeight);
 });
 
 onBeforeUnmount(() => {
@@ -884,18 +746,6 @@ onBeforeUnmount(() => {
     watchHandle = null;
   }
   clearDailyTimer();
-  
-  // 清理观察者和事件监听器
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-    resizeObserver = null;
-  }
-  if (testRunResizeObserver) {
-    testRunResizeObserver.disconnect();
-    testRunResizeObserver = null;
-  }
-  
-  window.removeEventListener('resize', calculateEditorHeight);
 });
 </script>
 
@@ -926,35 +776,44 @@ onBeforeUnmount(() => {
               </t-space>
             </t-form-item>
           </t-form>
-          <div class="dida-code-editor-zen-div" ref="codeEditRefZen">
+          <!-- 共享高度容器 - 为滑动栏功能预留 -->
+          <div style="height: calc(100vh - 57px); display: flex; flex-direction: column;">
+            <!-- 代码编辑器区域 -->
+            <div class="dida-code-editor-zen-div" ref="codeEditRefZen" style="flex: 1; margin: 10px; margin-bottom: 5px;">
+            </div>
+
+            <!-- 滑动栏分隔线（预留） -->
+            <div v-show="false" style="height: 4px; background: #f0f0f0; cursor: row-resize; position: relative;">
+              <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 2px; background: #ccc;"></div>
+            </div>
+
+            <!-- 测试运行区域 -->
+            <div style="margin: 10px; margin-top: 5px; flex: 0 0 auto;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px">
+                <span style="font-weight: bold">测试运行</span>
+                <t-button @click="handleRunTest" :loading="testRunning">运行</t-button>
+              </div>
+              <div style="display: flex; gap: 10px; height: 180px">
+                <t-input
+                  v-model="testInput"
+                  type="textarea"
+                  placeholder="请输入测试数据"
+                  :autosize="{ minRows: 8, maxRows: 8 }"
+                  style="flex: 1"
+                />
+                <t-card style="flex: 1; overflow: auto">
+                  <div v-if="testOutput">
+                    <pre>{{ testOutput }}</pre>
+                  </div>
+                  <div v-else style="color: #999; text-align: center; padding: 20px">
+                    运行结果将在这里显示
+                  </div>
+                </t-card>
+              </div>
+            </div>
           </div>
+          
         </div>
-
-        <!-- 拖拽分隔符 -->
-        <div class="drag-resize-handle" @mousedown="startDrag"></div>
-
-        <!-- 测试运行框 -->
-        <div class="test-run-container" ref="testRunContainerRef">
-          <div class="test-run-header">
-            <div class="test-run-title">测试运行</div>
-            <div class="test-run-actions">
-              <t-button @click="handleTestRun" :loading="testRunning" theme="primary" size="small">运行</t-button>
-            </div>
-          </div>
-          <div class="test-run-content">
-            <div class="test-input-section">
-              <div class="test-input-label">输入数据：</div>
-              <t-textarea v-model="testInput" placeholder="请输入测试数据..." :autosize="{ minRows: 3, maxRows: 8 }"
-                class="test-input-area" />
-            </div>
-            <div class="test-output-section">
-              <div class="test-output-label">运行结果：</div>
-              <t-textarea :model-value="testOutput" placeholder="运行结果将在这里显示..." :autosize="{ minRows: 3, maxRows: 8 }"
-                class="test-output-area" readonly />
-            </div>
-          </div>
-        </div>
-
       </div>
       <div class="dida-col-left">
 
@@ -1243,8 +1102,6 @@ onBeforeUnmount(() => {
   float: left;
   height: 100%;
   position: relative;
-  display: flex;
-  flex-direction: column;
 }
 
 .dida-main-content.zen-mode .dida-col-code {
@@ -1314,7 +1171,6 @@ onBeforeUnmount(() => {
 
 .dida-code-submit-div {
   margin-top: 10px;
-  flex-shrink: 0;
 }
 
 .dida-code-editor-div {
@@ -1326,12 +1182,9 @@ onBeforeUnmount(() => {
 
 .dida-code-editor-zen-div {
   width: 100%;
-  margin-top: 10px;
-  min-height: 300px;
-  height: calc(100vh - 56px);
   position: relative;
-  display: flex;
-  flex-direction: column;
+  min-height: 200px;
+  /* 高度由父容器flex布局控制 */
 }
 
 /* 禅模式题目信息面板样式 */
@@ -1571,3 +1424,10 @@ onBeforeUnmount(() => {
   max-height: 200px;
 }
 </style>
+
+const isZenMode = ref(false);
+
+// 测试运行相关数据
+const testInput = ref("");
+const testOutput = ref("");
+const testRunning = ref(false);
