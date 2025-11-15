@@ -48,6 +48,12 @@ let codeEditor = null as IStandaloneCodeEditor | null;
 const codeEditRef = ref<HTMLElement | null>(null);
 const codeEditRefZen = ref<HTMLElement | null>(null);
 const problemCrawlLoading = ref(false);
+
+// 代码缓存相关变量
+const getCacheKey = () => {
+  const key = problemKey || `daily-${dailyId}` || `contest-${contestId}-${problemIndex.value}`;
+  return `code_cache_${key}`;
+};
 const problemSubmitting = ref(false);
 
 const tagsMap = {} as { [key: number]: ProblemTag };
@@ -66,8 +72,6 @@ const dailyCode = ref("");
 let serverTimeOffset = 0;
 
 const isZenMode = ref(false);
-
-const submitCode = ref("");
 
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
@@ -407,6 +411,10 @@ const handleSubmitCode = async () => {
     ShowTextTipsInfo(globalProperties, "提交成功，正在跳转到详情页面");
 
     const statusId = res.data.id;
+
+    // 提交成功后清空代码缓存
+    localStorage.removeItem(getCacheKey());
+
     if (contestId) {
       await router.push({
         name: "contest-judge-detail",
@@ -445,18 +453,19 @@ const handleResetCode = (containerRef?: Ref<HTMLElement | null>) => {
   // \treturn 0;
   // }`;
 
+  // 重置代码时清空本地缓存并使用空模板
   const codeTemplate = "";
+
+  // 重置时使用缓存
+  let oldCodeValue = localStorage.getItem(getCacheKey()) || codeTemplate;
 
   let isContainReadOnly = false;
   if (codeTemplate) {
     isContainReadOnly = true;
   }
 
-  let oldCodeValue = codeTemplate;
-
   // 如果已有 editor，先销毁旧实例
   if (codeEditor) {
-    oldCodeValue = codeEditor.getValue();
     codeEditor.dispose();
   }
 
@@ -555,23 +564,37 @@ const handleResetCode = (containerRef?: Ref<HTMLElement | null>) => {
       decorationIds = model.deltaDecorations(decorationIds, decs);
     }
 
-    if (isContainReadOnly && model) {
-      // 初始化一次装饰
-      updateDecorations();
+    if (model) {
+      if (isContainReadOnly) {
+        // 初始化一次装饰
+        updateDecorations();
+      }
       // 监听内容变化
       model.onDidChangeContent((e) => {
         if (!codeEditor) {
           return;
         }
-        for (const change of e.changes) {
-          if (!isChangeAllowed(change)) {
-            codeEditor.trigger("prevent-edit", "undo", null);
+        if (isContainReadOnly) {
+          for (const change of e.changes) {
+            if (!isChangeAllowed(change)) {
+              codeEditor.trigger("prevent-edit", "undo", null);
+            }
           }
+          updateDecorations();
         }
-        updateDecorations();
+        // 自动保存代码到本地缓存
+        const currentCode = codeEditor.getValue();
+        localStorage.setItem(getCacheKey(), currentCode);
       });
     }
   }
+};
+
+const handleClickResetCode = () => {
+  // 清空本地缓存
+  localStorage.removeItem(getCacheKey());
+  const initialContainerRef = isZenMode.value ? codeEditRefZen : codeEditRef;
+  handleResetCode(initialContainerRef);
 };
 
 const handlePrivateChanged = (value: boolean): void => {
@@ -697,7 +720,7 @@ onBeforeUnmount(() => {
             <t-form-item>
               <t-space>
                 <t-button @click="handleSubmitCode" :loading="problemSubmitting">提交</t-button>
-                <t-button @click="handleResetCode" theme="danger">重置</t-button>
+                <t-button @click="handleClickResetCode" theme="danger">重置</t-button>
               </t-space>
             </t-form-item>
           </t-form>
@@ -958,7 +981,7 @@ onBeforeUnmount(() => {
               <t-form-item>
                 <t-space>
                   <t-button @click="handleSubmitCode" :loading="problemSubmitting">提交</t-button>
-                  <t-button @click="handleResetCode" theme="danger">重置</t-button>
+                  <t-button @click="handleClickResetCode" theme="danger">重置</t-button>
                 </t-space>
               </t-form-item>
             </t-form>
