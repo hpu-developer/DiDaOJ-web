@@ -58,9 +58,8 @@ const listColumns = ref([
       let clickFunction = null;
       if (
         (!data.row.private ||
-          data.row.inserter == userStore.getUserId ||
-          contestInserterId == userStore.getUserId ||
-          userStore.hasAuth(AuthType.ManageJudge)) &&
+          (userStore.isLogin() &&
+            (data.row.inserter == userStore.getUserId || contestInserterId == userStore.getUserId || userStore.hasAuth(AuthType.ManageJudge)))) &&
         IsJudgeStatusValid(data.row.status) &&
         IsJudgeLanguageValid(data.row.language)
       ) {
@@ -101,9 +100,8 @@ const listColumns = ref([
       let clickFunction = null;
       if (
         (!data.row.private ||
-          data.row.inserter == userStore.getUserId ||
-          contestInserterId == userStore.getUserId ||
-          userStore.hasAuth(AuthType.ManageJudge)) &&
+          (userStore.isLogin() &&
+            (data.row.inserter == userStore.getUserId || contestInserterId == userStore.getUserId || userStore.hasAuth(AuthType.ManageJudge)))) &&
         IsJudgeStatusValid(data.row.status) &&
         IsJudgeLanguageValid(data.row.language)
       ) {
@@ -151,9 +149,8 @@ const listColumns = ref([
       let disabled =
         !languageValid ||
         (data.row.private &&
-          data.row.inserter != userStore.getUserId &&
-          contestInserterId != userStore.getUserId &&
-          !userStore.hasAuth(AuthType.ManageJudge));
+          !userStore.hasAuth(AuthType.ManageJudge) &&
+          (!userStore.isLogin() || (data.row.inserter != userStore.getUserId && contestInserterId != userStore.getUserId)));
       return (
         <t-button theme="default" onClick={() => handleShowCode(data.row)} disabled={disabled}>
           {buttonText}
