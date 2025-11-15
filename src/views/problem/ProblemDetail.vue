@@ -779,31 +779,30 @@ onBeforeUnmount(() => {
           <!-- 共享高度容器 - 为滑动栏功能预留 -->
           <div style="height: calc(100vh - 57px); display: flex; flex-direction: column;">
             <!-- 代码编辑器区域 -->
-            <div class="dida-code-editor-zen-div" ref="codeEditRefZen" style="flex: 1; margin: 10px; margin-bottom: 5px;">
+            <div class="dida-code-editor-zen-div" ref="codeEditRefZen"
+              style="flex: 1; margin: 10px; margin-bottom: 5px;">
             </div>
 
             <!-- 滑动栏分隔线（预留） -->
             <div v-show="false" style="height: 4px; background: #f0f0f0; cursor: row-resize; position: relative;">
-              <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 2px; background: #ccc;"></div>
+              <div
+                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 2px; background: #ccc;">
+              </div>
             </div>
 
             <!-- 测试运行区域 -->
-            <div style="margin: 10px; margin-top: 5px; flex: 0 0 auto;">
+            <div style="margin: 10px; margin-top: 5px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px">
                 <span style="font-weight: bold">测试运行</span>
                 <t-button @click="handleRunTest" :loading="testRunning">运行</t-button>
               </div>
-              <div style="display: flex; gap: 10px; height: 180px">
-                <t-input
-                  v-model="testInput"
-                  type="textarea"
-                  placeholder="请输入测试数据"
-                  :autosize="{ minRows: 8, maxRows: 8 }"
-                  style="flex: 1"
-                />
-                <t-card style="flex: 1; overflow: auto">
+              <div style="display: flex; gap: 10px; min-height: 200px;">
+                <div style="flex: 1;">
+                  <t-textarea v-model="testInput" :autosize="{ minRows: 8, maxRows: 20 }" placeholder="请输入测试数据" />
+                </div>
+                <t-card style="flex: 1; min-height: 200px; max-height: 400px; overflow: auto;">
                   <div v-if="testOutput">
-                    <pre>{{ testOutput }}</pre>
+                    <pre style="margin: 0; white-space: pre-wrap; word-wrap: break-word;">{{ testOutput }}</pre>
                   </div>
                   <div v-else style="color: #999; text-align: center; padding: 20px">
                     运行结果将在这里显示
@@ -812,7 +811,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
-          
+
         </div>
       </div>
       <div class="dida-col-left">
@@ -1182,9 +1181,10 @@ onBeforeUnmount(() => {
 
 .dida-code-editor-zen-div {
   width: 100%;
+  margin-top: 10px;
+  min-height: 500px;
+  height: calc(100vh - 56px);
   position: relative;
-  min-height: 200px;
-  /* 高度由父容器flex布局控制 */
 }
 
 /* 禅模式题目信息面板样式 */
