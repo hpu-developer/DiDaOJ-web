@@ -10,7 +10,6 @@ declare module 'vue' {
     BreadcrumbContent: typeof import('./src/components/BreadcrumbContent.vue')['default']
     Countdown: typeof import('./src/components/count-down/Countdown.vue')['default']
     FooterContent: typeof import('./src/components/FooterContent.vue')['default']
-    ForceHiddenFooterButton: typeof import('./src/components/ForceHiddenFooterButton.vue')['default']
     ForceHiddenSidebarButton: typeof import('./src/components/ForceHiddenSidebarButton.vue')['default']
     HeaderContent: typeof import('./src/components/HeaderContent.vue')['default']
     Hitokoto: typeof import('./src/components/Hitokoto.vue')['default']

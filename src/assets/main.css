@@ -53,3 +53,137 @@ a {
 .monaco-editor .editable-line {
   background-color: rgba(0, 255, 120, 0.08);
 }
+
+/* 测试运行框样式 */
+.test-run-container {
+  border: 1px solid #e8eaec;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  overflow: hidden;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  min-height: 150px;
+  max-height: 500px;
+}
+
+/* 拖拽分隔符样式 */
+.drag-resize-handle {
+  height: 6px;
+  background-color: #e8eaec;
+  cursor: ns-resize;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  border-top: 1px solid #e8eaec;
+  border-bottom: 1px solid #e8eaec;
+}
+
+.drag-resize-handle:hover {
+  background-color: #409eff;
+  border-color: #409eff;
+}
+
+.drag-resize-handle::after {
+  content: '≡';
+  color: #999;
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.drag-resize-handle:hover::after {
+  color: white;
+}
+
+/* 拖拽时的视觉效果 */
+.drag-resize-handle.dragging {
+  background-color: #0052d9;
+  border-color: #0052d9;
+}
+
+.drag-resize-handle.dragging::after {
+  color: white;
+}
+
+.test-run-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #f0f2f5;
+  border-bottom: 1px solid #e8eaec;
+  flex-shrink: 0;
+}
+
+.test-run-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.test-run-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.test-run-content {
+  flex: 1;
+  display: flex;
+  padding: 15px;
+  gap: 15px;
+  min-height: 0; /* 重要：让flex子元素可以收缩 */
+}
+
+.test-input-section,
+.test-output-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* 重要：让flex子元素可以收缩 */
+}
+
+.test-input-label,
+.test-output-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.test-input-area,
+.test-output-area {
+  flex: 1;
+  min-height: 0; /* 重要：让textarea可以正确收缩 */
+}
+
+.test-output-area {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+}
+
+/* 确保在移动端也能正常显示 */
+@media (max-width: 768px) {
+  .test-run-container {
+    height: auto;
+    resize: none;
+  }
+  
+  .test-run-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .test-run-actions {
+    justify-content: flex-end;
+  }
+  
+  .test-run-content {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
