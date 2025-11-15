@@ -677,6 +677,7 @@ onBeforeUnmount(() => {
 <template>
   <t-loading :loading="problemLoading">
     <div class="dida-main-content" :class="{ 'zen-mode': isZenMode }">
+
       <div class="dida-col-code">
         <div class="dida-code-submit-div" v-if="isLogin">
           <t-form layout="inline">
@@ -711,9 +712,59 @@ onBeforeUnmount(() => {
       </div>
       <div class="dida-col-left">
 
-        <!-- 在这里需要在zen模式下增加一些题目描述（显隐可以用vue3的动画做一个从上方下移，移除的时候再上移） -->
+        <transition name="slide-down">
+          <div v-if="isZenMode">
+            <div class="dida-problems-container" v-if="contestId">
+              <t-space style="flex-wrap: wrap">
+                <t-button v-for="(item, index) in contestProblems" :key="index"
+                  :theme="item == problemIndex ? 'primary' : 'default'"
+                  @click="async () => await handleGotoContestProblem(contestId, item)">
+                  {{ GetContestProblemIndexStr(item) }}
+                </t-button>
+              </t-space>
+            </div>
 
-        <t-card style="margin: 10px">
+            <!-- 禅模式下的题目信息面板 -->
+            <div v-if="problemData" class="dida-zen-problem-info">
+              <!-- 主标题 -->
+              <div class="dida-zen-main-title">
+                <span class="dida-zen-title-text">{{ problemData?.title }}</span>
+                <span class="dida-zen-key" v-if="problemData?.key">{{ problemData?.key }}</span>
+              </div>
+
+              <!-- 第一行：时间、内存、判题信息 -->
+              <div class="dida-zen-key-info-row">
+                <span class="dida-zen-info-item">
+                  <span class="dida-zen-label">时间:</span>
+                  <span class="dida-zen-value">{{ problemData?.timeLimit }}</span>
+                </span>
+                <span class="dida-zen-info-item">
+                  <span class="dida-zen-label">内存:</span>
+                  <span class="dida-zen-value">{{ problemData?.memoryLimit }}</span>
+                </span>
+                <span class="dida-zen-info-item">
+                  <span class="dida-zen-label">判题:</span>
+                  <span class="dida-zen-value">{{ problemData?.judgeType }}</span>
+                </span>
+              </div>
+
+              <!-- 第二行：标签信息（如果存在） -->
+              <div class="dida-zen-tags-row" v-if="problemData?.tags && problemData?.tags.length > 0">
+                <div class="dida-zen-tags-container">
+                  <span class="dida-zen-info-item">
+                    <span class="dida-zen-label">标签:</span>
+                    <t-tag v-for="tag in problemData?.tags" :key="tag.id" size="small" variant="outline"
+                      @click="() => handleClickTag(tag)" class="dida-zen-tag">
+                      {{ tag.name }}
+                    </t-tag>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+
+        <t-card style="margin: 10px" :style="{ marginTop: isZenMode ? '0' : '10px' }">
           <md-preview :model-value="problemDescription" previewTheme="cyanosis" />
         </t-card>
         <t-card style="margin: 10px" v-if="isDailyProblem" title="题解">
@@ -750,6 +801,78 @@ onBeforeUnmount(() => {
             </div>
           </div>
         </t-card>
+
+        <!-- 详细信息面板 -->
+        <div class="dida-zen-detail-info-panel" v-if="isZenMode">
+
+          <!-- 统计信息 -->
+          <div class="dida-detail-stats" v-if="!isContestProblem">
+            <div class="dida-detail-section-title">统计数据</div>
+            <div class="dida-detail-grid">
+              <div class="dida-detail-row">
+                <span class="dida-detail-label">正确:</span>
+                <span class="dida-detail-value">{{ problemData?.accept }}</span>
+              </div>
+              <div class="dida-detail-row">
+                <span class="dida-detail-label">总计:</span>
+                <span class="dida-detail-value">{{ problemData?.attempt }}</span>
+              </div>
+              <div class="dida-detail-row" v-if="problemData?.accept && problemData?.attempt">
+                <span class="dida-detail-label">通过率:</span>
+                <span class="dida-detail-value">{{ ((problemData?.accept / problemData?.attempt) * 100).toFixed(1)
+                }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 作者和来源信息 -->
+          <div class="dida-detail-meta">
+            <div class="dida-detail-section-title">作者信息</div>
+            <div class="dida-detail-grid">
+              <div class="dida-detail-row">
+                <span class="dida-detail-label">上传用户:</span>
+                <span class="dida-detail-value">
+                  {{ problemData?.inserterNickname ? problemData?.inserterNickname : problemData?.originAuthor }}
+                </span>
+              </div>
+              <div class="dida-detail-row" v-if="!isContestProblem && problemData?.source">
+                <span class="dida-detail-label">题目来源:</span>
+                <span class="dida-detail-value">{{ problemData?.source }}</span>
+              </div>
+              <div class="dida-detail-row" v-if="hasEditAuth">
+                <span class="dida-detail-label">权限:</span>
+                <span class="dida-detail-value">{{ problemData?.private ? "私有" : "公开" }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 时间信息 -->
+          <div class="dida-detail-time">
+            <div class="dida-detail-section-title">时间信息</div>
+            <div class="dida-detail-grid">
+              <div class="dida-detail-row">
+                <span class="dida-detail-label">创建时间:</span>
+                <span class="dida-detail-value">{{ problemData?.insertTime }}</span>
+              </div>
+              <div class="dida-detail-row">
+                <span class="dida-detail-label">编辑时间:</span>
+                <span class="dida-detail-value">{{ problemData?.modifyTime }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 原题链接 -->
+          <div class="dida-detail-origin" v-if="problemData?.originUrl">
+            <div class="dida-detail-section-title">原题信息</div>
+            <div class="dida-detail-row">
+              <span class="dida-detail-label">原题链接:</span>
+              <t-link :href="problemData?.originUrl" target="_blank" class="dida-detail-link">
+                {{ problemData?.originOj }} - {{ problemData?.originId }}
+              </t-link>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="dida-col-right">
         <div class="dida-problems-container" v-if="contestId">
@@ -839,7 +962,7 @@ onBeforeUnmount(() => {
                 </t-space>
               </t-form-item>
             </t-form>
-            <div class="dida-code-editor-div" ref="codeEditRef" >
+            <div class="dida-code-editor-div" ref="codeEditRef">
             </div>
           </div>
           <div style="text-align: center" v-else>
@@ -958,5 +1081,242 @@ onBeforeUnmount(() => {
   min-height: 500px;
   height: calc(100vh - 56px);
   position: relative;
+}
+
+/* 禅模式题目信息面板样式 */
+.dida-zen-problem-info {
+  margin: 8px 10px 10px 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+/* 主标题样式 */
+.dida-zen-main-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dida-zen-title-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.dida-zen-key {
+  font-size: 11px;
+  color: #666;
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* 紧凑信息行 - 两行布局 */
+.dida-zen-compact-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dida-zen-key-info-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+}
+
+.dida-zen-info-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #666;
+  font-weight: 400;
+}
+
+.dida-zen-label {
+  color: #999;
+  margin-right: 4px;
+}
+
+.dida-zen-value {
+  color: #333;
+  font-weight: 500;
+}
+
+/* 详细信息区域 */
+.dida-zen-detail-info {
+  font-size: 11px;
+}
+
+/* 统计信息行 */
+.dida-zen-stats-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.dida-zen-stat-tag {
+  font-size: 10px !important;
+  height: 18px !important;
+  line-height: 16px !important;
+  padding: 0 4px !important;
+}
+
+/* 原题链接行 */
+.dida-zen-origin-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.dida-zen-origin-link {
+  font-size: 11px !important;
+  margin-left: 2px;
+}
+
+/* 标签区域 */
+.dida-zen-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.dida-zen-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.dida-zen-tag {
+  font-size: 11px;
+  padding: 2px 6px;
+  margin: 0;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background-color: #fafafa;
+  color: #595959;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dida-zen-tag:hover {
+  background-color: #0052d9;
+  color: white;
+  border-color: #0052d9;
+}
+
+/* 详细信息面板样式 */
+.dida-zen-detail-info-panel {
+  margin-top: 20px;
+  padding: 16px;
+  border-top: 1px solid #f0f0f0;
+  background-color: #fafafa;
+  border-radius: 8px;
+}
+
+.dida-detail-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+  border-left: 3px solid #0052d9;
+  padding-left: 8px;
+}
+
+.dida-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.dida-detail-row {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+.dida-detail-label {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+  margin-right: 8px;
+  min-width: 70px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.dida-detail-value {
+  font-size: 13px;
+  color: #333;
+  font-weight: 400;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dida-detail-link {
+  font-size: 13px !important;
+}
+
+.dida-detail-stats,
+.dida-detail-meta,
+.dida-detail-time,
+.dida-detail-origin {
+  margin-bottom: 20px;
+}
+
+.dida-detail-stats:last-child,
+.dida-detail-meta:last-child,
+.dida-detail-time:last-child,
+.dida-detail-origin:last-child {
+  margin-bottom: 0;
+}
+
+/* 动画效果 */
+.slide-down-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-down-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.slide-down-enter-from {
+  transform: translateY(-20px);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+.slide-down-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+.slide-down-enter-to,
+.slide-down-leave-from {
+  transform: translateY(0);
+  opacity: 1;
+  max-height: 200px;
 }
 </style>
