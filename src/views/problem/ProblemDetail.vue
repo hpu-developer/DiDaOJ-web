@@ -73,11 +73,6 @@ let serverTimeOffset = 0;
 
 const isZenMode = ref(false);
 
-// 测试运行相关数据
-const testInput = ref("");
-const testOutput = ref("");
-const testRunning = ref(false);
-
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
 });
@@ -633,39 +628,6 @@ const onSelectLanguageChanged = (value: JudgeLanguage): void => {
   localStorage.setItem("problem_select_language", String(value));
 };
 
-// 测试运行处理方法
-const handleRunTest = async () => {
-  const selectLanguageValue = parseInt(selectLanguage.value);
-  if (!IsJudgeLanguageValid(selectLanguageValue)) {
-    ShowTextTipsError(globalProperties, "请选择所编写的语言");
-    return;
-  }
-  const code = codeEditor?.getValue();
-  if (!code) {
-    ShowTextTipsError(globalProperties, "请输入所需运行的代码");
-    return;
-  }
-  if (!testInput.value.trim()) {
-    ShowTextTipsError(globalProperties, "请输入测试数据");
-    return;
-  }
-
-  testRunning.value = true;
-  testOutput.value = "";
-
-  try {
-    // 这里可以调用测试运行的API，目前先模拟一个简单的返回
-    // TODO: 实现真正的测试运行逻辑
-    setTimeout(() => {
-      testOutput.value = `运行时间: 2024-01-01 12:00:00\n运行状态: 成功\n输入数据:\n${testInput.value}\n\n输出结果:\nHello, World!`;
-      testRunning.value = false;
-    }, 2000);
-  } catch (error) {
-    ShowTextTipsError(globalProperties, "运行失败，请稍后再试");
-    testRunning.value = false;
-  }
-};
-
 onMounted(async () => {
 
   // 读取zen模式设置
@@ -754,65 +716,31 @@ onBeforeUnmount(() => {
     <div class="dida-main-content" :class="{ 'zen-mode': isZenMode }">
 
       <div class="dida-col-code">
-        <div class="dida-code-submit-div">
-          <t-form layout="inline">
-            <t-form-item>
-              <t-button @click="handleZenMode" theme="danger">退出禅模式</t-button>
-            </t-form-item>
-            <t-form-item label="是否隐藏代码">
-              <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
-            </t-form-item>
-            <t-form-item label="语言">
-              <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable
-                @change="onSelectLanguageChanged">
-                <t-option v-for="item in languageOptions" :key="item.value" :value="item.value"
-                  :label="item.label"></t-option>
-              </t-select>
-            </t-form-item>
-            <t-form-item>
-              <t-space>
-                <t-button @click="handleSubmitCode" :loading="problemSubmitting">提交</t-button>
-                <t-button @click="handleClickResetCode" theme="danger">重置</t-button>
-              </t-space>
-            </t-form-item>
-          </t-form>
-          <!-- 共享高度容器 - 为滑动栏功能预留 -->
-          <div style="height: calc(100vh - 57px); display: flex; flex-direction: column;">
-            <!-- 代码编辑器区域 -->
-            <div class="dida-code-editor-zen-div" ref="codeEditRefZen"
-              style="flex: 1; margin: 10px; margin-bottom: 5px;">
-            </div>
-
-            <!-- 滑动栏分隔线（预留） -->
-            <div v-show="false" style="height: 4px; background: #f0f0f0; cursor: row-resize; position: relative;">
-              <div
-                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 2px; background: #ccc;">
-              </div>
-            </div>
-
-            <!-- 测试运行区域 -->
-            <div style="margin: 10px; margin-top: 5px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px">
-                <span style="font-weight: bold">测试运行</span>
-                <t-button @click="handleRunTest" :loading="testRunning">运行</t-button>
-              </div>
-              <div style="display: flex; gap: 10px; min-height: 200px;">
-                <div style="flex: 1;">
-                  <t-textarea v-model="testInput" :autosize="{ minRows: 8, maxRows: 20 }" placeholder="请输入测试数据" />
-                </div>
-                <t-card style="flex: 1; min-height: 200px; max-height: 400px; overflow: auto;">
-                  <div v-if="testOutput">
-                    <pre style="margin: 0; white-space: pre-wrap; word-wrap: break-word;">{{ testOutput }}</pre>
-                  </div>
-                  <div v-else style="color: #999; text-align: center; padding: 20px">
-                    运行结果将在这里显示
-                  </div>
-                </t-card>
-              </div>
-            </div>
-          </div>
-
+        <t-form layout="inline">
+          <t-form-item>
+            <t-button @click="handleZenMode" theme="danger">退出禅模式</t-button>
+          </t-form-item>
+          <t-form-item label="是否隐藏代码">
+            <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
+          </t-form-item>
+          <t-form-item label="语言">
+            <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable
+              @change="onSelectLanguageChanged">
+              <t-option v-for="item in languageOptions" :key="item.value" :value="item.value"
+                :label="item.label"></t-option>
+            </t-select>
+          </t-form-item>
+          <t-form-item>
+            <t-space>
+              <t-button @click="handleSubmitCode" :loading="problemSubmitting">提交</t-button>
+              <t-button @click="handleClickResetCode" theme="danger">重置</t-button>
+            </t-space>
+          </t-form-item>
+        </t-form>
+        <div class="dida-code-editor-zen-div" ref="codeEditRefZen">
         </div>
+
+        <div class="dida-run-zen">123</div>
       </div>
       <div class="dida-col-left">
 
@@ -1104,10 +1032,17 @@ onBeforeUnmount(() => {
 }
 
 .dida-main-content.zen-mode .dida-col-code {
-  width: 50%;
+  width: calc(50% - 12px);
   visibility: visible;
   opacity: 1;
   pointer-events: auto;
+  margin-left: 10px;
+
+  height: calc(100vh - 70px);
+
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .dida-col-left {
@@ -1180,11 +1115,24 @@ onBeforeUnmount(() => {
 }
 
 .dida-code-editor-zen-div {
-  width: 100%;
   margin-top: 10px;
-  min-height: 500px;
-  height: calc(100vh - 56px);
+  height: calc(100vh - 256px);
   position: relative;
+
+  border: 1px solid #3912e5;
+}
+
+.dida-run-zen {
+
+  /* 填充父div剩余的高度 */
+  flex: 1;
+  /* 填充剩余空间 */
+  min-height: 0;
+  /* 防止内容溢出 */
+
+  margin-top: 10px;
+
+  border: 1px solid #3912e5;
 }
 
 /* 禅模式题目信息面板样式 */
@@ -1424,10 +1372,3 @@ onBeforeUnmount(() => {
   max-height: 200px;
 }
 </style>
-
-const isZenMode = ref(false);
-
-// 测试运行相关数据
-const testInput = ref("");
-const testOutput = ref("");
-const testRunning = ref(false);
