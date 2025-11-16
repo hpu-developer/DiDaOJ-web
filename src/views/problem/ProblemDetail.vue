@@ -150,6 +150,51 @@ const clearDailyTimer = () => {
   }
 };
 
+// 拖动调整高度相关方法
+const startResize = (event: MouseEvent) => {
+  isResizing.value = true;
+  startY.value = event.clientY;
+
+  // 获取当前编辑器高度
+  const editorElement = codeEditRefZen.value;
+  if (editorElement) {
+    startEditorHeight.value = editorElement.offsetHeight;
+  }
+
+  // 添加全局事件监听
+  document.addEventListener('mousemove', handleResize);
+  document.addEventListener('mouseup', stopResize);
+  document.body.style.cursor = 'ns-resize';
+  document.body.style.userSelect = 'none';
+};
+
+const handleResize = (event: MouseEvent) => {
+  if (!isResizing.value) return;
+
+  const deltaY = event.clientY - startY.value; // 向上拖动时减小高度
+  const newHeight = Math.max(minEditorHeight, Math.min(maxEditorHeight, startEditorHeight.value + deltaY));
+
+  const editorElement = codeEditRefZen.value;
+  if (editorElement) {
+    editorElement.style.height = `${newHeight}px`;
+  }
+};
+
+const stopResize = () => {
+  isResizing.value = false;
+
+  // 移除全局事件监听
+  document.removeEventListener('mousemove', handleResize);
+  document.removeEventListener('mouseup', stopResize);
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
+
+  // 重新布局编辑器
+  if (codeEditor) {
+    codeEditor.layout();
+  }
+};
+
 const handleClickTag = (tag: ProblemTag) => {
   if (!tag) {
     return;
@@ -178,6 +223,13 @@ const handleClickDailyEdit = async () => {
 };
 
 let resizeObserver: ResizeObserver | null = null;
+
+// 拖动调整高度相关变量
+const isResizing = ref(false);
+const startY = ref(0);
+const startEditorHeight = ref(0);
+const minEditorHeight = 200; // 最小高度
+const maxEditorHeight = 800; // 最大高度
 
 const handleZenMode = () => {
   const wasZenMode = isZenMode.value;
@@ -707,6 +759,12 @@ onBeforeUnmount(() => {
     watchHandle();
     watchHandle = null;
   }
+
+  // 清理拖动事件监听器
+  if (isResizing.value) {
+    stopResize();
+  }
+
   clearDailyTimer();
 });
 </script>
@@ -740,7 +798,18 @@ onBeforeUnmount(() => {
         <div class="dida-code-editor-zen-div" ref="codeEditRefZen">
         </div>
 
-        <div class="dida-run-zen">123</div>
+        <!-- 增加一个拖动条向上拖动时修改codeEditRefZen的高度 -->
+        <div class="dida-resize-handle" @mousedown="startResize"></div>
+        <div class="dida-run-zen">
+          <div class="dida-run-header">
+            <div class="dida-run-title">测试运行</div>
+            <t-button class="dida-run-button">运行</t-button>
+          </div>
+          <div class="dida-run-content">
+            <textarea placeholder="请输入测试数据" class="dida-run-input"></textarea>
+            <t-card class="dida-run-card"></t-card>
+          </div>
+        </div>
       </div>
       <div class="dida-col-left">
 
@@ -1122,17 +1191,92 @@ onBeforeUnmount(() => {
   border: 1px solid #3912e5;
 }
 
-.dida-run-zen {
+.dida-resize-handle {
+  height: 3px;
+  background: #e0e0e0;
+  cursor: ns-resize;
+  position: relative;
+  margin: 2px 0;
+  border-radius: 1px;
+  transition: background-color 0.2s ease;
+}
 
+.dida-resize-handle:hover {
+  background: #b0b0b0;
+}
+
+.dida-resize-handle:active {
+  background: #808080;
+}
+
+.dida-run-zen {
   /* 填充父div剩余的高度 */
   flex: 1;
   /* 填充剩余空间 */
   min-height: 0;
   /* 防止内容溢出 */
+  display: flex;
+  flex-direction: column;
 
-  margin-top: 10px;
+}
 
-  border: 1px solid #3912e5;
+/* 运行区域头部 - 标题靠左，按钮靠右 */
+.dida-run-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e5e5;
+  background-color: #fafafa;
+}
+
+.dida-run-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.dida-run-button {
+  flex-shrink: 0;
+}
+
+/* 运行区域内容 - 输入框和卡片左右布局 */
+.dida-run-content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  gap: 12px;
+  padding: 12px;
+}
+
+.dida-run-input {
+  flex: 1;
+  min-height: 0;
+  resize: none;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.dida-run-input:focus {
+  border-color: #0052d9;
+  box-shadow: 0 0 0 2px rgba(0, 82, 217, 0.1);
+}
+
+.dida-run-input::placeholder {
+  color: #999;
+}
+
+.dida-run-card {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
 }
 
 /* 禅模式题目信息面板样式 */
