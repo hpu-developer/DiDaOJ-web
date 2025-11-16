@@ -26,6 +26,9 @@ export function GetText(key: string | number, lang = "zh"): [boolean, string] {
 async function fetchRemoteText(): Promise<Record<string, Record<string, string>> | null> {
   return new Promise((resolve) => {
     resolve({
+      "401": {
+        zh: "缺少权限，请重新登陆后重试",
+      },
       "404": {
         zh: "接口未找到",
       },

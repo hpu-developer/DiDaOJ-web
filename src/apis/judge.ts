@@ -42,6 +42,7 @@ export const GetJudgeTypeStr = (type: JudgeType) => {
       return "未知";
   }
 };
+
 const JudgeStatusColorMap: Partial<Record<JudgeStatus, string>> = {
   [JudgeStatus.Init]: "#95a5a6",
   [JudgeStatus.Rejudge]: "#7f8c8d",

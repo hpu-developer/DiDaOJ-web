@@ -8,6 +8,7 @@ import { useCurrentInstance } from "@/util";
 import { ShowErrorTips, ShowTextTipsInfo, ShowTextTipsError } from "@/util/tips";
 import { ProblemTag, ProblemView } from "@/types/problem.ts";
 import { PostJudgeJob } from "@/apis/judge.ts";
+import { PostRunCode, GetRunCodeState, IsRunStatusRunning, RunStatus, GetRunStatusStr } from "@/apis/run.ts";
 
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 
@@ -21,6 +22,7 @@ import { GetContestProblemIndexStr, GetContestProblemRealKey, GetContestProblems
 import { handleGotoContestProblem, handleGotoLogin } from "@/util/router.ts";
 import SecretPanel from "@/components/SecretPanel.vue";
 import { useFooterStyleStore } from "@/stores/footerStyle";
+import { GetText } from "@/text/library";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -72,6 +74,13 @@ const dailyCode = ref("");
 let serverTimeOffset = 0;
 
 const isZenMode = ref(false);
+
+// 测试运行相关变量
+const runTestData = ref(""); // 测试数据输入
+const runResult = ref(""); // 运行结果
+const runStatus = ref("点击运行按钮获取结果"); // 运行状态
+const isRunning = ref(false); // 是否正在运行
+const runTimer = ref<number | null>(null); // 定时器ID
 
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
@@ -172,7 +181,7 @@ const handleResize = (event: MouseEvent) => {
   if (!isResizing.value) return;
 
   const deltaY = event.clientY - startY.value; // 向上拖动时减小高度
-  const newHeight = Math.max(minEditorHeight, Math.min(maxEditorHeight, startEditorHeight.value + deltaY));
+  const newHeight = startEditorHeight.value + deltaY;
 
   const editorElement = codeEditRefZen.value;
   if (editorElement) {
@@ -228,8 +237,6 @@ let resizeObserver: ResizeObserver | null = null;
 const isResizing = ref(false);
 const startY = ref(0);
 const startEditorHeight = ref(0);
-const minEditorHeight = 200; // 最小高度
-const maxEditorHeight = 800; // 最大高度
 
 const handleZenMode = () => {
   const wasZenMode = isZenMode.value;
@@ -680,6 +687,98 @@ const onSelectLanguageChanged = (value: JudgeLanguage): void => {
   localStorage.setItem("problem_select_language", String(value));
 };
 
+// 测试运行相关方法
+const handleRunCode = async () => {
+  const code = codeEditor?.getValue();
+  if (!code) {
+    ShowTextTipsError(globalProperties, "请输入需要运行的代码");
+    return;
+  }
+
+  // 验证语言选择
+  const selectLanguageValue = parseInt(selectLanguage.value);
+  if (!IsJudgeLanguageValid(selectLanguageValue)) {
+    ShowTextTipsError(globalProperties, "请选择所编写的语言");
+    return;
+  }
+
+  isRunning.value = true;
+  runResult.value = "正在运行...";
+
+  try {
+    // 提交运行请求
+    const runResponse = await PostRunCode({
+      code: code,
+      input: runTestData.value,
+      language: selectLanguageValue
+    });
+
+    if (runResponse.code !== 0) {
+      ShowErrorTips(globalProperties, runResponse.code);
+      const [found, realTips] = GetText(runResponse.code);
+      runResult.value = found ? realTips : "运行失败";
+      isRunning.value = false;
+      return;
+    }
+
+    const runId = runResponse.data;
+
+    // 开始定时获取运行状态
+    runTimer.value = setInterval(async () => {
+      try {
+        const stateResponse = await GetRunCodeState(runId);
+
+        if (stateResponse.code === 0) {
+          const { status, content } = stateResponse.data;
+          if (IsRunStatusRunning(status)) {
+            // 正在运行，显示结果
+            runResult.value = content;
+          } else {
+            // 运行完成，停止定时器
+            if (runTimer.value) {
+              clearInterval(runTimer.value);
+              runTimer.value = null;
+            }
+            isRunning.value = false;
+            runStatus.value = GetRunStatusStr(status);
+            runResult.value = content;
+          }
+        } else {
+          // 获取状态失败
+          if (runTimer.value) {
+            clearInterval(runTimer.value);
+            runTimer.value = null;
+          }
+          isRunning.value = false;
+          ShowErrorTips(globalProperties, stateResponse.code);
+          runResult.value = "获取运行状态失败";
+        }
+      } catch (error) {
+        console.error("获取运行状态错误:", error);
+        if (runTimer.value) {
+          clearInterval(runTimer.value);
+          runTimer.value = null;
+        }
+        isRunning.value = false;
+        runResult.value = "网络错误，请重试";
+      }
+    }, 1000);
+  } catch (error) {
+    console.error("提交运行请求错误:", error);
+    isRunning.value = false;
+    runResult.value = "提交运行请求失败";
+    ShowTextTipsError(globalProperties, "提交运行请求失败");
+  }
+};
+
+// 清理定时器（组件销毁时调用）
+const clearRunTimer = () => {
+  if (runTimer.value) {
+    clearInterval(runTimer.value);
+    runTimer.value = null;
+  }
+};
+
 onMounted(async () => {
 
   // 读取zen模式设置
@@ -765,6 +864,9 @@ onBeforeUnmount(() => {
     stopResize();
   }
 
+  // 清理运行定时器
+  clearRunTimer();
+
   clearDailyTimer();
 });
 </script>
@@ -776,7 +878,7 @@ onBeforeUnmount(() => {
       <div class="dida-col-code">
         <t-form layout="inline">
           <t-form-item>
-            <t-button @click="handleZenMode" theme="danger">退出禅模式</t-button>
+            <t-button @click="handleZenMode" theme="danger">退出编程模式</t-button>
           </t-form-item>
           <t-form-item label="是否隐藏代码">
             <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
@@ -803,11 +905,18 @@ onBeforeUnmount(() => {
         <div class="dida-run-zen">
           <div class="dida-run-header">
             <div class="dida-run-title">测试运行</div>
-            <t-button class="dida-run-button">运行</t-button>
+            <t-button class="dida-run-button" :loading="isRunning" @click="handleRunCode">
+              {{ isRunning ? '运行中...' : '运行' }}
+            </t-button>
           </div>
           <div class="dida-run-content">
-            <textarea placeholder="请输入测试数据" class="dida-run-input"></textarea>
-            <t-card class="dida-run-card"></t-card>
+            <textarea v-model="runTestData" placeholder="请输入测试数据" class="dida-run-input"
+              :disabled="isRunning"></textarea>
+            <t-card class="dida-run-card">
+              <t-tag theme="primary">{{ runStatus }}</t-tag>
+              <div v-if="runResult" class="run-result-content">{{ runResult }}</div>
+              <div v-else class="run-result-placeholder">运行结果将在这里显示</div>
+            </t-card>
           </div>
         </div>
       </div>
@@ -825,7 +934,7 @@ onBeforeUnmount(() => {
               </t-space>
             </div>
 
-            <!-- 禅模式下的题目信息面板 -->
+            <!-- 编程模式下的题目信息面板 -->
             <div v-if="problemData" class="dida-zen-problem-info">
               <!-- 主标题 -->
               <div class="dida-zen-main-title">
@@ -1054,7 +1163,7 @@ onBeforeUnmount(() => {
                 <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
               </t-form-item>
               <t-form-item>
-                <t-button @click="handleZenMode">禅模式</t-button>
+                <t-button @click="handleZenMode">编程模式</t-button>
               </t-form-item>
               <t-form-item>
                 <t-space>
@@ -1123,7 +1232,7 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
-/* 禅模式下的布局 */
+/* 编程模式下的布局 */
 .dida-main-content.zen-mode .dida-col-left {
   width: 50%;
   overflow-y: auto;
@@ -1139,7 +1248,7 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
-/* 禅模式下隐藏右侧栏 - 完全隐藏并释放空间 */
+/* 编程模式下隐藏右侧栏 - 完全隐藏并释放空间 */
 .dida-main-content.zen-mode .dida-col-right {
   width: 0;
   min-width: 0;
@@ -1186,6 +1295,7 @@ onBeforeUnmount(() => {
 .dida-code-editor-zen-div {
   margin-top: 10px;
   height: calc(100vh - 256px);
+  max-height: calc(100vh);
   position: relative;
 
   border: 1px solid #3912e5;
@@ -1247,11 +1357,17 @@ onBeforeUnmount(() => {
   min-height: 0;
   gap: 12px;
   padding: 12px;
+  overflow: hidden;
+  /* 防止容器溢出 */
+  max-width: 100%;
 }
 
+/* 输入框样式 - 防止溢出 */
 .dida-run-input {
   flex: 1;
   min-height: 0;
+  min-width: 0;
+  /* 重要：允许flex子项收缩到0 */
   resize: none;
   border: 1px solid #d9d9d9;
   border-radius: 6px;
@@ -1261,6 +1377,10 @@ onBeforeUnmount(() => {
   line-height: 1.5;
   outline: none;
   transition: border-color 0.2s ease;
+  /* 防止内容溢出 */
+  overflow: auto;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .dida-run-input:focus {
@@ -1272,14 +1392,53 @@ onBeforeUnmount(() => {
   color: #999;
 }
 
+/* t-card样式 - 防止溢出 */
 .dida-run-card {
   flex: 1;
   min-height: 0;
+  min-width: 0;
+  /* 重要：允许flex子项收缩到0 */
   border: 1px solid #d9d9d9;
   border-radius: 6px;
+  /* 防止内容溢出 */
+  overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-/* 禅模式题目信息面板样式 */
+/* 运行结果显示区域样式 */
+.dida-run-card :deep(.t-card__body) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.run-result-content {
+  flex: 1;
+  padding: 12px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  font-family: 'Courier New', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+}
+
+.run-result-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* 编程模式题目信息面板样式 */
 .dida-zen-problem-info {
   margin: 8px 10px 10px 10px;
   padding: 10px;
