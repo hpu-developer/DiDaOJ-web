@@ -40,8 +40,8 @@ const token = userStore.getToken;
 
 const showSidebar = ref(false);
 const realShowSidebar = ref(false);
-const showFooter = ref(false);
-const realShowFooter = ref(false);
+const showFooter = ref(true);
+const realShowFooter = ref(true);
 
 const titleBase = "DidaOJ";
 

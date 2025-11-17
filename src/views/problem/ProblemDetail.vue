@@ -868,6 +868,10 @@ onBeforeUnmount(() => {
   clearRunTimer();
 
   clearDailyTimer();
+
+  footerStyleStore.$patch({
+    showFooter: true,
+  });
 });
 </script>
 
