@@ -177,3 +177,10 @@ export function PostContestDolos(contestId: number) {
     },
   });
 }
+
+export function GetContentRencently() {
+  return httpRequest({
+    url: "/contest/recently",
+    method: "get",
+  });
+}

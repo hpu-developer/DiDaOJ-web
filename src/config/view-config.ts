@@ -40,6 +40,7 @@ import SystemStatus from "@/views/system/SystemStatus.vue";
 
 import ManageJudge from "@/views/manage/ManageJudge.vue";
 import ManageWeb from "@/views/manage/ManageWeb.vue";
+import ContestRencently from "@/views/contest/ContestRencently.vue";
 
 const viewsConfig = [
   {
@@ -184,7 +185,7 @@ const viewsConfig = [
     path: "recent",
     title: "近期比赛",
     icon: "list",
-    component: ContestList,
+    component: ContestRencently,
   },
   {
     name: "contest-create",

@@ -1,5 +1,15 @@
 import { ProblemView } from "@/types/problem.ts";
 
+export interface ContestRemoteList {
+  title: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  type: string;
+  source: string;
+  link: string;
+}
+
 export interface ContestState {
   starMembers: Record<number, Record<number, boolean>>; // 使用 Record 来存储星标成员
 }
