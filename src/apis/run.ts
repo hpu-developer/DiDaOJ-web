@@ -30,6 +30,8 @@ export const GetRunStatusStr = (status: RunStatus) => {
       return "运行中";
     case RunStatus.Finish:
       return "已完成";
+    case RunStatus.TLE:
+      return "时间超限";
     case RunStatus.MLE:
       return "内存超限";
     case RunStatus.OLE:

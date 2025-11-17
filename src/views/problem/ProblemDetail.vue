@@ -8,7 +8,7 @@ import { useCurrentInstance } from "@/util";
 import { ShowErrorTips, ShowTextTipsInfo, ShowTextTipsError } from "@/util/tips";
 import { ProblemTag, ProblemView } from "@/types/problem.ts";
 import { PostJudgeJob } from "@/apis/judge.ts";
-import { PostRunCode, GetRunCodeState, IsRunStatusRunning, RunStatus, GetRunStatusStr } from "@/apis/run.ts";
+import { PostRunCode, GetRunCodeState, IsRunStatusRunning, GetRunStatusStr } from "@/apis/run.ts";
 
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 
@@ -78,7 +78,8 @@ const isZenMode = ref(false);
 // 测试运行相关变量
 const runTestData = ref(""); // 测试数据输入
 const runResult = ref(""); // 运行结果
-const runStatus = ref("点击运行按钮获取结果"); // 运行状态
+const runStatusDefault = "点击运行按钮获取结果";
+const runStatus = ref(runStatusDefault); // 运行状态
 const isRunning = ref(false); // 是否正在运行
 const runTimer = ref<number | null>(null); // 定时器ID
 
@@ -703,7 +704,8 @@ const handleRunCode = async () => {
   }
 
   isRunning.value = true;
-  runResult.value = "正在运行...";
+  runResult.value = "正在提交到远程测试...";
+  runStatus.value = runStatusDefault;
 
   try {
     // 提交运行请求
@@ -733,6 +735,7 @@ const handleRunCode = async () => {
           if (IsRunStatusRunning(status)) {
             // 正在运行，显示结果
             runResult.value = content;
+            runStatus.value = GetRunStatusStr(status);
           } else {
             // 运行完成，停止定时器
             if (runTimer.value) {
