@@ -345,7 +345,7 @@ onMounted(async () => {
     problemDailyLoading.value = false;
   })();
 
-  postAutoCheckin().then(() => {
+  postAutoCheckin().finally(() => {
     void (async () => {
       await loadCheckinData();
     })();
