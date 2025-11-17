@@ -234,7 +234,7 @@ const viewsConfig = [
     sidebar: "contest-judge",
     path: ":contestId+/judge",
     title: "评测列表",
-    icon: "clock",
+    icon: "cloud",
     component: JudgeJobList,
   },
   {
@@ -253,7 +253,7 @@ const viewsConfig = [
     sidebar: "contest-rank",
     path: ":contestId+/rank",
     title: "比赛排名",
-    icon: "chart-pie",
+    icon: "chart-bar",
     component: ContestRank,
   },
   {
