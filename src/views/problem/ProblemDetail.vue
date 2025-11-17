@@ -1298,7 +1298,7 @@ onBeforeUnmount(() => {
 
 .dida-code-editor-zen-div {
   margin-top: 10px;
-  height: calc(100vh - 256px);
+  height: calc(100vh - 356px);
   max-height: calc(100vh);
   position: relative;
 
