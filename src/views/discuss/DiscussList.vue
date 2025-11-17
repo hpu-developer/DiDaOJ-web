@@ -278,17 +278,8 @@ onBeforeUnmount(() => {
   <t-row>
     <t-col :span="9">
       <t-card style="margin: 10px">
-        <t-table
-          :data="discussViews"
-          :columns="listColumns"
-          row-key="id"
-          vertical-align="top"
-          :hover="true"
-          :pagination="pagination"
-          :loading="dataLoading"
-          table-layout="auto"
-          @page-change="onPageChange"
-        />
+        <t-table :data="discussViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true"
+          :pagination="pagination" :loading="dataLoading" table-layout="auto" @page-change="onPageChange" />
       </t-card>
     </t-col>
     <t-col :span="3">
@@ -313,6 +304,15 @@ onBeforeUnmount(() => {
           <t-space>
             <t-button @click="handleCreateDiscuss">创建</t-button>
           </t-space>
+        </t-card>
+
+        <t-card class="sh-card" header="讨论区" :header-bordered="true">
+          <p>
+            友好交流，发言请遵守相关法律法规，请勿进行刷帖、指责、人身攻击等行为，管理员会对讨论区进行自动以及人工审核。
+          </p>
+          <p>
+            请珍惜账号资源，管理员有可能对违规信息做出包括但不限删帖、禁言、封号、提交信息到有关学校（部门）等措施。
+          </p>
         </t-card>
       </div>
     </t-col>
