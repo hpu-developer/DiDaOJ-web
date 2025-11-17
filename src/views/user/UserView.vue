@@ -527,6 +527,11 @@ onMounted(async () => {
               <span>暂无未领取奖励的题目</span>
             </p>
             <template v-else>
+              <t-alert
+                type="info"
+                style="margin-bottom: 10px"
+                >您可以点击下方按钮领取首通奖励，每个题目仅可领取一次。</t-alert
+              >
               <t-button
                 class="dida-tag-button"
                 v-for="reward in judgeRewards"
