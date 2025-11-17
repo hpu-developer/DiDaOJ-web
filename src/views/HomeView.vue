@@ -115,27 +115,18 @@ const handleTouchMove = (e: TouchEvent) => {
   }
 };
 
-onMounted(() => {
-  // 添加鼠标事件监听
-  document.addEventListener("mousemove", handleMouseMove);
-  // 添加触摸事件监听
-  document.addEventListener("touchmove", handleTouchMove, { passive: true });
-});
-
-onUnmounted(() => {
-  // 移除鼠标事件监听
-  document.removeEventListener("mousemove", handleMouseMove);
-  // 移除触摸事件监听
-  document.removeEventListener("touchmove", handleTouchMove);
-});
-
-onMounted(() => {
-  document.addEventListener("mousemove", handleMouseMove);
-});
-
-onUnmounted(() => {
-  document.removeEventListener("mousemove", handleMouseMove);
-});
+const postAutoCheckin = async () => {
+  try {
+    const res = await PostCheckin();
+    if (res.code === 0) {
+      ShowTextTipsSuccess(globalProperties, "每日签到成功！");
+      createFireworks();
+      ShowEnhancedAwardTips(globalProperties, res.data, 4000);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 // 使用从util导入的createFireworks函数
 
@@ -329,6 +320,11 @@ onMounted(async () => {
   ojNotifyLoading.value = true;
   ojAnnouncementLoading.value = true;
 
+  // 添加鼠标事件监听
+  document.addEventListener("mousemove", handleMouseMove);
+  // 添加触摸事件监听
+  document.addEventListener("touchmove", handleTouchMove, { passive: true });
+
   void (async () => {
     await handleReloadStatus();
     ojNotifyLoading.value = false;
@@ -349,15 +345,21 @@ onMounted(async () => {
     problemDailyLoading.value = false;
   })();
 
-  void (async () => {
-    await loadCheckinData();
-  })();
+  postAutoCheckin().then(() => {
+    void (async () => {
+      await loadCheckinData();
+    })();
+  });
 
   stateLoading.value = false;
 });
 
 onUnmounted(() => {
   clearInterval(intervalId);
+  // 移除鼠标事件监听
+  document.removeEventListener("mousemove", handleMouseMove);
+  // 移除触摸事件监听
+  document.removeEventListener("touchmove", handleTouchMove);
 });
 </script>
 
@@ -405,17 +407,11 @@ onUnmounted(() => {
               <div style="margin-bottom: 20px; font-size: 18px; color: #409eff">
                 <span v-if="showCheckinHint">点击按钮完成今日签到</span>
                 <span v-else-if="checkinCount === 0">今日暂未有人签到</span>
-                <span v-else
-                  >今日已有 <span style="font-weight: bold; color: #f56c6c">{{ checkinCount }}</span> 人签到</span
-                >
+                <span v-else>今日已有 <span style="font-weight: bold; color: #f56c6c">{{ checkinCount }}</span> 人签到</span>
               </div>
-              <t-button
-                theme="primary"
-                @click="(e: MouseEvent) => handleCheckin(e)"
+              <t-button theme="primary" @click="(e: MouseEvent) => handleCheckin(e)"
                 @touchstart="(e: TouchEvent) => handleTouchCheckin(e)"
-                :disabled="checkinLoading || stateLoading || isCheckedIn"
-                style="width: 120px"
-              >
+                :disabled="checkinLoading || stateLoading || isCheckedIn" style="width: 120px">
                 {{ isCheckedIn ? "已签到" : "立即签到" }}
               </t-button>
               <div v-if="isCheckedIn" style="margin-top: 10px; color: #67c23a; font-size: 14px">签到成功，开始解题吧！</div>
@@ -539,23 +535,29 @@ onUnmounted(() => {
 
 .oj-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 三列布局 */
-  gap: 16px; /* 横纵间距 */
+  grid-template-columns: repeat(3, 1fr);
+  /* 三列布局 */
+  gap: 16px;
+  /* 横纵间距 */
   margin: 10px 0;
 }
 
 .oj-item {
   display: flex;
-  justify-content: space-between; /* 左右对齐 */
-  align-items: center; /* 垂直居中 */
+  justify-content: space-between;
+  /* 左右对齐 */
+  align-items: center;
+  /* 垂直居中 */
   padding: 8px;
-  border: 1px solid #e0e0e0; /* 可选：表格风格边框 */
+  border: 1px solid #e0e0e0;
+  /* 可选：表格风格边框 */
   border-radius: 6px;
 }
 
 .friend-link-card {
   margin: 10px;
 }
+
 .friend-link-card li {
   margin: 8px;
 }
