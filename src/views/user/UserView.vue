@@ -29,6 +29,10 @@ const userLoading = ref(false);
 const userData = ref<UserInfoView | null>(null);
 const vjudgeLoading = ref(false);
 
+let myChart = null as any;
+let myChartData = [] as [string, number, number][];
+const colorMappingMode = ref("total");
+
 const problemsAccept = ref([] as any[]);
 const problemsAttempt = ref([] as any[]);
 let problemAttemptStatus = null as Record<string, ProblemAttemptStatus> | null;
@@ -78,6 +82,69 @@ const getProblemThemeAttempt = (problemId: number) => {
 const handleGotoVjudgeProblem = (oj: string, problemId: string) => {
   const url = `https://vjudge.net/problem/${oj}-${problemId}`;
   window.open(url, "_blank");
+};
+
+const handleColorMappingChange = () => {
+  // 自定义颜色映射函数
+  function getColor(accept: number, unAttempt: number) {
+    if (colorMappingMode.value === "total") {
+      // 绿色渐变：从浅绿到深绿 (柔和色调)
+      const intensity = Math.min(accept + unAttempt, 20) / 20;
+      return `rgb(${Math.floor(230 * (1 - intensity))}, ${Math.floor(230 + 25 * intensity)}, ${Math.floor(230 * (1 - intensity))})`;
+    }
+    if (accept > 0) {
+      // 绿色渐变：从浅绿到深绿 (柔和色调)
+      const intensity = Math.min(accept, 20) / 20;
+      return `rgb(${Math.floor(230 * (1 - intensity))}, ${Math.floor(230 + 25 * intensity)}, ${Math.floor(230 * (1 - intensity))})`;
+    } else {
+      // 红色渐变：从浅红到深红 (柔和色调)
+      const intensity = Math.min(unAttempt, 10) / 10;
+      return `rgb(${Math.floor(230 + 25 * intensity)}, ${Math.floor(230 * (1 - intensity))}, ${Math.floor(230 * (1 - intensity))})`;
+    }
+  }
+
+  const option = {
+    tooltip: {
+      formatter: function (params: any) {
+        const value = params.value;
+        const dataStr = value[0].toString();
+        return `${dataStr}<br/>accept:${value[2]}<br/>unaccept:${value[1]}`;
+      },
+    },
+    visualMap: {
+      show: false, // 隐藏顶部图例
+    },
+    calendar: {
+      top: 50, // 上移日历位置
+      left: 30,
+      right: 30,
+      cellSize: ["auto", "auto"],
+      range: new Date().getFullYear(),
+      itemStyle: {
+        borderWidth: 0.5,
+        borderColor: "#f5f5f5", // 柔和的边框颜色
+      },
+      yearLabel: { show: false },
+    },
+    series: {
+      type: "heatmap",
+      coordinateSystem: "calendar",
+      data: myChartData.map((item: [string, number, number]) => ({
+        value: item,
+        itemStyle: {
+          color: getColor(item[2], item[1]),
+        },
+      })),
+      emphasis: {
+        itemStyle: {
+          borderColor: "#333",
+          borderWidth: 1,
+        },
+      },
+    },
+  } as EChartsOption;
+
+  myChart.setOption(option);
 };
 
 // 领取评测奖励
@@ -248,72 +315,16 @@ const loadUserInfo = async (username: string) => {
     if (!chartDom) {
       return;
     }
-    const myChart = echarts.init(chartDom);
-
-    const data: [string, number, number][] = [];
+    myChart = echarts.init(chartDom);
+    myChartData = [];
 
     if (statics) {
       for (const stat of statics) {
         const date = new Date(stat.date);
-        data.push([echarts.time.format(date, "{yyyy}-{MM}-{dd}", false), stat.attempt - stat.accept, stat.accept]);
+        myChartData.push([echarts.time.format(date, "{yyyy}-{MM}-{dd}", false), stat.attempt - stat.accept, stat.accept]);
       }
     }
-
-    // 自定义颜色映射函数
-    function getColor(accept: number, attempt: number) {
-      if (accept > 0) {
-        // 绿色渐变：从浅绿到深绿 (柔和色调)
-        const intensity = Math.min(accept, 20) / 20;
-        return `rgb(${Math.floor(230 * (1 - intensity))}, ${Math.floor(230 + 25 * intensity)}, ${Math.floor(230 * (1 - intensity))})`;
-      } else {
-        // 红色渐变：从浅红到深红 (柔和色调)
-        const intensity = Math.min(attempt, 10) / 10;
-        return `rgb(${Math.floor(230 + 25 * intensity)}, ${Math.floor(230 * (1 - intensity))}, ${Math.floor(230 * (1 - intensity))})`;
-      }
-    }
-
-    const option = {
-      tooltip: {
-        formatter: function (params: any) {
-          const value = params.value;
-          const dataStr = value[0].toString();
-          return `${dataStr}<br/>accept:${value[2]}<br/>unaccept:${value[1]}`;
-        },
-      },
-      visualMap: {
-        show: false, // 隐藏顶部图例
-      },
-      calendar: {
-        top: 50, // 上移日历位置
-        left: 30,
-        right: 30,
-        cellSize: ["auto", "auto"],
-        range: new Date().getFullYear(),
-        itemStyle: {
-          borderWidth: 0.5,
-          borderColor: "#f5f5f5", // 柔和的边框颜色
-        },
-        yearLabel: { show: false },
-      },
-      series: {
-        type: "heatmap",
-        coordinateSystem: "calendar",
-        data: data.map((item) => ({
-          value: item,
-          itemStyle: {
-            color: getColor(item[2], item[1]),
-          },
-        })),
-        emphasis: {
-          itemStyle: {
-            borderColor: "#333",
-            borderWidth: 1,
-          },
-        },
-      },
-    } as EChartsOption;
-
-    myChart.setOption(option);
+    handleColorMappingChange();
 
     const resizeObserver = new ResizeObserver(() => {
       myChart.resize({
@@ -383,7 +394,11 @@ onMounted(async () => {
     <t-row class="dida-main-content">
       <t-col :span="8">
         <t-card style="margin: 10px">
-          <div style="text-align: right; margin-right: 20px">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 20px 10px 20px">
+            <t-select v-model="colorMappingMode" style="width: 200px" @change="handleColorMappingChange">
+              <t-option value="total" label="根据总尝试数显示颜色" />
+              <t-option value="accept" label="根据通过状态显示颜色" />
+            </t-select>
             <t-link :href="userLink" :underline="true">前往查看最近提交</t-link>
           </div>
           <div id="ojStaticsDiv" class="dida-statistics-chart"></div>
@@ -527,11 +542,7 @@ onMounted(async () => {
               <span>暂无未领取奖励的题目</span>
             </p>
             <template v-else>
-              <t-alert
-                type="info"
-                style="margin-bottom: 10px"
-                >您可以点击下方按钮领取首通奖励，每个题目仅可领取一次。</t-alert
-              >
+              <t-alert type="info" style="margin-bottom: 10px">您可以点击下方按钮领取首通奖励，每个题目仅可领取一次。</t-alert>
               <t-button
                 class="dida-tag-button"
                 v-for="reward in judgeRewards"
