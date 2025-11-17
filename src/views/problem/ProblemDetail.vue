@@ -83,6 +83,16 @@ const runStatus = ref(runStatusDefault); // 运行状态
 const isRunning = ref(false); // 是否正在运行
 const runTimer = ref<number | null>(null); // 定时器ID
 
+// 复制运行结果到剪贴板
+const copyRunResult = async () => {
+  try {
+    await navigator.clipboard.writeText(runResult.value);
+    ShowTextTipsInfo(globalProperties, "复制成功");
+  } catch (error) {
+    ShowTextTipsError(globalProperties, "复制失败");
+  }
+};
+
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageProblem);
 });
@@ -172,10 +182,10 @@ const startResize = (event: MouseEvent) => {
   }
 
   // 添加全局事件监听
-  document.addEventListener('mousemove', handleResize);
-  document.addEventListener('mouseup', stopResize);
-  document.body.style.cursor = 'ns-resize';
-  document.body.style.userSelect = 'none';
+  document.addEventListener("mousemove", handleResize);
+  document.addEventListener("mouseup", stopResize);
+  document.body.style.cursor = "ns-resize";
+  document.body.style.userSelect = "none";
 };
 
 const handleResize = (event: MouseEvent) => {
@@ -194,10 +204,10 @@ const stopResize = () => {
   isResizing.value = false;
 
   // 移除全局事件监听
-  document.removeEventListener('mousemove', handleResize);
-  document.removeEventListener('mouseup', stopResize);
-  document.body.style.cursor = '';
-  document.body.style.userSelect = '';
+  document.removeEventListener("mousemove", handleResize);
+  document.removeEventListener("mouseup", stopResize);
+  document.body.style.cursor = "";
+  document.body.style.userSelect = "";
 
   // 重新布局编辑器
   if (codeEditor) {
@@ -272,7 +282,7 @@ const handleZenMode = () => {
       }
     });
   }
-}
+};
 
 const handleClickEdit = async () => {
   let realProblemKey = problemKey;
@@ -408,7 +418,6 @@ const fetchProblemData = async () => {
       selectLanguage.value = parsedLanguage as JudgeLanguage;
     }
   }
-
 
   problemDescription.value = problemData.value.description as string;
   await nextTick(() => {
@@ -546,7 +555,7 @@ const handleResetCode = (containerRef?: Ref<HTMLElement | null>) => {
   // 确保目标容器不为null
   if (targetContainer) {
     // 清空现有内容
-    targetContainer.innerHTML = '';
+    targetContainer.innerHTML = "";
 
     // 创建编辑器容器
     const editorContainer = document.createElement("div");
@@ -712,7 +721,7 @@ const handleRunCode = async () => {
     const runResponse = await PostRunCode({
       code: code,
       input: runTestData.value,
-      language: selectLanguageValue
+      language: selectLanguageValue,
     });
 
     if (runResponse.code !== 0) {
@@ -783,7 +792,6 @@ const clearRunTimer = () => {
 };
 
 onMounted(async () => {
-
   // 读取zen模式设置
   const isZenMode = localStorage.getItem("problem_zen_mode") === "1";
   if (isZenMode) {
@@ -881,7 +889,6 @@ onBeforeUnmount(() => {
 <template>
   <t-loading :loading="problemLoading">
     <div class="dida-main-content" :class="{ 'zen-mode': isZenMode }">
-
       <div class="dida-col-code">
         <t-form layout="inline">
           <t-form-item>
@@ -891,10 +898,8 @@ onBeforeUnmount(() => {
             <t-switch v-model="isPrivate" @change="handlePrivateChanged"> </t-switch>
           </t-form-item>
           <t-form-item label="语言">
-            <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable
-              @change="onSelectLanguageChanged">
-              <t-option v-for="item in languageOptions" :key="item.value" :value="item.value"
-                :label="item.label"></t-option>
+            <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
+              <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
             </t-select>
           </t-form-item>
           <t-form-item>
@@ -904,8 +909,7 @@ onBeforeUnmount(() => {
             </t-space>
           </t-form-item>
         </t-form>
-        <div class="dida-code-editor-zen-div" ref="codeEditRefZen">
-        </div>
+        <div class="dida-code-editor-zen-div" ref="codeEditRefZen"></div>
 
         <!-- 增加一个拖动条向上拖动时修改codeEditRefZen的高度 -->
         <div class="dida-resize-handle" @mousedown="startResize"></div>
@@ -913,29 +917,48 @@ onBeforeUnmount(() => {
           <div class="dida-run-header">
             <div class="dida-run-title">测试运行</div>
             <t-button class="dida-run-button" :loading="isRunning" @click="handleRunCode">
-              {{ isRunning ? '运行中...' : '运行' }}
+              {{ isRunning ? "运行中..." : "运行" }}
             </t-button>
           </div>
           <div class="dida-run-content">
-            <textarea v-model="runTestData" placeholder="请输入测试数据" class="dida-run-input"
-              :disabled="isRunning"></textarea>
+            <textarea v-model="runTestData" placeholder="请输入测试数据" class="dida-run-input" :disabled="isRunning"></textarea>
             <t-card class="dida-run-card">
               <t-tag theme="primary">{{ runStatus }}</t-tag>
-              <div v-if="runResult" class="run-result-content">{{ runResult }}</div>
+              <div v-if="runResult" class="run-result-container">
+                <div class="run-result-content">{{ runResult }}</div>
+                <button class="copy-result-btn" @click="copyRunResult">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+              </div>
               <div v-else class="run-result-placeholder">运行结果将在这里显示</div>
             </t-card>
           </div>
         </div>
       </div>
       <div class="dida-col-left">
-
         <transition name="slide-down">
           <div v-if="isZenMode">
             <div class="dida-problems-container" v-if="contestId">
               <t-space style="flex-wrap: wrap">
-                <t-button v-for="(item, index) in contestProblems" :key="index"
+                <t-button
+                  v-for="(item, index) in contestProblems"
+                  :key="index"
                   :theme="item == problemIndex ? 'primary' : 'default'"
-                  @click="async () => await handleGotoContestProblem(contestId, item)">
+                  @click="async () => await handleGotoContestProblem(contestId, item)"
+                >
                   {{ GetContestProblemIndexStr(item) }}
                 </t-button>
               </t-space>
@@ -970,8 +993,14 @@ onBeforeUnmount(() => {
                 <div class="dida-zen-tags-container">
                   <span class="dida-zen-info-item">
                     <span class="dida-zen-label">标签:</span>
-                    <t-tag v-for="tag in problemData?.tags" :key="tag.id" size="small" variant="outline"
-                      @click="() => handleClickTag(tag)" class="dida-zen-tag">
+                    <t-tag
+                      v-for="tag in problemData?.tags"
+                      :key="tag.id"
+                      size="small"
+                      variant="outline"
+                      @click="() => handleClickTag(tag)"
+                      class="dida-zen-tag"
+                    >
                       {{ tag.name }}
                     </t-tag>
                   </span>
@@ -992,10 +1021,13 @@ onBeforeUnmount(() => {
             <div>
               <t-space>
                 <p>距离解锁百分比</p>
-                <t-progress theme="circle" :color="{ from: '#0052D9', to: '#00A870' }"
-                  :percentage="100 - (dailySolutionUnlockCountdown / (18 * 60 * 60)) * 100" :status="'active'">
-                  <template #label>{{ (100 - (dailySolutionUnlockCountdown / (18 * 60 * 60)) * 100).toFixed(3) }}%
-                  </template>
+                <t-progress
+                  theme="circle"
+                  :color="{ from: '#0052D9', to: '#00A870' }"
+                  :percentage="100 - (dailySolutionUnlockCountdown / (18 * 60 * 60)) * 100"
+                  :status="'active'"
+                >
+                  <template #label>{{ (100 - (dailySolutionUnlockCountdown / (18 * 60 * 60)) * 100).toFixed(3) }}% </template>
                 </t-progress>
               </t-space>
             </div>
@@ -1009,10 +1041,13 @@ onBeforeUnmount(() => {
             <div>
               <t-space style="margin: 0 auto">
                 <p>距离解锁百分比</p>
-                <t-progress theme="circle" :color="{ from: '#0052D9', to: '#00A870' }"
-                  :percentage="100 - (dailyCodeUnlockCountdown / (24 * 60 * 60)) * 100" :status="'active'">
-                  <template #label>{{ (100 - (dailyCodeUnlockCountdown / (24 * 60 * 60)) * 100).toFixed(3) }}%
-                  </template>
+                <t-progress
+                  theme="circle"
+                  :color="{ from: '#0052D9', to: '#00A870' }"
+                  :percentage="100 - (dailyCodeUnlockCountdown / (24 * 60 * 60)) * 100"
+                  :status="'active'"
+                >
+                  <template #label>{{ (100 - (dailyCodeUnlockCountdown / (24 * 60 * 60)) * 100).toFixed(3) }}% </template>
                 </t-progress>
               </t-space>
             </div>
@@ -1021,7 +1056,6 @@ onBeforeUnmount(() => {
 
         <!-- 详细信息面板 -->
         <div class="dida-zen-detail-info-panel" v-if="isZenMode">
-
           <!-- 统计信息 -->
           <div class="dida-detail-stats" v-if="!isContestProblem">
             <div class="dida-detail-section-title">统计数据</div>
@@ -1036,8 +1070,7 @@ onBeforeUnmount(() => {
               </div>
               <div class="dida-detail-row" v-if="problemData?.accept && problemData?.attempt">
                 <span class="dida-detail-label">通过率:</span>
-                <span class="dida-detail-value">{{ ((problemData?.accept / problemData?.attempt) * 100).toFixed(1)
-                }}%</span>
+                <span class="dida-detail-value">{{ ((problemData?.accept / problemData?.attempt) * 100).toFixed(1) }}%</span>
               </div>
             </div>
           </div>
@@ -1089,14 +1122,16 @@ onBeforeUnmount(() => {
             </div>
           </div>
         </div>
-
       </div>
       <div class="dida-col-right">
         <div class="dida-problems-container" v-if="contestId">
           <t-space style="flex-wrap: wrap">
-            <t-button v-for="(item, index) in contestProblems" :key="index"
+            <t-button
+              v-for="(item, index) in contestProblems"
+              :key="index"
               :theme="item == problemIndex ? 'primary' : 'default'"
-              @click="async () => await handleGotoContestProblem(contestId, item)">
+              @click="async () => await handleGotoContestProblem(contestId, item)"
+            >
               {{ GetContestProblemIndexStr(item) }}
             </t-button>
           </t-space>
@@ -1123,8 +1158,7 @@ onBeforeUnmount(() => {
                 {{ problemData?.source }}
               </span>
             </t-descriptions-item>
-            <t-descriptions-item label="是否私有" v-if="hasEditAuth">{{ problemData?.private ? "私有" : "公开" }}
-            </t-descriptions-item>
+            <t-descriptions-item label="是否私有" v-if="hasEditAuth">{{ problemData?.private ? "私有" : "公开" }} </t-descriptions-item>
             <t-descriptions-item v-if="problemData?.originUrl" label="原题链接">
               <t-link :href="problemData?.originUrl" target="_blank">
                 {{ problemData?.originOj }} -
@@ -1132,8 +1166,14 @@ onBeforeUnmount(() => {
               </t-link>
             </t-descriptions-item>
             <t-descriptions-item label="标签" v-if="problemKey">
-              <t-button class="dida-tag-button" v-for="tag in problemData?.tags" :key="tag.id" variant="dashed"
-                size="small" @click="() => handleClickTag(tag)">
+              <t-button
+                class="dida-tag-button"
+                v-for="tag in problemData?.tags"
+                :key="tag.id"
+                variant="dashed"
+                size="small"
+                @click="() => handleClickTag(tag)"
+              >
                 {{ tag.name }}
               </t-button>
             </t-descriptions-item>
@@ -1147,23 +1187,19 @@ onBeforeUnmount(() => {
               <t-button @click="handleClickRecommend" v-if="problemKey">题目推荐</t-button>
             </t-space>
           </div>
-          <div class="dida-operation-container"
-            v-if="(isDailyProblem && hasEditDailyAuth) || hasEditAuth || problemData?.originId">
+          <div class="dida-operation-container" v-if="(isDailyProblem && hasEditDailyAuth) || hasEditAuth || problemData?.originId">
             <t-space>
               <t-button v-if="isDailyProblem && hasEditDailyAuth" @click="handleClickDailyEdit">每日一题</t-button>
               <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
-              <t-button v-if="problemData?.originId" @click="handleClickCrawl" :loading="problemCrawlLoading">更新描述
-              </t-button>
+              <t-button v-if="problemData?.originId" @click="handleClickCrawl" :loading="problemCrawlLoading">更新描述 </t-button>
             </t-space>
           </div>
 
           <div class="dida-code-submit-div" v-if="isLogin">
             <t-form layout="inline">
               <t-form-item label="语言">
-                <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable
-                  @change="onSelectLanguageChanged">
-                  <t-option v-for="item in languageOptions" :key="item.value" :value="item.value"
-                    :label="item.label"></t-option>
+                <t-select v-model="selectLanguage" placeholder="请选择提交语言" auto-width clearable @change="onSelectLanguageChanged">
+                  <t-option v-for="item in languageOptions" :key="item.value" :value="item.value" :label="item.label"></t-option>
                 </t-select>
               </t-form-item>
               <t-form-item label="是否隐藏代码">
@@ -1179,8 +1215,7 @@ onBeforeUnmount(() => {
                 </t-space>
               </t-form-item>
             </t-form>
-            <div class="dida-code-editor-div" ref="codeEditRef">
-            </div>
+            <div class="dida-code-editor-div" ref="codeEditRef"></div>
           </div>
           <div style="text-align: center" v-else>
             <t-space>
@@ -1334,7 +1369,6 @@ onBeforeUnmount(() => {
   /* 防止内容溢出 */
   display: flex;
   flex-direction: column;
-
 }
 
 /* 运行区域头部 - 标题靠左，按钮靠右 */
@@ -1380,7 +1414,7 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   padding: 12px;
   font-size: 14px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   line-height: 1.5;
   outline: none;
   transition: border-color 0.2s ease;
@@ -1426,7 +1460,7 @@ onBeforeUnmount(() => {
   background: #f8f9fa;
   border: 1px solid #e9ecef;
   border-radius: 4px;
-  font-family: 'Courier New', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Courier New", "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 13px;
   line-height: 1.5;
   color: #333;
@@ -1680,5 +1714,45 @@ onBeforeUnmount(() => {
   transform: translateY(0);
   opacity: 1;
   max-height: 200px;
+}
+
+.run-result-container {
+  position: relative;
+  margin-top: 8px;
+}
+
+.copy-result-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copy-result-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: #c6e2ff;
+  color: #409eff;
+}
+
+.run-result-container:hover .copy-result-btn {
+  opacity: 1;
+}
+
+.run-result-content {
+  white-space: pre-wrap;
+  word-break: break-all;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 4px;
+  min-height: 60px;
 }
 </style>
