@@ -923,7 +923,7 @@ onBeforeUnmount(() => {
           <div class="dida-run-content">
             <textarea v-model="runTestData" placeholder="请输入测试数据" class="dida-run-input" :disabled="isRunning"></textarea>
             <t-card class="dida-run-card">
-              <t-tag theme="primary">{{ runStatus }}</t-tag>
+              <t-tag theme="primary" variant="light">{{ runStatus }}</t-tag>
               <div v-if="runResult" class="run-result-container">
                 <div class="run-result-content">{{ runResult }}</div>
                 <button class="copy-result-btn" @click="copyRunResult">
