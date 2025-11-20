@@ -215,7 +215,7 @@ const loadProblem = async () => {
   const judgeJob = res.data.problem.judge_job
 
   taskViews.value = [];
-  if (judgeJob.tasks) {
+  if (judgeJob && judgeJob.tasks) {
     judgeJob.tasks.forEach((judge: ProblemJudgeTask) => {
       taskViews.value.push({
         key: judge.key,
@@ -267,8 +267,7 @@ onMounted(async () => {
             <input ref="fileInput" type="file" style="display: none" @change="handleFileChange" />
             {{ dropText }}
           </div>
-          <t-table :data="taskViews" :columns="listColumns" row-key="id" vertical-align="top" table-layout="auto"
-            :hover="true" />
+          <t-table :data="taskViews" :columns="listColumns" row-key="id" vertical-align="top" table-layout="auto" :hover="true" style="margin: 10px" />
         </div>
       </t-col>
       <t-col :span="5">
