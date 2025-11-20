@@ -443,9 +443,9 @@ export function PostProblemDailyEdit(dailyId: string, problemKey: string, soluti
   });
 }
 
-export function GetJudgeDataDownload(id: number, key: string) {
+export function GetJudgeDataDownload(id: number) {
   return httpRequest({
-    url: "/problem/judge/data/download" + "?id=" + id + "&key=" + key,
+    url: "/problem/judge/data/download" + "?id=" + id,
     method: "get",
   });
 }

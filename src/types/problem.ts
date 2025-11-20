@@ -72,6 +72,16 @@ export interface ProblemJudgeData {
   last_modified: string;
 }
 
+export interface ProblemJudgeTask {
+  key: string;
+  score: number;
+  in_file: string;
+  in_file_size: number;
+  out_file: string;
+  out_file_size: number;
+  out_limit: number;
+}
+
 export interface ProblemDaily {
   key: string;
   problem_id: number;

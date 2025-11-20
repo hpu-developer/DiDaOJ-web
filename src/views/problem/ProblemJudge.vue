@@ -6,7 +6,8 @@ import { GetJudgeDataDownload, GetProblemJudge, ParseProblem, PostJudgeData } fr
 import { useCurrentInstance } from "@/util";
 import { ShowErrorParamTips, ShowErrorTips, ShowTextTipsError, ShowTextTipsSuccess } from "@/util/tips";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
-import { ProblemJudgeData, ProblemView } from "@/types/problem.ts";
+import { ProblemJudgeData, ProblemJudgeTask, ProblemView } from "@/types/problem.ts";
+import { GetFileSizeStr } from "@/util/file.ts";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -26,50 +27,50 @@ const fileName = ref("");
 const isDragging = ref(false);
 
 const isUploading = ref(false);
+const isDownloading = ref(false);
+
 
 const listColumns = ref([
   {
-    title: "文件",
-    colKey: "file",
+    title: "任务",
+    colKey: "key",
   },
   {
-    title: "大小",
-    colKey: "size",
-    width: 150,
+    title: "分数",
+    colKey: "score",
+  },
+  {
+    title: "输入文件",
+    colKey: "inFile",
+  },
+  {
+    title: "输入文件大小",
+    colKey: "inFileSize",
     cell: (_: any, data: any) => {
-      let size = data.row.size;
-      let sizeStr;
-      if (size > 10 * 1024) {
-        if (size > 1024 * 1024) {
-          sizeStr = (size / (1024 * 1024)).toFixed(3) + " MB";
-        } else {
-          sizeStr = (size / 1024).toFixed(3) + " KB";
-        }
-      } else {
-        sizeStr = size + " B";
-      }
-      return sizeStr;
+      return GetFileSizeStr(data.row.inFileSize)
     },
   },
   {
-    title: "最后编辑时间",
-    colKey: "lastModified",
-    width: 180,
+    title: "输出文件",
+    colKey: "outFile",
+  },
+  {
+    title: "输出文件大小",
+    colKey: "outFileSize",
     cell: (_: any, data: any) => {
-      return new Date(data.row.lastModified).toLocaleString();
+      return GetFileSizeStr(data.row.outFileSize)
     },
   },
   {
-    title: "操作",
-    colKey: "action",
-    width: 100,
+    title: "输出限制",
+    colKey: "outLimit",
     cell: (_: any, data: any) => {
-      return <t-button onClick={() => handleClickDownloadFile(data.row.file)}>下载</t-button>;
+      return GetFileSizeStr(data.row.outLimit)
     },
   },
 ]);
 
-const fileViews = ref([] as any);
+const taskViews = ref([] as any);
 
 const dropZoneStyle = computed(() => ({
   border: "2px dashed #ccc",
@@ -104,17 +105,23 @@ const handleClickEdit = () => {
   });
 };
 
-const handleClickDownloadFile = async (key: string) => {
-  const res = await GetJudgeDataDownload(problemId, key);
-  if (res.code !== 0) {
-    ShowErrorTips(globalProperties, res.code);
-    return;
+const handleClickDownloadFile = async (file: string) => {
+  isDownloading.value = true;
+  try {
+    const res = await GetJudgeDataDownload(problemId);
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+    const link = document.createElement("a");
+    link.href = res.data;
+    link.target = "_blank";
+    link.click();
+    URL.revokeObjectURL(link.href);
   }
-  const link = document.createElement("a");
-  link.href = res.data;
-  link.target = "_blank";
-  link.click();
-  URL.revokeObjectURL(link.href);
+  finally {
+    isDownloading.value = false;
+  }
 };
 
 const handleClickSave = async () => {
@@ -205,21 +212,20 @@ const loadProblem = async () => {
 
   webStyleStore.setTitle(problem.title + " - " + webStyleStore.getTitle);
 
-  fileViews.value = [];
-  if (res.data.judges) {
-    res.data.judges.forEach((judge: ProblemJudgeData) => {
-      fileViews.value.push({
-        file: judge.key,
-        size: judge.size,
-        lastModified: judge.last_modified,
+  const judgeJob = res.data.problem.judge_job
+
+  taskViews.value = [];
+  if (judgeJob.tasks) {
+    judgeJob.tasks.forEach((judge: ProblemJudgeTask) => {
+      taskViews.value.push({
+        key: judge.key,
+        score: judge.score,
+        inFile: judge.in_file,
+        inFileSize: judge.in_file_size,
+        outFile: judge.out_file,
+        outFileSize: judge.out_file_size,
+        outLimit: judge.out_limit,
       });
-    });
-    fileViews.value.sort((a, b) => {
-      if (a.file.endsWith(".zip") && !b.file.endsWith(".zip")) return -1;
-      if (!a.file.endsWith(".zip") && b.file.endsWith(".zip")) return 1;
-      if (a.file.endsWith(".yaml") && !b.file.endsWith(".yaml")) return -1;
-      if (!a.file.endsWith(".yaml") && b.file.endsWith(".yaml")) return 1;
-      return 0;
     });
   } else {
     ShowTextTipsError(globalProperties, "评测数据不存在");
@@ -250,26 +256,25 @@ onMounted(async () => {
     <t-row>
       <t-col :span="7">
         <div style="margin: 10px">
-          <div
-            id="drop-zone"
-            :style="dropZoneStyle"
-            @click="triggerFileInput"
-            @dragenter.prevent="handleDragEnter"
-            @dragover.prevent
-            @dragleave.prevent="handleDragLeave"
-            @drop="handleDrop"
-          >
+          <div style="margin: 10px;text-align: right;">
+            <t-space>
+              <t-button @click="handleClickDownloadFile" :loading="isDownloading">下载</t-button>
+              <t-button @click="handleClickSave" theme="danger" :loading="isUploading">上传</t-button>
+            </t-space>
+          </div>
+          <div id="drop-zone" :style="dropZoneStyle" @click="triggerFileInput" @dragenter.prevent="handleDragEnter"
+            @dragover.prevent @dragleave.prevent="handleDragLeave" @drop="handleDrop">
             <input ref="fileInput" type="file" style="display: none" @change="handleFileChange" />
             {{ dropText }}
           </div>
+          <t-table :data="taskViews" :columns="listColumns" row-key="id" vertical-align="top" table-layout="auto"
+            :hover="true" />
         </div>
-        <t-table :data="fileViews" :columns="listColumns" row-key="id" vertical-align="top" :hover="true" />
       </t-col>
       <t-col :span="5">
         <div style="margin: 12px">
           <div class="dida-edit-container">
             <t-space>
-              <t-button @click="handleClickSave" theme="danger" :loading="isUploading">上传</t-button>
               <t-button @click="handleClickEdit" theme="warning">编辑</t-button>
               <t-button @click="handleClickView">查看</t-button>
             </t-space>
