@@ -1,6 +1,7 @@
 ﻿export enum AuthType {
   ManageWeb = "i-manage-web",
   ManageJudge = "i-manage-judge",
+  ManageBotGame = "i-manage-bot-game",
   ManageProblem = "i-manage-problem",
   ManageProblemDaily = "i-manage-problem-daily",
   ManageContest = "i-manage-contest",
@@ -12,6 +13,7 @@ const roleAuths: Record<string, string[]> = {
   "r-admin": [
     AuthType.ManageWeb,
     AuthType.ManageJudge,
+    AuthType.ManageBotGame,
     AuthType.ManageProblem,
     AuthType.ManageProblemDaily,
     AuthType.ManageContest,

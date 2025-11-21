@@ -15,6 +15,9 @@ import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 import ProblemEdit from "@/views/problem/ProblemEdit.vue";
 import ProblemJudge from "@/views/problem/ProblemJudge.vue";
 
+import BotList from "@/views/bot/BotList.vue";
+import BotReplay from "@/views/bot/BotReplay.vue";
+
 import CollectionList from "@/views/collection/CollectionList.vue";
 import CollectionDetail from "@/views/collection/CollectionDetail.vue";
 import CollectionRank from "@/views/collection/CollectionRank.vue";
@@ -41,6 +44,7 @@ import SystemStatus from "@/views/system/SystemStatus.vue";
 import ManageJudge from "@/views/manage/ManageJudge.vue";
 import ManageWeb from "@/views/manage/ManageWeb.vue";
 import ContestRencently from "@/views/contest/ContestRencently.vue";
+import BotGame from "@/views/bot/BotGame.vue";
 
 const viewsConfig = [
   {
@@ -152,20 +156,22 @@ const viewsConfig = [
 
   {
     name: "judge-list",
-    tab: "judge",
+    tab: "problem",
     sidebar: "judge-list",
-    path: "",
     title: "评测列表",
     icon: "cloud",
+    path: "judge",
+    disableTabPath: true,
     component: JudgeJobList,
   },
   {
     name: "judge-detail",
-    tab: "judge",
+    tab: "problem",
     sidebar: "judge-list",
-    path: ":judgeId+",
     title: "评测详情",
     icon: "check-circle",
+    path: "judge/:judgeId+",
+    disableTabPath: true,
     component: JudgeJobDetail,
   },
 
@@ -227,6 +233,35 @@ const viewsConfig = [
     icon: "file-code",
     disableSidebar: true,
     component: ProblemDetail,
+  },
+  {
+    name: "bot-list",
+    tab: "bot",
+    sidebar: "bot-list",
+    path: "",
+    title: "对战列表",
+    icon: "flag",
+    component: BotList,
+  },
+  {
+    name: "bot-game",
+    tab: "bot",
+    sidebar: "bot-game",
+    path: ":gameKey+",
+    title: "游戏详情",
+    icon: "play",
+    disableSidebar: true,
+    component: BotGame,
+  },
+  {
+    name: "bot-replay",
+    tab: "bot",
+    sidebar: "bot-replay",
+    path: ":gameKey+/replay/:replayId+",
+    title: "对战详情",
+    icon: "play",
+    disableSidebar: true,
+    component: BotReplay,
   },
   {
     name: "contest-judge",
