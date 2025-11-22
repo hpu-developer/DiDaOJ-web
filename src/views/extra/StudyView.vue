@@ -1,7 +1,9 @@
-﻿<script setup lang="ts"></script>
+<script setup lang="ts">
+// 算法课程学习页面
+</script>
 
 <template>
-  <div style="margin: 20px">
+  <div class="study-view-container">
     <header>
       <h1>算法设计高级课程方案</h1>
       <p>分治策略 · 动态规划 · 贪心算法 · 回溯算法</p>
@@ -13,7 +15,7 @@
       <div class="two-columns">
         <div class="column">
           <h3>1. 分治策略 (Divide and Conquer)</h3>
-          <p>分治算法是一种将问题分解为若干子问题，递归解决子问题，再合并子问题解得到原问题解的算法策略:cite[1]:cite[4]。</p>
+          <p>分治算法是一种将问题分解为若干子问题，递归解决子问题，再合并子问题解得到原问题解的算法策略。</p>
           <ul>
             <li><span class="highlight">基本思想</span>：将大问题分解为k个较小规模的相同子问题</li>
             <li><span class="highlight">关键特征</span>：子问题相互独立且与原问题形式相同</li>
@@ -22,7 +24,7 @@
           </ul>
 
           <h3>2. 动态规划 (Dynamic Programming)</h3>
-          <p>动态规划通过保存子问题的解避免重复计算，适用于具有最优子结构和重叠子问题性质的问题:cite[1]:cite[6]。</p>
+          <p>动态规划通过保存子问题的解避免重复计算，适用于具有最优子结构和重叠子问题性质的问题。</p>
           <ul>
             <li><span class="highlight">基本思想</span>：记忆化存储，自底向上求解</li>
             <li><span class="highlight">关键特征</span>：最优子结构、重叠子问题、无后效性</li>
@@ -33,7 +35,7 @@
 
         <div class="column">
           <h3>3. 贪心算法 (Greedy Algorithm)</h3>
-          <p>贪心算法在每一步做出局部最优选择，希望最终得到全局最优解:cite[1]:cite[5]。</p>
+          <p>贪心算法在每一步做出局部最优选择，希望最终得到全局最优解。</p>
           <ul>
             <li><span class="highlight">基本思想</span>：当前状态下做出最好选择，不回溯</li>
             <li><span class="highlight">关键特征</span>：贪心选择性质、最优子结构</li>
@@ -42,7 +44,7 @@
           </ul>
 
           <h3>4. 回溯算法 (Backtracking)</h3>
-          <p>回溯法通过深度优先搜索解空间树，通过剪枝避免无效搜索:cite[1]:cite[7]。</p>
+          <p>回溯法通过深度优先搜索解空间树，通过剪枝避免无效搜索。</p>
           <ul>
             <li><span class="highlight">基本思想</span>：系统搜索解空间，走不通就回溯</li>
             <li><span class="highlight">关键特征</span>：解空间树、约束函数、限界函数</li>
@@ -271,7 +273,7 @@
 </template>
 
 <style scoped>
-body {
+.study-view-container {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   color: #333;
