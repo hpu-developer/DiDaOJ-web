@@ -216,36 +216,40 @@
       </div>
 
       <table>
-        <tr>
-          <th>教学环节</th>
-          <th>专业型硕士</th>
-          <th>学术型硕士</th>
-        </tr>
-        <tr>
-          <td>案例教学</td>
-          <td>70%课时</td>
-          <td>40%课时</td>
-        </tr>
-        <tr>
-          <td>理论证明</td>
-          <td>20%课时</td>
-          <td>50%课时</td>
-        </tr>
-        <tr>
-          <td>论文研读</td>
-          <td>10%课时</td>
-          <td>40%课时</td>
-        </tr>
-        <tr>
-          <td>实践项目</td>
-          <td>必做</td>
-          <td>选做</td>
-        </tr>
-        <tr>
-          <td>研究论文</td>
-          <td>选做</td>
-          <td>必做</td>
-        </tr>
+        <thead>
+          <tr>
+            <th>教学环节</th>
+            <th>专业型硕士</th>
+            <th>学术型硕士</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>案例教学</td>
+            <td>70%课时</td>
+            <td>40%课时</td>
+          </tr>
+          <tr>
+            <td>理论证明</td>
+            <td>20%课时</td>
+            <td>50%课时</td>
+          </tr>
+          <tr>
+            <td>论文研读</td>
+            <td>10%课时</td>
+            <td>40%课时</td>
+          </tr>
+          <tr>
+            <td>实践项目</td>
+            <td>必做</td>
+            <td>选做</td>
+          </tr>
+          <tr>
+            <td>研究论文</td>
+            <td>选做</td>
+            <td>必做</td>
+          </tr>
+        </tbody>
       </table>
     </div>
 
