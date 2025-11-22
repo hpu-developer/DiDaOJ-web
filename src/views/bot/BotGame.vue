@@ -273,20 +273,9 @@ onMounted(async () => {
       <!-- 右侧：信息和操作 -->
       <div class="dida-col-right">
         <!-- 问题基础信息 -->
-        <t-card style="margin-bottom: 10px">
-          <template #header>
-            <div class="dida-card-header">
-              <h3>游戏信息</h3>
-            </div>
-          </template>
+        <t-card style="margin-bottom: 10px" title="游戏信息">
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="游戏ID">{{ gameData?.id }}</t-descriptions-item>
-            <t-descriptions-item label="难度">
-              <t-tag v-if="gameData?.difficulty" :variant="getDifficultyVariant(gameData.difficulty)">
-                {{ gameData.difficulty }}
-              </t-tag>
-              <span v-else>-</span>
-            </t-descriptions-item>
+            <t-descriptions-item label="游戏名">{{ gameData?.title }}</t-descriptions-item>
             <t-descriptions-item label="最大玩家数">{{ gameData?.maxPlayers }}</t-descriptions-item>
             <t-descriptions-item label="时间限制">{{ gameData?.timeLimit }}</t-descriptions-item>
             <t-descriptions-item label="内存限制">{{ gameData?.memoryLimit }}</t-descriptions-item>
@@ -299,52 +288,6 @@ onMounted(async () => {
             <t-descriptions-item label="创建时间">{{ formatTime(gameData?.createTime) }}</t-descriptions-item>
             <t-descriptions-item label="更新时间">{{ formatTime(gameData?.updateTime) }}</t-descriptions-item>
           </t-descriptions>
-        </t-card>
-
-        <!-- 当前对局信息 -->
-        <t-card :loading="matchLoading" style="margin-bottom: 10px">
-          <template #header>
-            <div class="dida-card-header">
-              <h3>当前对局</h3>
-            </div>
-          </template>
-          <div v-if="currentMatch" class="dida-match-info">
-            <t-descriptions :column="1">
-              <t-descriptions-item label="对局ID">{{ currentMatch.id }}</t-descriptions-item>
-              <t-descriptions-item label="状态">
-                <t-tag :variant="getMatchStatusVariant(currentMatch.status)">
-                  {{ getMatchStatusText(currentMatch.status) }}
-                </t-tag>
-              </t-descriptions-item>
-              <t-descriptions-item label="创建时间">{{ formatTime(currentMatch.createTime) }}</t-descriptions-item>
-              <t-descriptions-item label="参与者">
-                <div class="players-container">
-                  <div v-for="(player, index) in currentMatch.players" :key="player.id" class="player-item">
-                    <span class="player-rank">{{ index + 1 }}</span>
-                    <span class="player-name">{{ player.name || "匿名用户" }}</span>
-                    <span v-if="player.score !== undefined" class="player-score">得分: {{ player.score }}</span>
-                  </div>
-                  <div v-if="!currentMatch.players || currentMatch.players.length === 0" class="no-players">暂无参与者</div>
-                </div>
-              </t-descriptions-item>
-              <t-descriptions-item label="进度">
-                <div class="progress-container">
-                  <t-progress
-                    :value="getPlayerProgress(currentMatch.players?.length || 0, gameData?.maxPlayers || 0)"
-                    :max="100"
-                    :show-percentage="true"
-                  />
-                  <span class="progress-text">{{ currentMatch.players?.length || 0 }} / {{ gameData?.maxPlayers || 0 }}</span>
-                </div>
-              </t-descriptions-item>
-              <t-descriptions-item v-if="currentMatch.startTime" label="开始时间">{{ formatTime(currentMatch.startTime) }}</t-descriptions-item>
-              <t-descriptions-item v-if="currentMatch.endTime" label="结束时间">{{ formatTime(currentMatch.endTime) }}</t-descriptions-item>
-            </t-descriptions>
-          </div>
-          <div v-else class="dida-no-match">
-            <t-empty description="暂无进行中的对局" />
-            <p class="text-center mt-2">点击下方按钮创建新对局</p>
-          </div>
         </t-card>
 
         <!-- 操作按钮 -->
