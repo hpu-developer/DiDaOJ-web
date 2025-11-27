@@ -10,6 +10,7 @@ export enum JudgeLanguage {
   Golang = 5,
   Lua = 6,
   TypeScript = 7,
+  Rust = 8,
   Max,
 }
 
@@ -64,6 +65,8 @@ export function GetJudgeLanguageStr(language: JudgeLanguage | undefined) {
       return "Lua";
     case JudgeLanguage.TypeScript:
       return "TypeScript";
+    case JudgeLanguage.Rust:
+      return "Rust";
     default:
       return "未知";
   }
@@ -87,6 +90,8 @@ export function GetHighlightKeyByJudgeLanguage(language: JudgeLanguage) {
       return "lua";
     case JudgeLanguage.TypeScript:
       return "typescript";
+    case JudgeLanguage.Rust:
+      return "rust";
     default:
       return "text";
   }
