@@ -63,6 +63,10 @@ export default defineConfig({
           label: "typescript",
           entry: "monaco-editor/esm/vs/basic-languages/typescript/typescript.js",
         },
+        {
+          label: "rust",
+          entry: "monaco-editor/esm/vs/basic-languages/rust/rust.js",
+        },
       ],
     }),
   ],
