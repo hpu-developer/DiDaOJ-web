@@ -37,10 +37,16 @@ export function ParseBotGame(item: BotGame): BotGameView {
   result.title = item.title;
   result.description = item.description;
   result.judgeCode = item.judge_code;
+  result.playerMax = item.player_max;
   result.inserter = item.inserter;
+  result.inserterNickname = item.inserterNickname;
+  result.inserterUsername = item.inserterUsername;
   if (item.insert_time != undefined) {
     result.insertTime = new Date(item.insert_time).toLocaleString();
   }
+  result.modifier = item.modifier;
+  result.modifierNickname = item.modifierNickname;
+  result.modifierUsername = item.modifierUsername;
   if (item.modify_time != undefined) {
     result.modifyTime = new Date(item.modify_time).toLocaleString();
   }
