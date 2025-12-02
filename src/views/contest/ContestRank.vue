@@ -5,14 +5,14 @@ import { LocationQuery, useRoute, useRouter } from "vue-router";
 import { useCurrentInstance } from "@/util";
 import { GetCommonErrorCode, GetEllipsisText, ShowErrorTips, ShowTextTipsInfo } from "@/util/tips";
 import { GetContestProblemIndexStr, GetContestRank } from "@/apis/contest.ts";
-import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { JudgeStatus } from "@/apis/judge.ts";
-import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
 import { GetSecondFromDuration, GetTimeStringBySeconds } from "@/time/library.ts";
 import { StarIcon, StarFilledIcon } from "tdesign-icons-vue-next";
 import { useContestStore } from "@/stores/contest.ts";
 import { TNode } from "tdesign-vue-next/es/common";
 import { GetAvatarUrl } from "@/util/avatar.ts";
+import type { BaseTableCol } from "tdesign-vue-next";
+import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
 
 const route = useRoute();
 const router = useRouter();

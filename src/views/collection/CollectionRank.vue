@@ -6,9 +6,9 @@ import { useCurrentInstance } from "@/util";
 import { GetCommonErrorCode, ShowErrorTips } from "@/util/tips";
 import { GetCollectionRank } from "@/apis/collection.ts";
 import type { CollectionRank, CollectionRankView } from "@/types/collection.ts";
-import { BaseTableCol } from "tdesign-vue-next/es/table/type";
 import { JudgeStatus } from "@/apis/judge.ts";
 import { GetAvatarUrl } from "@/util/avatar.ts";
+import type { BaseTableCol } from "tdesign-vue-next";
 
 const route = useRoute();
 const router = useRouter();

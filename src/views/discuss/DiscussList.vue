@@ -7,7 +7,7 @@ import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo } from "@/util/tips
 import { GetDiscussList, ParseDiscuss } from "@/apis/discuss.ts";
 import { Discuss, DiscussView } from "@/types/discuss.ts";
 import { GetContestProblemIndexStr } from "@/apis/contest.ts";
-import { BaseTableCol } from "tdesign-vue-next/es/table/type";
+import type { BaseTableCol } from "tdesign-vue-next";
 import { handleGotoProblem, handleGotoUsername } from "@/util/router.ts";
 import { GetAvatarUrl } from "@/util/avatar.ts";
 
