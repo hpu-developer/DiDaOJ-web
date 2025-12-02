@@ -16,6 +16,8 @@ import ProblemEdit from "@/views/problem/ProblemEdit.vue";
 import ProblemJudge from "@/views/problem/ProblemJudge.vue";
 
 import BotList from "@/views/bot/BotList.vue";
+import BotGame from "@/views/bot/BotGame.vue";
+import BotGameEdit from "@/views/bot/BotGameEdit.vue";
 import BotReplay from "@/views/bot/BotReplay.vue";
 
 import CollectionList from "@/views/collection/CollectionList.vue";
@@ -44,7 +46,6 @@ import SystemStatus from "@/views/system/SystemStatus.vue";
 import ManageJudge from "@/views/manage/ManageJudge.vue";
 import ManageWeb from "@/views/manage/ManageWeb.vue";
 import ContestRencently from "@/views/contest/ContestRencently.vue";
-import BotGame from "@/views/bot/BotGame.vue";
 
 const viewsConfig = [
   {
@@ -239,28 +240,55 @@ const viewsConfig = [
     tab: "bot",
     sidebar: "bot-list",
     path: "",
-    title: "对战列表",
+    title: "游戏列表",
     icon: "flag",
     component: BotList,
   },
+  // {
+  //   name: "bot-replay-list",
+  //   tab: "bot",
+  //   sidebar: "bot-replay-list",
+  //   path: "",
+  //   title: "回放列表",
+  //   icon: "camera",
+  //   component: BotList,
+  // },
   {
     name: "bot-game",
-    tab: "bot",
+    tab: "bot-detail-tab",
     sidebar: "bot-game",
     path: ":gameKey+",
     title: "游戏详情",
     icon: "play",
-    disableSidebar: true,
     component: BotGame,
   },
   {
-    name: "bot-replay",
-    tab: "bot",
-    sidebar: "bot-replay",
-    path: ":gameKey+/replay/:replayId+",
-    title: "对战详情",
-    icon: "play",
+    name: "manage-bot-game",
+    tab: "bot-detail-tab",
+    sidebar: "manage-bot-game",
     disableSidebar: true,
+    path: "game/:gameKey+",
+    title: "游戏编辑",
+    icon: "edit",
+    component: BotGameEdit,
+    auths: [AuthType.ManageBotGame],
+  },
+  {
+    name: "bot-replay-list",
+    tab: "bot-detail-tab",
+    sidebar: "bot-replay-list",
+    path: ":gameKey+/replay",
+    title: "回放列表",
+    icon: "camera",
+    component: BotList,
+  },
+  {
+    name: "bot-replay",
+    tab: "bot-detail-tab",
+    sidebar: "bot-replay-list",
+    path: ":gameKey+/replay/:replayId+",
+    title: "回放详情",
+    icon: "play",
     component: BotReplay,
   },
   {

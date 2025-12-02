@@ -45,6 +45,14 @@ const tabsConfig: Tab[] = [
     redirect: "bot-list",
   },
   {
+    name: "bot-detail-tab",
+    title: "对战",
+    path: "/bot",
+    showSidebar: true,
+    disableGenerateTab: true,
+    redirect: "bot-list",
+  },
+  {
     name: "contest",
     path: "/contest",
     title: "比赛",

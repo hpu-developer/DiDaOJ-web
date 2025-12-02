@@ -5,6 +5,8 @@ import { useCurrentInstance } from "@/util";
 import { ShowTextTipsInfo, ShowTextTipsError } from "@/util/tips";
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
+import { GetBotGame } from "@/apis/bot.ts";
+import router from "@/router";
 
 // 获取路由和全局属性
 const route = useRoute();
@@ -12,10 +14,24 @@ const { globalProperties } = useCurrentInstance();
 const userStore = useUserStore();
 
 // 响应式数据
-const gameId = ref(route.params.id as string);
+const gameId = ref(route.params.gameKey as string);
 const gameLoading = ref(false);
-const gameData = ref<any>(null);
+const gameData = ref<any>({
+  // 提供默认值以确保模板渲染不会出错
+  id: '',
+  key: '',
+  title: '',
+  description: '',
+  difficulty: '中等',
+  maxPlayers: 2,
+  timeLimit: '30秒',
+  memoryLimit: '256MB',
+  author: '系统管理员',
+  createTime: '-',
+  updateTime: '-'
+});
 const gameDescription = ref("");
+const errorMessage = ref(""); // 用于显示具体错误信息
 
 // 对局相关数据
 const matchLoading = ref(false);
@@ -34,29 +50,64 @@ const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageBotGame);
 });
 
+const handleClickEdit = async () => {
+  await router.push({
+    name: "manage-bot-game",
+    params: {
+      gameKey: gameId.value,
+    },
+  });
+};
+
 // 加载游戏数据
 const loadGameData = async () => {
   gameLoading.value = true;
+  errorMessage.value = '';
+
   try {
-    // 这里应该调用实际的API来获取游戏数据
-    // 暂时使用模拟数据
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // 验证gameId是否存在
+    if (!gameId.value) {
+      throw new Error('游戏ID无效');
+    }
+
+    // 调用实际的API来获取游戏数据
+    const res = await GetBotGame(gameId.value);
+
+    // 检查API响应
+    if (!res) {
+      throw new Error('API响应为空');
+    }
+
+    if (res.code !== 0) {
+      const errorMsg = `加载游戏数据失败，错误码：${res.code}${res.msg ? '，' + res.msg : ''}`;
+      errorMessage.value = errorMsg;
+      ShowTextTipsError(globalProperties, errorMsg);
+      return;
+    }
+
+    // 处理API返回的数据
+    const gameInfo = res.data;
+
+    if (!gameInfo) {
+      throw new Error('游戏数据为空');
+    }
+
+    // 更新游戏数据，保留原有默认值
     gameData.value = {
-      id: gameId.value,
-      title: "机器人对战游戏示例",
-      description:
-        "这是一个机器人对战游戏的描述信息。玩家需要编写AI代码控制机器人进行对战。游戏规则：\n\n1. 每个玩家控制一个机器人\n2. 机器人可以移动、攻击和使用技能\n3. 目标是击败对手的机器人\n4. 游戏有时间限制，超时则根据剩余生命值判断胜负\n\n请编写你的AI逻辑来赢得比赛！",
-      difficulty: "中等",
-      maxPlayers: 2,
-      timeLimit: "30秒",
-      memoryLimit: "256MB",
-      author: "系统管理员",
-      createTime: "2023-01-01 10:00:00",
-      updateTime: "2023-01-01 10:00:00",
+      ...gameData.value, // 保留默认值
+      id: gameInfo.id || gameData.value.id,
+      key: gameInfo.key || gameData.value.key,
+      title: gameInfo.title || gameData.value.title,
+      description: gameInfo.description || gameData.value.description,
+      createTime: gameInfo.insert_time || gameInfo.createTime || gameData.value.createTime,
+      updateTime: gameInfo.modify_time || gameInfo.updateTime || gameData.value.updateTime
     };
+
     gameDescription.value = gameData.value.description;
   } catch (error) {
-    ShowTextTipsError(globalProperties, "加载游戏数据失败");
+    const errorText = error instanceof Error ? error.message : '加载游戏数据时发生未知错误';
+    errorMessage.value = errorText;
+    ShowTextTipsError(globalProperties, errorText);
   } finally {
     gameLoading.value = false;
   }
@@ -258,14 +309,19 @@ onMounted(async () => {
     <div class="dida-row">
       <!-- 左侧：游戏描述 -->
       <div class="dida-col-left">
+        <!-- 错误提示 -->
+        <div v-if="errorMessage" class="dida-error-message">
+          {{ errorMessage }}
+        </div>
+
         <t-card :loading="gameLoading" style="margin-bottom: 10px">
           <template #header>
             <div class="dida-card-header">
-              <h2 class="dida-game-title">{{ gameData?.title }}</h2>
+              <h2 class="dida-game-title">{{ gameData.title }}</h2>
             </div>
           </template>
           <div class="dida-game-description">
-            <div v-html="gameDescription.replace(/\n/g, '<br>')"></div>
+            <md-preview :model-value="gameDescription" previewTheme="cyanosis" />
           </div>
         </t-card>
       </div>
@@ -273,59 +329,18 @@ onMounted(async () => {
       <!-- 右侧：信息和操作 -->
       <div class="dida-col-right">
         <!-- 问题基础信息 -->
-        <t-card style="margin-bottom: 10px" title="游戏信息">
-          <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="游戏名">{{ gameData?.title }}</t-descriptions-item>
-            <t-descriptions-item label="最大玩家数">{{ gameData?.maxPlayers }}</t-descriptions-item>
-            <t-descriptions-item label="时间限制">{{ gameData?.timeLimit }}</t-descriptions-item>
-            <t-descriptions-item label="内存限制">{{ gameData?.memoryLimit }}</t-descriptions-item>
-            <t-descriptions-item label="分类">{{ gameData?.category || "-" }}</t-descriptions-item>
-            <t-descriptions-item label="来源">{{ gameData?.source || "-" }}</t-descriptions-item>
-            <t-descriptions-item label="提交数">{{ gameData?.submitCount || 0 }}</t-descriptions-item>
-            <t-descriptions-item label="通过数">{{ gameData?.acceptCount || 0 }}</t-descriptions-item>
-            <t-descriptions-item label="通过率">{{ gameData?.passRate || "0%" }}</t-descriptions-item>
-            <t-descriptions-item label="作者">{{ gameData?.author }}</t-descriptions-item>
-            <t-descriptions-item label="创建时间">{{ formatTime(gameData?.createTime) }}</t-descriptions-item>
-            <t-descriptions-item label="更新时间">{{ formatTime(gameData?.updateTime) }}</t-descriptions-item>
-          </t-descriptions>
-        </t-card>
+        <t-descriptions layout="vertical" :bordered="true">
+          <t-descriptions-item label="游戏名">{{ gameData?.title }}</t-descriptions-item>
+          <t-descriptions-item label="最大玩家数">{{ gameData?.maxPlayers }}</t-descriptions-item>
+          <t-descriptions-item label="作者">{{ gameData?.author }}</t-descriptions-item>
+          <t-descriptions-item label="创建时间">{{ formatTime(gameData?.createTime) }}</t-descriptions-item>
+          <t-descriptions-item label="更新时间">{{ formatTime(gameData?.updateTime) }}</t-descriptions-item>
+        </t-descriptions>
 
         <!-- 操作按钮 -->
         <div class="dida-operation-container">
           <t-space>
-            <t-button
-              v-if="!currentMatch || currentMatch.status === 'completed' || currentMatch.status === 'cancelled'"
-              type="primary"
-              :loading="isCreatingMatch"
-              @click="createNewMatch"
-              :disabled="!isLogin"
-              size="large"
-            >
-              创建对局
-            </t-button>
-            <t-button
-              v-else-if="currentMatch.status === 'waiting'"
-              type="success"
-              @click="joinGame"
-              size="large"
-              :disabled="!isLogin || hasJoined || isJoining"
-              :loading="isJoining"
-            >
-              {{ hasJoined ? "已加入" : "加入对局" }}
-            </t-button>
-            <t-button v-else-if="currentMatch.status === 'playing'" type="info" @click="enterGame" size="large" :disabled="!isLogin || !hasJoined">
-              进入对局
-            </t-button>
-            <t-button
-              v-if="currentMatch && isCreator"
-              type="danger"
-              @click="cancelGame"
-              size="large"
-              :disabled="currentMatch.status === 'playing' || currentMatch.status === 'completed'"
-            >
-              取消对局
-            </t-button>
-            <t-button v-if="hasEditAuth" @click="editGame" type="default"> 编辑游戏 </t-button>
+            <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
           </t-space>
         </div>
       </div>
@@ -348,7 +363,7 @@ onMounted(async () => {
 }
 
 .dida-col-right {
-  flex: 1;
+  flex: 2;
   min-width: 300px;
 }
 
@@ -431,19 +446,17 @@ onMounted(async () => {
 }
 
 .dida-operation-container {
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
+  margin: 10px 0 20px;
+  text-align: right;
 }
 
-@media (max-width: 768px) {
-  .dida-row {
-    flex-direction: column;
-  }
-
-  .dida-col-right {
-    min-width: auto;
-  }
+.dida-error-message {
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  border-radius: 4px;
+  color: #f5222d;
+  font-size: 14px;
 }
 </style>

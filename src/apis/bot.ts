@@ -29,6 +29,13 @@ export function IsBotStatusRunning(status: BotStatus) {
     }
 }
 
+export function GetBotGame(gameKey:string) {
+  return httpRequest({
+    url: "/bot/game" + "?game_key=" + gameKey,
+    method: "get",
+  });
+}
+
 export function GetBotReplay(gameKey:string, replayId:number) {
   return httpRequest({
     url: "/bot/replay" + "?game_key=" + gameKey + "&replay_id=" + replayId,
