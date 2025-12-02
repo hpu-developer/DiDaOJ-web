@@ -1,110 +1,46 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { ChevronDownIcon } from "tdesign-icons-vue-next";
 import { HandleR2ImageUpload } from "@/util/md-editor-v3.ts";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import { useCurrentInstance } from "@/util";
 import { ShowErrorTips, ShowTextTipsSuccess } from "@/util/tips";
-import { GetProblem, GetProblemTagList, ParseProblem, GetProblemImageToken, PostProblemCreate, PostProblemEdit } from "@/apis/problem.ts";
-import type { ProblemTag, ProblemView } from "@/types/problem.ts";
+import { GetBotGame, GetBotGameImageToken, ParseBotGame, PostBotGameCreate, PostBotGameEdit } from "@/apis/bot.ts";
+
+// Monaco Editor imports
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+import { editor } from "monaco-editor/esm/vs/editor/editor.api";
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
 
 const webStyleStore = useWebStyleStore();
 
-let problemId = 0;
-const problemKey = ref("");
-const problemLoading = ref(false);
+let gameId = 0;
+const gameKey = ref("");
+const gameLoading = ref(false);
 const isSaving = ref(false);
 const disabledEdit = ref(false);
 
-const problemData = ref<ProblemView | null>(null);
+const gameData = ref<any>(null);
 
-const problemEditForm = ref({
+const gameEditForm = ref({
   title: "",
-  timeLimit: 0,
-  memoryLimit: 0,
-  source: "",
-  private: true,
-  tags: [] as string[],
   description: "",
+  judgeCode: "",
 });
 
-const problemTags = ref([] as { label: string; value: number }[]);
-const problemTagOptions = ref([] as { label: string; value: number }[]);
-
-const problemTagsCheckbox = computed(() => {
-  const arr = [];
-  const list = problemTags.value;
-  // 此处不使用 forEach，减少函数迭代
-  for (let i = 0, len = list.length; i < len; i++) {
-    list[i].value && arr.push(list[i].value);
-  }
-  return arr;
-});
-
-const onTagChange = (_: any, context: any) => {
-  const { trigger, index, item } = context;
-  if (trigger === "clear") {
-    problemTags.value = [];
-  }
-  if (["tag-remove", "backspace"].includes(trigger)) {
-    problemTags.value.splice(index, 1);
-  }
-  if (trigger === "enter") {
-    for (let i = 0; i < problemTagOptions.value.length; i++) {
-      const tag = problemTagOptions.value[i];
-      if (tag.label === item) {
-        for (let j = 0; j < problemTags.value.length; j++) {
-          if (problemTags.value[j].label === tag.label) {
-            return;
-          }
-        }
-        problemTags.value.push(tag);
-        return;
-      }
-    }
-    const current = { label: item, value: item };
-    problemTags.value.push(current);
-    problemTagOptions.value = problemTagOptions.value.concat(current);
-  }
-};
-
-const onTagCheckedChange = (_: any, { current, type }: any) => {
-  // current 不存在，则表示操作全选
-  if (!current) {
-    problemTags.value = type === "check" ? problemTagOptions.value.slice(1) : [];
-    return;
-  }
-  // 普通操作
-  if (type === "check") {
-    const option = problemTagOptions.value.find((t) => t.value === current);
-    if (!option) {
-      return;
-    }
-    problemTags.value.push(option);
-  } else {
-    problemTags.value = problemTags.value.filter((v) => v.value !== current);
-  }
-};
+// Code editor related
+const judgeCodeEditRef = ref<HTMLElement | null>(null);
+let codeEditor = null as IStandaloneCodeEditor | null;
 
 const handleClickView = () => {
   router.push({
-    name: "problem-detail",
+    name: "bot-game",
     params: {
-      problemKey: problemKey.value,
-    },
-  });
-};
-
-const handleClickJudge = () => {
-  router.push({
-    name: "manage-problem-judge",
-    params: {
-      problemKey: problemKey.value,
+      gameKey: gameKey.value,
     },
   });
 };
@@ -112,7 +48,7 @@ const handleClickJudge = () => {
 const onUploadImg = async (files: File[], callback: (urls: { url: string; alt: string; title: string }[]) => void) => {
   disabledEdit.value = true;
   await HandleR2ImageUpload(files, callback, globalProperties, () => {
-    return GetProblemImageToken(problemId);
+    return GetBotGameImageToken(gameId);
   });
   disabledEdit.value = false;
 };
@@ -120,26 +56,12 @@ const onUploadImg = async (files: File[], callback: (urls: { url: string; alt: s
 const handleClickCreate = async () => {
   isSaving.value = true;
 
-  problemEditForm.value.tags = [];
-  for (let i = 0; i < problemTags.value.length; i++) {
-    const tag = problemTags.value[i];
-    if (tag && tag.label) {
-      problemEditForm.value.tags.push(tag.label);
-    }
-  }
-
   try {
-    const res = await PostProblemCreate(
-      problemEditForm.value.title,
-      problemEditForm.value.timeLimit,
-      problemEditForm.value.memoryLimit,
-      problemEditForm.value.source,
-      problemEditForm.value.private,
-      problemEditForm.value.tags,
-      problemEditForm.value.description
+    const res = await PostBotGameCreate(
+      gameEditForm.value.title,
+      gameEditForm.value.description,
+      gameEditForm.value.judgeCode,
     );
-
-    isSaving.value = true;
 
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
@@ -148,8 +70,8 @@ const handleClickCreate = async () => {
 
     if (res.data != undefined) {
       await router.push({
-        name: "problem-detail",
-        params: { problemKey: res.data },
+        name: "bot-game",
+        params: { gameKey: res.data.game_key },
       });
     }
 
@@ -162,40 +84,29 @@ const handleClickCreate = async () => {
 const handleClickSave = async () => {
   isSaving.value = true;
 
-  problemEditForm.value.tags = [];
-  for (let i = 0; i < problemTags.value.length; i++) {
-    const tag = problemTags.value[i];
-    if (tag && tag.label) {
-      problemEditForm.value.tags.push(tag.label);
-    }
-  }
-
   try {
-    const res = await PostProblemEdit(
-      problemId,
-      problemEditForm.value.title,
-      problemEditForm.value.timeLimit,
-      problemEditForm.value.memoryLimit,
-      problemEditForm.value.source,
-      problemEditForm.value.private,
-      problemEditForm.value.tags,
-      problemEditForm.value.description
+    const res = await PostBotGameEdit(
+      gameId,
+      gameEditForm.value.title,
+      gameEditForm.value.description,
+      gameEditForm.value.judgeCode
     );
-
-    isSaving.value = true;
 
     if (res.code !== 0) {
       ShowErrorTips(globalProperties, res.code);
       return;
     }
 
-    if (problemData.value) {
+    if (gameData.value) {
       if (res.data.modify_time != undefined) {
-        problemData.value.modifyTime = new Date(res.data.modify_time).toLocaleString();
+        gameData.value.modifyTime = new Date(res.data.modify_time).toLocaleString();
       }
     }
     if (res.data.description != undefined) {
-      problemEditForm.value.description = res.data.description;
+      gameEditForm.value.description = res.data.description;
+    }
+    if (res.data.judge_code != undefined) {
+      gameEditForm.value.judgeCode = res.data.judge_code;
     }
 
     ShowTextTipsSuccess(globalProperties, "保存成功");
@@ -205,7 +116,7 @@ const handleClickSave = async () => {
 };
 
 const onEditSave = async () => {
-  if (problemId){
+  if (gameId){
     await handleClickSave();
   } else {
     await handleClickCreate();
@@ -213,100 +124,144 @@ const onEditSave = async () => {
 }
 
 const loadDescriptionEditor = (description: string) => {
-  problemEditForm.value.description = description;
-  problemLoading.value = false;
+  gameEditForm.value.description = description;
+  gameLoading.value = false;
 };
 
-const loadProblem = async () => {
-  const res = await GetProblem(problemKey.value, undefined, undefined);
+// 初始化代码编辑器
+const initCodeEditor = () => {
+  if (judgeCodeEditRef.value) {
+    // 清空现有内容
+    judgeCodeEditRef.value.innerHTML = "";
+
+    // 创建编辑器容器
+    const editorContainer = document.createElement("div");
+    editorContainer.style.width = "100%";
+    editorContainer.style.height = "400px";
+
+    codeEditor = monaco.editor.create(editorContainer, {
+      value: gameEditForm.value.judgeCode,
+      language: "go",
+      minimap: { enabled: true },
+      colorDecorators: true,
+      readOnly: disabledEdit.value || isSaving.value,
+      theme: "vs-dark",
+      automaticLayout: true,
+      fontSize: 14,
+      tabSize: 2,
+      scrollBeyondLastLine: false,
+    });
+
+    judgeCodeEditRef.value.appendChild(editorContainer);
+
+    // 监听编辑器内容变化
+    codeEditor.onDidChangeModelContent(() => {
+      if (codeEditor) {
+        gameEditForm.value.judgeCode = codeEditor.getValue();
+      }
+    });
+
+    // 确保编辑器正确布局
+    nextTick(() => {
+      if (codeEditor) {
+        codeEditor.layout();
+      }
+    });
+  }
+};
+
+// 更新编辑器内容
+const updateCodeEditorContent = () => {
+  if (codeEditor) {
+    codeEditor.setValue(gameEditForm.value.judgeCode);
+    codeEditor.updateOptions({
+      readOnly: disabledEdit.value || isSaving.value
+    });
+  }
+};
+
+// 销毁编辑器
+const disposeCodeEditor = () => {
+  if (codeEditor) {
+    codeEditor.dispose();
+    codeEditor = null;
+  }
+};
+
+const loadGame = async () => {
+  const res = await GetBotGame(gameKey.value);
   if (res.code !== 0) {
     ShowErrorTips(globalProperties, res.code);
-    console.error("problem get failed", res.code);
-    await router.push({ name: "problem" });
+    console.error("game get failed", res.code);
+    await router.push({ name: "bot-game" });
     return;
   }
 
-  const problem = res.data.problem;
+  const gameInfo = ParseBotGame(res.data);
 
-  problemId = problem.id;
-
-  problemData.value = ParseProblem(problem, {} as any);
-
-  problemEditForm.value.title = problem.title;
-  problemEditForm.value.timeLimit = problem.time_limit;
-  problemEditForm.value.memoryLimit = problem.memory_limit;
-  problemEditForm.value.source = problem.source;
-  problemEditForm.value.private = problem.private;
-
-  problemEditForm.value.tags = [];
-  problemTags.value = [] as { label: string; value: number }[];
-  if (res.data.tags) {
-    for (let i = 0; i < res.data.tags.length; i++) {
-      const tag = res.data.tags[i];
-      if (tag && tag.name) {
-        problemEditForm.value.tags.push(tag.name);
-        problemTags.value.push({ label: tag.name, value: tag.id });
-      }
-    }
+  if (!gameInfo) {
+    ShowErrorTips(globalProperties, "获取游戏数据失败");
+    await router.push({ name: "bot-game" });
+    return;
   }
 
-  webStyleStore.setTitle(problem.title + " - " + webStyleStore.getTitle);
+  gameId = gameInfo.id;
+  gameData.value = gameInfo;
 
-  let problemDescription = problem.description as string;
+  gameEditForm.value.title = gameInfo.title;
+  gameEditForm.value.description = gameInfo.description || "";
+  gameEditForm.value.judgeCode = gameInfo.judgeCode || "";
 
-  loadDescriptionEditor(problemDescription);
+  webStyleStore.setTitle(gameInfo.title + " - " + webStyleStore.getTitle);
+
+  loadDescriptionEditor(gameInfo.description || "");
+  
+  // 等待DOM更新后初始化代码编辑器
+  nextTick(() => {
+    initCodeEditor();
+  });
 };
 
 onMounted(async () => {
-  if (Array.isArray(route.params.problemKey)) {
-    problemKey.value = route.params.problemKey[0];
+  if (Array.isArray(route.params.gameKey)) {
+    gameKey.value = route.params.gameKey[0];
   } else {
-    problemKey.value = route.params.problemKey;
+    gameKey.value = route.params.gameKey;
   }
 
-  if (problemKey.value) {
-    problemLoading.value = true;
-    GetProblemTagList(-1)
-      .then(async (res) => {
-        if (res.code === 0) {
-          if (res.data.list) {
-            res.data.list.forEach((tag: ProblemTag) => {
-              problemTagOptions.value.push({
-                label: tag.name,
-                value: tag.id,
-              });
-            });
-          }
-          await loadProblem();
-        } else {
-          ShowErrorTips(globalProperties, res.code);
-          console.error("problem tag get failed", res.code);
-          await router.push({ name: "problem" });
-        }
-      })
-      .catch(async (err) => {
-        console.error(err);
-        ShowErrorTips(globalProperties, "获取数据异常");
-        await router.push({ name: "problem" });
-      });
+  if (gameKey.value) {
+    gameLoading.value = true;
+    try {
+      await loadGame();
+    } catch (err) {
+      console.error(err);
+      ShowErrorTips(globalProperties, "获取数据异常");
+      await router.push({ name: "bot-game" });
+    }
   } else {
-    problemEditForm.value.timeLimit = 1000;
-    problemEditForm.value.memoryLimit = 65536;
-
     loadDescriptionEditor("");
+    // 初始化空的代码编辑器
+    nextTick(() => {
+      initCodeEditor();
+    });
   }
+});
+
+// 在组件卸载前销毁编辑器
+onBeforeUnmount(() => {
+  disposeCodeEditor();
 });
 </script>
 
 <template>
-  <t-loading :loading="problemLoading">
+  <t-loading :loading="gameLoading">
     <t-row>
       <t-col :span="8">
-        <div style="margin: 10px">
-          <t-card class="sh-card">
-            <t-form :model="problemEditForm">
+        <div style="margin: 10px;margin-top: 50px;">
+          <t-card class="sh-card" :bordered="false">
+            <t-form :model="gameEditForm">
               <t-form-item label="标题">
-                <t-input v-model="problemEditForm.title" placeholder="问题标题"></t-input>
+                <t-input v-model="gameEditForm.title" placeholder="游戏标题"></t-input>
               </t-form-item>
             </t-form>
           </t-card>
@@ -315,7 +270,7 @@ onMounted(async () => {
       <t-col :span="4">
         <div style="margin: 12px">
           <div class="dida-edit-container">
-            <t-space v-if="problemId">
+            <t-space v-if="gameId">
               <t-button @click="handleClickSave" theme="danger" :loading="isSaving">保存</t-button>
               <t-button @click="handleClickView">查看</t-button>
             </t-space>
@@ -323,9 +278,9 @@ onMounted(async () => {
               <t-button @click="handleClickCreate" theme="danger" :loading="isSaving">创建</t-button>
             </t-space>
           </div>
-          <t-descriptions layout="vertical" :bordered="true" v-if="problemId">
-            <t-descriptions-item label="创建时间">{{ problemData?.insertTime }}</t-descriptions-item>
-            <t-descriptions-item label="编辑时间">{{ problemData?.modifyTime }}</t-descriptions-item>
+          <t-descriptions layout="vertical" :bordered="true" v-if="gameId">
+            <t-descriptions-item label="创建时间">{{ gameData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="更新时间">{{ gameData?.modifyTime }}</t-descriptions-item>
           </t-descriptions>
         </div>
       </t-col>
@@ -333,7 +288,14 @@ onMounted(async () => {
     <div class="dida-description-editor">
       <p>游戏描述</p>
       <t-loading :loading="disabledEdit || isSaving">
-        <md-editor-v3 v-model="problemEditForm.description" @save="onEditSave" @onUploadImg="onUploadImg" previewTheme="cyanosis"></md-editor-v3>
+        <md-editor-v3 v-model="gameEditForm.description" @save="onEditSave" @onUploadImg="onUploadImg" previewTheme="cyanosis"></md-editor-v3>
+      </t-loading>
+    </div>
+    
+    <div class="dida-code-editor-container">
+      <p>Judge Code</p>
+      <t-loading :loading="disabledEdit || isSaving">
+        <div class="dida-code-editor-div" ref="judgeCodeEditRef"></div>
       </t-loading>
     </div>
   </t-loading>
@@ -347,5 +309,25 @@ onMounted(async () => {
 
 .dida-description-editor {
   margin: 20px;
+}
+
+.dida-code-editor-container {
+  margin: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dida-code-editor-container p {
+  margin: 0;
+  padding: 10px 20px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 500;
+}
+
+.dida-code-editor-div {
+  width: 100%;
+  height: 400px;
 }
 </style>
