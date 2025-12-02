@@ -1,69 +1,86 @@
 <template>
   <div class="bot-replay-container">
-    <h1>五子棋对战</h1>
-    <!-- 游戏信息显示 -->
-    <div class="game-info">
-      <div class="player-info">
-        <div class="player black">
-          <span class="stone black"></span>
-          <span>黑方：{{ gameData.blackPlayer.name || "黑棋" }}</span>
+    <t-loading :loading="isLoading">
+      <div v-if="!loadError">
+        <h1>五子棋对战</h1>
+        <!-- 游戏信息显示 -->
+        <div class="game-info">
+          <div class="player-info">
+            <div class="player black">
+              <span class="stone black"></span>
+              <span>黑方：{{ gameData.blackPlayer.name || "黑棋" }}</span>
+            </div>
+            <div class="player white">
+              <span class="stone white"></span>
+              <span>白方：{{ gameData.whitePlayer.name || "白棋" }}</span>
+            </div>
+          </div>
+          <div class="game-status">
+            <p v-if="gameData.result">结果：{{ gameData.result }}</p>
+            <p>当前步数：{{ currentStep }} / {{ gameData.moves.length }}</p>
+          </div>
         </div>
-        <div class="player white">
-          <span class="stone white"></span>
-          <span>白方：{{ gameData.whitePlayer.name || "白棋" }}</span>
+
+        <!-- 棋盘Canvas -->
+        <div class="board-container">
+          <canvas ref="boardCanvas" :width="canvasWidth" :height="canvasHeight" class="go-board"></canvas>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="controls">
+          <button @click="gotoStart" class="control-btn"><span>⏮️</span> 开始</button>
+          <button @click="prevStep" class="control-btn"><span>⏪</span> 上一步</button>
+          <button @click="togglePlay" class="control-btn primary">
+            <span v-if="isPlaying">⏸️</span>
+            <span v-else>▶️</span>
+            {{ isPlaying ? "暂停" : "播放" }}
+          </button>
+          <button @click="nextStep" class="control-btn"><span>⏩</span> 下一步</button>
+          <button @click="gotoEnd" class="control-btn"><span>⏭️</span> 结束</button>
+          <div class="speed-control">
+            <label>播放速度：</label>
+            <input type="range" min="0.5" max="3" step="0.5" v-model="playSpeed" class="speed-slider" />
+            <span>{{ playSpeed }}x</span>
+          </div>
+        </div>
+
+        <!-- 落子记录 -->
+        <div class="move-history">
+          <h3>落子记录</h3>
+          <div class="moves">
+            <div
+              v-for="(move, index) in gameData.moves"
+              :key="index"
+              :class="['move-item', { active: index === currentStep - 1 }]"
+              @click="gotoStep(index + 1)"
+            >
+              <span class="move-number">{{ index + 1 }}</span>
+              <span class="stone" :class="move.color"></span>
+              <span class="move-position">{{ formatPosition(move.x, move.y) }}</span>
+              <span class="move-time" v-if="move.timestamp">{{ formatTime(move.timestamp) }}</span>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="game-status">
-        <p v-if="gameData.result">结果：{{ gameData.result }}</p>
-        <p>当前步数：{{ currentStep }} / {{ gameData.moves.length }}</p>
-      </div>
-    </div>
-
-    <!-- 棋盘Canvas -->
-    <div class="board-container">
-      <canvas ref="boardCanvas" :width="canvasWidth" :height="canvasHeight" class="go-board"></canvas>
-    </div>
-
-    <!-- 控制按钮 -->
-    <div class="controls">
-      <button @click="gotoStart" class="control-btn"><span>⏮️</span> 开始</button>
-      <button @click="prevStep" class="control-btn"><span>⏪</span> 上一步</button>
-      <button @click="togglePlay" class="control-btn primary">
-        <span v-if="isPlaying">⏸️</span>
-        <span v-else>▶️</span>
-        {{ isPlaying ? "暂停" : "播放" }}
-      </button>
-      <button @click="nextStep" class="control-btn"><span>⏩</span> 下一步</button>
-      <button @click="gotoEnd" class="control-btn"><span>⏭️</span> 结束</button>
-      <div class="speed-control">
-        <label>播放速度：</label>
-        <input type="range" min="0.5" max="3" step="0.5" v-model="playSpeed" class="speed-slider" />
-        <span>{{ playSpeed }}x</span>
-      </div>
-    </div>
-
-    <!-- 落子记录 -->
-    <div class="move-history">
-      <h3>落子记录</h3>
-      <div class="moves">
-        <div
-          v-for="(move, index) in gameData.moves"
-          :key="index"
-          :class="['move-item', { active: index === currentStep - 1 }]"
-          @click="gotoStep(index + 1)"
-        >
-          <span class="move-number">{{ index + 1 }}</span>
-          <span class="stone" :class="move.color"></span>
-          <span class="move-position">{{ formatPosition(move.x, move.y) }}</span>
-          <span class="move-time" v-if="move.timestamp">{{ formatTime(move.timestamp) }}</span>
+      
+      <!-- 加载失败面板 -->
+      <div v-if="loadError" class="load-error-container">
+        <div class="load-error-panel">
+          <div class="error-icon">❌</div>
+          <h2>加载失败</h2>
+          <p>无法获取游戏回放数据，请稍后重试。</p>
+          <button @click="fetchData" class="retry-btn">重新加载</button>
         </div>
       </div>
-    </div>
+    </t-loading>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, onUnmounted } from "vue";
+import { ref, onMounted, watch, onUnmounted, getCurrentInstance } from "vue";
+import { useRoute } from "vue-router";
+import { GetBotReplay } from "@/apis/bot";
+import { ShowErrorTips } from "@/util/tips";
 
 // 定义数据结构
 interface Player {
@@ -89,7 +106,17 @@ interface GameData {
   moves: Move[];
   result?: string; // 游戏结果描述
   winner?: "black" | "white" | "draw";
+  winningLine?: { x1: number; y1: number; x2: number; y2: number }[]; // 获胜的棋子连线
 }
+
+const route = useRoute();
+const gameKey = ref("");
+const replayId = ref(-1);
+
+// 加载状态
+const isLoading = ref(true);
+const loadError = ref(false);
+const instance = getCurrentInstance();
 
 // 组件状态
 const boardCanvas = ref<HTMLCanvasElement>();
@@ -299,6 +326,45 @@ function drawStones(): void {
       ctx.shadowBlur = 0;
     }
   }
+
+  // 检查是否有获胜情况，并绘制获胜连线
+  const { winner, winningLine } = evaluateBoard(size, gameData.value.moves, currentStep.value);
+  if (winner) {
+    gameData.value.winner = winner;
+    gameData.value.result = winner === "black" ? "黑方胜利" : "白方胜利";
+    gameData.value.winningLine = winningLine;
+
+    // 绘制获胜连线
+    ctx.strokeStyle = "#FF0000"; // 红色连线
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    for (const line of winningLine) {
+      const startX = offsetX + line.x1 * cellSize;
+      const startY = offsetY + line.y1 * cellSize;
+      const endX = offsetX + line.x2 * cellSize;
+      const endY = offsetY + line.y2 * cellSize;
+
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+    }
+
+    // 重置阴影效果
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+  } else if (currentStep.value >= size * size) {
+    // 平局情况
+    gameData.value.result = "平局";
+    gameData.value.winner = "draw";
+  } else {
+    // 游戏未结束
+    gameData.value.result = "游戏进行中";
+    gameData.value.winner = undefined;
+    gameData.value.winningLine = undefined;
+  }
 }
 
 // 控制函数
@@ -372,8 +438,166 @@ watch(
   { deep: true }
 );
 
+// 检查指定位置是否有五连子
+function checkWinning(board: Map<string, "black" | "white">, x: number, y: number, color: "black" | "white", size: number): { x1: number; y1: number; x2: number; y2: number }[] | null {
+  // 检查方向：横向、纵向、对角线1、对角线2
+  const directions = [
+    { dx: 1, dy: 0 }, // 横向
+    { dx: 0, dy: 1 }, // 纵向
+    { dx: 1, dy: 1 }, // 对角线1
+    { dx: 1, dy: -1 } // 对角线2
+  ];
+
+  for (const dir of directions) {
+    let count = 1; // 包含当前位置
+    let startX = x;
+    let startY = y;
+    let endX = x;
+    let endY = y;
+
+    // 向正方向检查
+    for (let i = 1; i < 5; i++) {
+      const nx = x + dir.dx * i;
+      const ny = y + dir.dy * i;
+      if (nx >= 0 && nx < size && ny >= 0 && ny < size && board.get(`${nx},${ny}`) === color) {
+        count++;
+        endX = nx;
+        endY = ny;
+      } else {
+        break;
+      }
+    }
+
+    // 向反方向检查
+    for (let i = 1; i < 5; i++) {
+      const nx = x - dir.dx * i;
+      const ny = y - dir.dy * i;
+      if (nx >= 0 && nx < size && ny >= 0 && ny < size && board.get(`${nx},${ny}`) === color) {
+        count++;
+        startX = nx;
+        startY = ny;
+      } else {
+        break;
+      }
+    }
+
+    // 如果有五连子，返回连线的起始和结束位置
+    if (count >= 5) {
+      return [{ x1: startX, y1: startY, x2: endX, y2: endY }];
+    }
+  }
+
+  return null;
+}
+
+// 根据当前局面判断胜负
+function evaluateBoard(boardSize: number, moves: Move[], currentStep: number): { winner: "black" | "white" | null; winningLine: { x1: number; y1: number; x2: number; y2: number }[] | null } {
+  // 创建棋盘映射
+  const board = new Map<string, "black" | "white">();
+  
+  // 只添加当前步骤之前的棋子
+  for (let i = 0; i < currentStep && i < moves.length; i++) {
+    const move = moves[i];
+    board.set(`${move.x},${move.y}`, move.color);
+  }
+
+  // 检查每个棋子是否形成五连子
+  for (let i = 0; i < currentStep && i < moves.length; i++) {
+    const move = moves[i];
+    const winningLine = checkWinning(board, move.x, move.y, move.color, boardSize);
+    if (winningLine) {
+      return { winner: move.color, winningLine };
+    }
+  }
+
+  // 检查是否平局（棋盘已满）
+  if (currentStep >= boardSize * boardSize) {
+    return { winner: null, winningLine: null };
+  }
+
+  return { winner: null, winningLine: null };
+}
+
+// 获取游戏数据
+async function fetchData() {
+  isLoading.value = true;
+  loadError.value = false;
+  
+  try {
+    const response = await GetBotReplay(gameKey.value, replayId.value);
+    
+    if (response.code !== 0) {
+      // 显示错误提示
+      if (instance) {
+        ShowErrorTips(instance.appContext.config.globalProperties, response.code);
+      }
+      loadError.value = true;
+      return;
+    }
+    
+    if (response.data) {
+      const { info, param } = response.data;
+
+      // 解析param中的moves数据
+      const paramData = JSON.parse(param);
+      if (paramData.moves && Array.isArray(paramData.moves)) {
+        // 将后端返回的移动步骤转换为前端所需格式
+        gameData.value.moves = paramData.moves.map((move: any, index: number) => ({
+          x: move.x,
+          y: move.y,
+          color: index % 2 === 0 ? "black" : "white",
+          timestamp: move.time ? Date.now() - (gameData.value.moves.length - index) * 1000 : undefined,
+        }));
+      }
+
+      // 解析info中的玩家信息
+      const infoData = JSON.parse(info);
+      if (infoData.black) {
+        gameData.value.blackPlayer = {
+          id: infoData.black.id.toString(),
+          name: infoData.black.nickname,
+          type: "bot",
+        };
+      }
+      if (infoData.white) {
+        gameData.value.whitePlayer = {
+          id: infoData.white.id.toString(),
+          name: infoData.white.nickname,
+          type: "bot",
+        };
+      }
+
+      // 重绘棋盘以显示新数据
+      drawBoard();
+    }
+  } catch (error) {
+    console.error("获取游戏回放数据失败:", error);
+    loadError.value = true;
+    if (instance) {
+      ShowErrorTips(instance.appContext.config.globalProperties, "获取游戏回放数据失败");
+    }
+  } finally {
+    isLoading.value = false;
+  }
+}
+
 // 组件挂载时初始化
-onMounted(() => {
+onMounted(async () => {
+  if (Array.isArray(route.params.judgeId)) {
+    gameKey.value = route.params.gameKey[0];
+  } else {
+    gameKey.value = route.params.gameKey as string;
+  }
+
+  if (Array.isArray(route.params.replayId)) {
+    replayId.value = Number(route.params.replayId[0]);
+  } else {
+    replayId.value = Number(route.params.replayId);
+  }
+
+  // 获取游戏数据
+  await fetchData();
+
   drawBoard();
   lastBlinkTime = Date.now();
 
@@ -585,6 +809,54 @@ h1 {
   font-size: 12px;
   color: #999;
   margin-left: auto;
+}
+
+/* 加载失败样式 */
+.load-error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 500px;
+  width: 100%;
+}
+
+.load-error-panel {
+  text-align: center;
+  padding: 40px;
+  background-color: #f8f8f8;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.load-error-panel h2 {
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.load-error-panel p {
+  margin-bottom: 24px;
+  color: #666;
+}
+
+.retry-btn {
+  padding: 10px 24px;
+  background-color: #409eff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.retry-btn:hover {
+  background-color: #66b1ff;
 }
 
 @media (max-width: 768px) {
