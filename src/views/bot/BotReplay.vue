@@ -130,6 +130,15 @@ let lastPlayTime = 0;
 let lastBlinkTime = 0;
 const blinkIntensity = ref(1); // 闪烁强度 (0-1)
 
+// 动画相关状态
+const dropAnimationProgress = ref(0); // 落子动画进度 (0-1)
+const lineAnimationProgress = ref(0); // 胜利连线动画进度 (0-1)
+const isDropAnimating = ref(false); // 是否正在进行落子动画
+const isLineAnimating = ref(false); // 是否正在进行连线动画
+let animationStartTime = 0;
+const DROP_ANIMATION_DURATION = 300; // 落子动画持续时间（毫秒）
+const LINE_ANIMATION_DURATION = 800; // 连线动画持续时间（毫秒）
+
 // 默认游戏数据（用于演示）
 const gameData = ref<GameData>({
   id: "demo-game-1",
@@ -273,29 +282,52 @@ function drawStones(): void {
     const move = gameData.value.moves[i];
     const x = offsetX + move.x * cellSize;
     const y = offsetY + move.y * cellSize;
+    
+    // 计算当前棋子的半径（考虑落子动画）
+    let currentRadius = stoneRadius;
+    let currentAlpha = 1;
+    
+    // 如果是当前步骤的棋子且正在进行落子动画，应用动画效果
+    if (i === currentStep.value - 1 && isDropAnimating.value) {
+      // 计算动画进度对应的缩放比例（使用缓动函数）
+      const easeOut = 1 - Math.pow(1 - dropAnimationProgress.value, 3); // 缓出效果
+      currentRadius = stoneRadius * easeOut;
+      currentAlpha = easeOut;
+      
+      // 添加落子特效（波纹效果）
+      const rippleRadius = stoneRadius * (1.5 + easeOut * 0.5);
+      ctx.beginPath();
+      ctx.arc(x, y, rippleRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255, 215, 0, ${0.5 * (1 - easeOut)})`; // 金色波纹，逐渐消失
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
 
     // 绘制棋子
     ctx.beginPath();
-    ctx.arc(x, y, stoneRadius, 0, Math.PI * 2);
+    ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
 
     if (move.color === "black") {
       // 黑色棋子带渐变效果
-      const gradient = ctx.createRadialGradient(x - stoneRadius * 0.3, y - stoneRadius * 0.3, 0, x, y, stoneRadius);
+      const gradient = ctx.createRadialGradient(x - currentRadius * 0.3, y - currentRadius * 0.3, 0, x, y, currentRadius);
       gradient.addColorStop(0, "#666666");
       gradient.addColorStop(1, "#000000");
       ctx.fillStyle = gradient;
     } else {
       // 白色棋子带渐变效果
-      const gradient = ctx.createRadialGradient(x - stoneRadius * 0.3, y - stoneRadius * 0.3, 0, x, y, stoneRadius);
+      const gradient = ctx.createRadialGradient(x - currentRadius * 0.3, y - currentRadius * 0.3, 0, x, y, currentRadius);
       gradient.addColorStop(0, "#FFFFFF");
       gradient.addColorStop(1, "#CCCCCC");
       ctx.fillStyle = gradient;
     }
 
+    // 设置透明度（用于动画）
+    ctx.globalAlpha = currentAlpha;
     ctx.fill();
     ctx.strokeStyle = "#000000";
     ctx.lineWidth = 1;
     ctx.stroke();
+    ctx.globalAlpha = 1; // 重置透明度
 
     // 如果是最后一步（当前步骤落下的棋子），添加明显的特殊标记
     if (i === currentStep.value - 1) {
@@ -306,14 +338,14 @@ function drawStones(): void {
 
       // 1. 首先绘制一个醒目的外框
       ctx.beginPath();
-      ctx.arc(x, y, stoneRadius * 1.2, 0, Math.PI * 2);
+      ctx.arc(x, y, currentRadius * 1.2, 0, Math.PI * 2);
       ctx.strokeStyle = borderColor;
       ctx.lineWidth = 3;
       ctx.stroke();
 
       // 2. 添加内部标记点
       ctx.beginPath();
-      ctx.arc(x, y, stoneRadius / 4, 0, Math.PI * 2);
+      ctx.arc(x, y, currentRadius / 4, 0, Math.PI * 2);
       ctx.fillStyle = move.color === "black" ? "#FFFFFF" : "#000000";
       ctx.fill();
 
@@ -345,11 +377,36 @@ function drawStones(): void {
       const startY = offsetY + line.y1 * cellSize;
       const endX = offsetX + line.x2 * cellSize;
       const endY = offsetY + line.y2 * cellSize;
+      
+      // 如果正在进行连线动画，应用动画效果
+      if (isLineAnimating.value) {
+        // 计算动画进度对应的线段长度
+        const easeOut = 1 - Math.pow(1 - lineAnimationProgress.value, 2); // 缓出效果
+        
+        // 计算当前应该绘制到的点
+        const currentEndX = startX + (endX - startX) * easeOut;
+        const currentEndY = startY + (endY - startY) * easeOut;
 
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.lineTo(endX, endY);
-      ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(currentEndX, currentEndY);
+        ctx.stroke();
+        
+        // 添加连线动画的发光效果
+        ctx.shadowColor = "#FF0000";
+        ctx.shadowBlur = 10 * easeOut;
+        ctx.beginPath();
+        ctx.arc(currentEndX, currentEndY, 6, 0, Math.PI * 2);
+        ctx.fillStyle = "#FF0000";
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      } else {
+        // 正常绘制完整连线
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+      }
     }
 
     // 重置阴影效果
@@ -369,8 +426,71 @@ function drawStones(): void {
 
 // 控制函数
 function gotoStep(step: number): void {
+  // 保存之前的步骤，用于判断是否需要动画
+  const prevStep = currentStep.value;
   currentStep.value = Math.max(0, Math.min(step, gameData.value.moves.length));
-  drawBoard();
+  
+  // 只有当步骤发生变化且不是后退时，才触发落子动画
+  if (currentStep.value > prevStep && currentStep.value <= gameData.value.moves.length) {
+    // 检查是否到达胜利步骤
+    const { winner } = evaluateBoard(gameData.value.boardSize, gameData.value.moves, currentStep.value);
+    if (winner && !gameData.value.winner) {
+      // 如果刚到达胜利步骤，启动连线动画
+      startLineAnimation();
+    } else {
+      // 否则启动落子动画
+      startDropAnimation();
+    }
+  } else {
+    // 后退或无变化时直接重绘
+    drawBoard();
+  }
+}
+
+// 启动落子动画
+function startDropAnimation() {
+  isDropAnimating.value = true;
+  dropAnimationProgress.value = 0;
+  animationStartTime = Date.now();
+  
+  // 动画循环
+  function animateDrop() {
+    const elapsed = Date.now() - animationStartTime;
+    dropAnimationProgress.value = Math.min(elapsed / DROP_ANIMATION_DURATION, 1);
+    
+    drawBoard();
+    
+    if (dropAnimationProgress.value < 1) {
+      requestAnimationFrame(animateDrop);
+    } else {
+      isDropAnimating.value = false;
+    }
+  }
+  
+  animateDrop();
+}
+
+// 启动胜利连线动画
+function startLineAnimation() {
+  isLineAnimating.value = true;
+  lineAnimationProgress.value = 0;
+  animationStartTime = Date.now();
+  
+  // 动画循环
+  function animateLine() {
+    const elapsed = Date.now() - animationStartTime;
+    lineAnimationProgress.value = Math.min(elapsed / LINE_ANIMATION_DURATION, 1);
+    
+    drawBoard();
+    
+    if (lineAnimationProgress.value < 1) {
+      requestAnimationFrame(animateLine);
+    } else {
+      isLineAnimating.value = false;
+    }
+  }
+  
+  animateLine();
 }
 
 function gotoStart(): void {
@@ -407,7 +527,8 @@ function playAnimation(): void {
   const timeDiff = now - lastPlayTime;
   const stepInterval = 1000 / playSpeed.value;
 
-  if (timeDiff >= stepInterval) {
+  // 只有当没有正在进行的动画时，才进行步骤切换
+  if (timeDiff >= stepInterval && !isDropAnimating.value && !isLineAnimating.value) {
     if (currentStep.value < gameData.value.moves.length) {
       nextStep();
       lastPlayTime = now;
@@ -420,9 +541,8 @@ function playAnimation(): void {
   animationFrameId = requestAnimationFrame(playAnimation);
 }
 
-// 监听步骤变化，重新绘制并重置闪烁效果
+// 监听步骤变化，重置闪烁效果
 watch(currentStep, () => {
-  drawBoard();
   // 重置闪烁效果
   blinkIntensity.value = 1;
   lastBlinkTime = Date.now();
