@@ -36,43 +36,36 @@ const fetchGameList = async () => {
     //   url: '/bot/game/list',
     //   method: 'get'
     // });
-    
+
     // 由于目前没有实际的API，使用模拟数据
     // 模拟网络延迟
     await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // 模拟数据
+
+    // 模拟数据（只包含实际游戏）
     const mockData = [
       {
         id: 'gomoku',
         title: '五子棋',
-        description: '与AI对战的五子棋游戏，锻炼你的策略思维',
+        description: 'AI 对战的五子棋游戏，锻炼你的策略思维',
         route: '/bot/gomoku'
       }
     ];
-    
-    // 如果有实际API，应该这样处理
-    // if (response.code === 0) {
-    //   gameList.value = response.data || mockData;
-    // } else {
-    //   gameList.value = mockData;
-    //   ShowTextTipsInfo(globalProperties, '使用默认游戏列表');
-    // }
-    
+
     // 使用模拟数据
     gameList.value = mockData;
+    
+    // 在获取列表后手动添加"敬请期待"项（非服务器返回）
+    gameList.value.push({
+      id: 'coming-soon',
+      title: '敬请期待',
+      description: '更多精彩游戏即将上线，敬请期待！',
+      route: ''
+    });
   } catch (err) {
     console.error('获取游戏列表失败:', err);
     ShowErrorTips(globalProperties, GetCommonErrorCode());
     // 出错时使用默认数据
-    gameList.value = [
-      {
-        id: 'gomoku',
-        title: '五子棋',
-        description: '与AI对战的五子棋游戏，锻炼你的策略思维',
-        route: '/bot/gomoku'
-      }
-    ];
+    gameList.value = [ ];
   } finally {
     dataLoading.value = false;
   }
@@ -92,34 +85,28 @@ onMounted(() => {
             <span>游戏列表</span>
           </div>
         </template>
-        
+
         <div v-if="dataLoading" class="loading-container">
           <t-skeleton :rows="3" animated />
         </div>
-        
+
         <div v-else class="game-list">
-          <div 
-            v-for="game in gameList" 
-            :key="game.id"
-            class="game-item"
-          >
-            <t-card hoverable>
+          <div v-for="(game, index) in gameList" :key="game.id" class="game-item">
+            <t-card :hoverable="index !== gameList.length - 1">
               <div class="game-content">
                 <div class="game-info">
                   <h3 class="game-title">{{ game.title }}</h3>
                   <p class="game-description">{{ game.description }}</p>
                 </div>
-                <div class="game-action">
-                  <t-button 
-                    theme="primary" 
-                    @click="handleNavigateToGame(game)"
-                  >
+                <div v-if="index !== gameList.length - 1" class="game-action">
+                  <t-button theme="primary" @click="handleNavigateToGame(game)">
                     开始游戏
                   </t-button>
                 </div>
               </div>
             </t-card>
           </div>
+
         </div>
       </t-card>
     </t-col>
@@ -129,7 +116,7 @@ onMounted(() => {
 <style scoped>
 .game-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
   gap: 20px;
 }
 
@@ -166,21 +153,5 @@ onMounted(() => {
 
 .loading-container {
   padding: 20px;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .game-list {
-    grid-template-columns: 1fr;
-  }
-  
-  .game-content {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .game-action {
-    margin-top: 15px;
-  }
 }
 </style>

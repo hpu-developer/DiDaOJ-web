@@ -5,16 +5,16 @@
     <div class="player-info">
       <div class="player black">
         <span class="stone black"></span>
-        <span>黑方：{{ gameData.blackPlayer.name || "黑棋" }}</span>
+        <span>黑方：{{ gameData.blackPlayer?.name || "黑棋" }}</span>
       </div>
       <div class="player white">
         <span class="stone white"></span>
-        <span>白方：{{ gameData.whitePlayer.name || "白棋" }}</span>
+        <span>白方：{{ gameData.whitePlayer?.name || "白棋" }}</span>
       </div>
     </div>
     <div class="game-status">
       <p v-if="gameData.result">结果：{{ gameData.result }}</p>
-      <p>当前步数：{{ currentStep }} / {{ gameData.moves.length }}</p>
+      <p>当前步数：{{ currentStep }} / {{ gameData.moves?.length || 0 }}</p>
     </div>
   </div>
 
@@ -54,8 +54,8 @@
         <span class="move-number">{{ index + 1 }}</span>
         <span class="stone" :class="move.color"></span>
         <span class="move-position">{{ formatPosition(move.x, move.y) }}</span>
-        <span class="move-time" v-if="move.timestamp">{{ formatTime(move.timestamp) }}</span>
-      </div>
+        <span class="timestamp" v-if="move.time">{{ formatTime(move.time) }}</span>
+    </div>
     </div>
   </div>
 </template>
@@ -74,7 +74,7 @@ interface Move {
   x: number; // x坐标（0-14）
   y: number; // y坐标（0-14）
   color: "black" | "white";
-  timestamp?: number; // 落子时间戳
+  time?: number; // 落子用时（毫秒）
 }
 
 interface GameData {
@@ -125,14 +125,14 @@ const internalGameData = ref<GameData>({
     type: "bot",
   },
   moves: [
-    { x: 7, y: 7, color: "black", timestamp: Date.now() - 3500000 },
-    { x: 8, y: 8, color: "white", timestamp: Date.now() - 3400000 },
-    { x: 6, y: 6, color: "black", timestamp: Date.now() - 3300000 },
-    { x: 9, y: 9, color: "white", timestamp: Date.now() - 3200000 },
-    { x: 5, y: 5, color: "black", timestamp: Date.now() - 3100000 },
-    { x: 10, y: 10, color: "white", timestamp: Date.now() - 3000000 },
-    { x: 4, y: 4, color: "black", timestamp: Date.now() - 2900000 },
-  ],
+      { x: 7, y: 7, color: "black", time: 120 },
+      { x: 8, y: 8, color: "white", time: 150 },
+      { x: 6, y: 6, color: "black", time: 90 },
+      { x: 9, y: 9, color: "white", time: 200 },
+      { x: 5, y: 5, color: "black", time: 130 },
+      { x: 10, y: 10, color: "white", time: 170 },
+      { x: 4, y: 4, color: "black", time: 100 },
+    ],
   result: "游戏进行中",
 });
 
@@ -163,10 +163,9 @@ function formatPosition(x: number, y: number): string {
   return `${colLetters[x]}${y + 1}`;
 }
 
-// 格式化时间
-function formatTime(timestamp: number): string {
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString();
+// 格式化时间 - 显示用时（毫秒）
+function formatTime(time: number): string {
+  return `${time}ms`;
 }
 
 // 绘制棋盘
@@ -262,7 +261,7 @@ function drawStones(): void {
   const ctx = boardCanvas.value.getContext("2d");
   if (!ctx) return;
 
-  const size = props.gameData.boardSize;
+  const size = internalGameData.value.boardSize;
   // 使用与drawBoard函数相同的计算方式
   const labelSize = 25; // 行列号标签的大小
   const cellSize = Math.min((canvasWidth.value - labelSize) / size, (canvasHeight.value - labelSize) / size);
@@ -354,13 +353,9 @@ function drawStones(): void {
 
   // 检查是否有获胜情况，并绘制获胜连线
   const { winner, winningLine } = evaluateBoard(size, internalGameData.value.moves, currentStep.value);
-  if (winner) {
-    const updatedGameData = { ...internalGameData.value };
-    updatedGameData.winner = winner;
-    updatedGameData.result = winner === "black" ? "黑方胜利" : "白方胜利";
-    updatedGameData.winningLine = winningLine;
-    internalGameData.value = updatedGameData;
-
+  
+  // 绘制获胜连线（如果有）
+  if (winner && winningLine) {
     // 绘制获胜连线
     ctx.strokeStyle = "#FF0000"; // 红色连线
     ctx.lineWidth = 3;
@@ -407,19 +402,6 @@ function drawStones(): void {
     // 重置阴影效果
     ctx.shadowColor = "transparent";
     ctx.shadowBlur = 0;
-  } else if (currentStep.value >= size * size) {
-    // 平局情况
-    const updatedGameData = { ...internalGameData.value };
-    updatedGameData.result = "平局";
-    updatedGameData.winner = "draw";
-    internalGameData.value = updatedGameData;
-  } else {
-    // 游戏未结束
-    const updatedGameData = { ...internalGameData.value };
-    updatedGameData.result = "游戏进行中";
-    updatedGameData.winner = undefined;
-    updatedGameData.winningLine = undefined;
-    internalGameData.value = updatedGameData;
   }
 }
 
@@ -428,6 +410,9 @@ function gotoStep(step: number): void {
   // 保存之前的步骤，用于判断是否需要动画
   const prevStep = currentStep.value;
   currentStep.value = Math.max(0, Math.min(step, internalGameData.value.moves.length));
+
+  // 更新游戏状态
+  updateGameStatus();
 
   // 只有当步骤发生变化且不是后退时，才触发落子动画
   if (currentStep.value > prevStep && currentStep.value <= internalGameData.value.moves.length) {
@@ -650,22 +635,22 @@ watch(
           x: move.x,
           y: move.y,
           color: index % 2 === 0 ? "black" : "white",
-          timestamp: move.time ? Date.now() - (newData.paramData.moves.length - index) * 1000 : undefined,
+          time: move.time, // 直接使用服务器返回的用时
         }));
       }
 
-      // 处理玩家信息
+      // 处理玩家信息 - 确保正确读取infoData中的black和white字段
       if (newData.infoData.black) {
         internalGameData.value.blackPlayer = {
           id: newData.infoData.black.id.toString(),
-          name: newData.infoData.black.nickname,
+          name: newData.infoData.black.nickname || newData.infoData.black.name || "黑方",
           type: "bot",
         };
       }
       if (newData.infoData.white) {
         internalGameData.value.whitePlayer = {
           id: newData.infoData.white.id.toString(),
-          name: newData.infoData.white.nickname,
+          name: newData.infoData.white.nickname || newData.infoData.white.name || "白方",
           type: "bot",
         };
       }
@@ -694,54 +679,107 @@ watch(
   { deep: true }
 );
 
-// 组件挂载时初始化
-onMounted(() => {
-  drawBoard();
-  lastBlinkTime = Date.now();
-
-  // 启动闪烁动画
-  function animateBlink() {
-    const now = Date.now();
-    const timeDiff = now - lastBlinkTime;
-    const blinkPeriod = 1000; // 闪烁周期（毫秒）
-
-    // 计算闪烁强度 - 使用正弦波创建平滑的闪烁效果
-    blinkIntensity.value = 0.5 + 0.5 * Math.sin((timeDiff * Math.PI * 2) / blinkPeriod);
-
-    // 只有当有当前步骤且不是在播放状态时，才重绘以显示闪烁效果
-    if (currentStep.value >= 0 && !isPlaying.value) {
-      drawBoard();
+// 从evaluateBoard函数中分离游戏状态更新逻辑
+function updateGameStatus() {
+  const size = internalGameData.value.boardSize;
+  const { winner, winningLine } = evaluateBoard(size, internalGameData.value.moves, currentStep.value);
+  
+  let needsUpdate = false;
+  const updatedGameData = { ...internalGameData.value };
+  
+  if (winner) {
+    if (updatedGameData.winner !== winner) {
+      updatedGameData.winner = winner;
+      updatedGameData.result = winner === "black" ? "黑方胜利" : "白方胜利";
+      updatedGameData.winningLine = winningLine;
+      needsUpdate = true;
     }
-
-    requestAnimationFrame(animateBlink);
+  } else if (currentStep.value >= size * size) {
+    // 平局情况
+    if (updatedGameData.result !== "平局") {
+      updatedGameData.result = "平局";
+      updatedGameData.winner = "draw";
+      needsUpdate = true;
+    }
+  } else {
+    // 游戏未结束
+    if (updatedGameData.result !== "游戏进行中") {
+      updatedGameData.result = "游戏进行中";
+      updatedGameData.winner = undefined;
+      updatedGameData.winningLine = undefined;
+      needsUpdate = true;
+    }
   }
+  
+  if (needsUpdate) {
+    internalGameData.value = updatedGameData;
+  }
+}
 
-  animateBlink();
+// 组件挂载时初始化
+  onMounted(() => {
+    drawBoard();
+    lastBlinkTime = Date.now();
+    
+    // 更新游戏状态
+    updateGameStatus();
 
-  // 响应式调整画布大小
-  const handleResize = () => {
-    const container = boardCanvas.value?.parentElement;
-    if (container) {
-      const containerWidth = container.clientWidth;
-      const containerHeight = container.clientHeight;
-      const size = Math.min(containerWidth, containerHeight);
-      canvasWidth.value = size;
-      canvasHeight.value = size;
-      drawBoard();
+    // 启动闪烁动画
+    function animateBlink() {
+      // 检查boardCanvas是否存在，不存在则停止动画
+      if (!boardCanvas.value) {
+        return;
+      }
+      
+      const now = Date.now();
+      const timeDiff = now - lastBlinkTime;
+      const blinkPeriod = 1000; // 闪烁周期（毫秒）
+
+      // 计算闪烁强度 - 使用正弦波创建平滑的闪烁效果
+      blinkIntensity.value = 0.5 + 0.5 * Math.sin((timeDiff * Math.PI * 2) / blinkPeriod);
+
+      // 只有当有当前步骤且不是在播放状态时，才重绘以显示闪烁效果
+      if (currentStep.value >= 0 && !isPlaying.value) {
+        drawBoard();
+      }
+
+      animationFrameId = requestAnimationFrame(animateBlink);
     }
-  };
 
-  handleResize();
-  window.addEventListener("resize", handleResize);
+    animateBlink();
 
-  // 组件卸载时清理
-  onUnmounted(() => {
-    window.removeEventListener("resize", handleResize);
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-    }
+    // 响应式调整画布大小
+    const handleResize = () => {
+      // 检查boardCanvas是否存在
+      if (!boardCanvas.value) return;
+      
+      const container = boardCanvas.value.parentElement;
+      if (container) {
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        const size = Math.min(containerWidth, containerHeight);
+        
+        // 避免不必要的更新
+        if (canvasWidth.value !== size || canvasHeight.value !== size) {
+          canvasWidth.value = size;
+          canvasHeight.value = size;
+          drawBoard();
+        }
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    // 组件卸载时清理
+    onUnmounted(() => {
+      window.removeEventListener("resize", handleResize);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    });
   });
-});
 </script>
 
 <style scoped>
