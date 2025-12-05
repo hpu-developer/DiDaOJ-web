@@ -156,7 +156,11 @@ const handleEditContestMember = async () => {
       ShowErrorTips(globalProperties, res.code);
       return;
     }
-    contestName.value = res.data.contest_name || "";
+    if (res.data &&  res.data.contest_name){
+      contestName.value = res.data.contest_name
+    }else{
+      contestName.value = "";
+    }
   } finally {
     editContestMemberLoading.value = false;
   showEditContestMemberDialog.value = true;
@@ -276,7 +280,7 @@ onMounted(async () => {
         </div>
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="">{{ contestData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="创建时间">{{ contestData?.insertTime }}</t-descriptions-item>
           </t-descriptions>
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="编辑时间">{{ contestData?.modifyTime }}</t-descriptions-item>
