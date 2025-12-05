@@ -189,7 +189,7 @@ const loadContest = async () => {
   contestEditForm.value.notification = contest.notification || "";
 
   contestEditForm.value.problems = contest.problems;
-  contestEditForm.value.members = res.data.members;
+  contestEditForm.value.members = contest.members;
 
   if (contest.lock_rank_duration) {
     contestEditForm.value.lockRankDuration = GetSecondFromDuration(contest.lock_rank_duration);

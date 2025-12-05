@@ -25,6 +25,7 @@ let contestId = 0;
 let contestStartTime = null as Date | null;
 let contestEndTime = null as Date | null;
 let lockRankDurationSeconds = 0;
+let contestNames = {} as Record<number, string>;
 const progressValue = ref(0);
 const progressMax = ref(0);
 const onlyShowStarMembers = ref(false);
@@ -106,7 +107,11 @@ const listColumns1 = [
       };
     },
     cell: (_: any, data: any) => {
-      const text = GetEllipsisText(data.row.nickname, 18);
+      let nickname = data.row.nickname
+      if (contestNames[data.row.userId]){
+        nickname = contestNames[data.row.userId];
+      }
+      const text = GetEllipsisText(nickname, 18);
 
       let starButton = null;
       if (isUserBeStar(data.row.userId)) {
@@ -145,7 +150,7 @@ const listColumns1 = [
         <div class="rank-nickname-cell">
           <t-space>
             <t-avatar shape="round" size="32px" image={avatarUrl} hide-on-load-failed={false} />
-            <t-tooltip content={data.row.nickname}>
+            <t-tooltip content={nickname}>
               <t-button
                 variant="text"
                 onClick={() =>
@@ -519,6 +524,14 @@ const fetchData = async (needLoading: boolean) => {
         await router.push({ name: "contest-detail", params: { contestId: contestId } });
         return;
       }
+
+      contestNames = {} as Record<number, string>;
+      if (res.data.contest.members){
+        res.data.contest.members.forEach((member: { id: number, contest_name: string }) => {
+          contestNames[member.id] = member.contest_name;
+        })
+      }
+
       res.data.contest.problems.sort((a: number, b: number) => a - b);
       res.data.contest.problems.forEach((problemIndex: number, _: number) => {
         listColumns.value.push({

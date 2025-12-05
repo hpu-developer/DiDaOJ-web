@@ -15,19 +15,7 @@ const isParsing = ref(false);
 const textareaValue = ref("");
 
 const modelUserIds = defineModel<number[]>();
-let filteredUserIds = [];
-
-watch(
-  modelUserIds,
-  async (newVal) => {
-    if (JSON.stringify(newVal) === JSON.stringify(filteredUserIds)) {
-      return;
-    }
-    filteredUserIds = newVal;
-    await loadUserListByIds(newVal);
-  },
-  { deep: true }
-);
+let filteredUserIds = [] as number[];
 
 const localViews = ref<User[]>();
 
@@ -132,6 +120,26 @@ const handleParseUser = () => {
   }
   showDialog.value = true;
 };
+
+watch(
+  modelUserIds,
+  async (newVal) => {
+    if (JSON.stringify(newVal) === JSON.stringify(filteredUserIds)) {
+      return;
+    }
+    if (!newVal) {
+      filteredUserIds = [];
+      return;
+    }
+    filteredUserIds = newVal;
+    await loadUserListByIds(newVal);
+  },
+  {
+    deep: true,
+    immediate: true,
+  }
+);
+
 </script>
 
 <template>
