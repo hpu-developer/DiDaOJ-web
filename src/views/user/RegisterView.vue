@@ -95,7 +95,7 @@ const handleSendEmailKey = async () => {
 
   const windowRef = window as any;
   windowRef.grecaptcha.ready(function () {
-    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'submit' }).then(async function (token: string) {
+    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'register' }).then(async function (token: string) {
       await requestSendEmailKey(token);
     });
   });

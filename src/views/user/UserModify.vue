@@ -296,7 +296,7 @@ const handleSendOldEmailKey = async () => {
   isSendOldEmailKeying.value = true;
   const windowRef = window as any;
   windowRef.grecaptcha.ready(function () {
-    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'submit' }).then(async function (token: string) {
+    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'old_email' }).then(async function (token: string) {
       await requestSendOldEmailKey(token);
     });
   });
@@ -325,7 +325,7 @@ const handleSendNewEmailKey = async () => {
   isSendNewEmailKeying.value = true;
   const windowRef = window as any;
   windowRef.grecaptcha.ready(function () {
-    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'submit' }).then(async function (token: string) {
+    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'new_email' }).then(async function (token: string) {
       await requestSendNewEmailKey(token);
     });
   });

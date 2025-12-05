@@ -90,10 +90,12 @@ const requestSendEmailKey = async (token: string) => {
       }, 1000);
     } else {
       ShowErrorTips(globalProperties, res.code);
+      isSendEmailKeying.value = false;
     }
   } catch (e) {
     console.error("Send email key error", e);
     ShowTextTipsError(globalProperties, "发送验证码失败");
+    isSendEmailKeying.value = false;
   } finally {
     isPostRunning.value = false;
   }
@@ -110,7 +112,7 @@ const handleSendEmailKey = async () => {
 
   const windowRef = window as any;
   windowRef.grecaptcha.ready(function () {
-    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'submit' }).then(async function (token: string) {
+    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'forget' }).then(async function (token: string) {
       await requestSendEmailKey(token);
     });
   });
