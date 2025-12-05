@@ -16,9 +16,6 @@ const sendEmailButtonText = ref("发送验证码");
 let sendEmailTime: any = null;
 let sendEmailInterval = -1;
 
-const dialogShow = ref(false);
-const dialogContainer = ref(null as any);
-
 const formData = ref({
   username: "",
   password: "",
@@ -94,43 +91,17 @@ const handleSendEmailKey = async () => {
     return;
   }
 
-  dialogShow.value = true;
-
-  await nextTick(); // 等待 modal 渲染完成
-
-  // 确保 cf-confirm-div 只添加一次
-  const confirmDiv = document.getElementById("cf-confirm-div");
-  if (confirmDiv) {
-    confirmDiv.remove();
-  }
-
-  const div = document.createElement("div");
-  div.id = "cf-confirm-div";
-  div.setAttribute("data-theme", "light");
-  dialogContainer.value?.appendChild(div);
+  isSendEmailKeying.value = true;
 
   const windowRef = window as any;
-  windowRef.turnstile.ready(function () {
-    windowRef.turnstile.render("#cf-confirm-div", {
-      sitekey: "0x4AAAAAABeM4SYPu2Rn7PmI",
-      callback: async function (token: string) {
-        dialogShow.value = false;
-        await requestSendEmailKey(token);
-      },
-      "before-interactive-callback": function () {
-        console.log("before-interactive-callback");
-      },
+  windowRef.grecaptcha.ready(function () {
+    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'submit' }).then(async function (token: string) {
+      await requestSendEmailKey(token);
     });
   });
 };
 
 const requestSendEmailKey = async (token: string) => {
-  if (isSendEmailKeyDisabled.value) {
-    return;
-  }
-
-  isSendEmailKeying.value = true;
-
   try {
     const res = await PostUserRegisterEmailKey(token, formData.value.email);
     if (res.code !== 0) {
@@ -221,7 +192,8 @@ onBeforeUnmount(() => {
 
 <template>
   <t-card class="yj-login-card" title="欢迎使用DidaOJ~">
-    <t-form ref="form" :rules="formRules" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit" class="yj-login-form">
+    <t-form ref="form" :rules="formRules" :data="formData" :colon="true" @reset="onReset" @submit="onSubmit"
+      class="yj-login-form">
       <t-form-item name="username" label="用户名">
         <t-input v-model="formData.username" clearable placeholder="用于登录与查找"></t-input>
       </t-form-item>
@@ -261,20 +233,14 @@ onBeforeUnmount(() => {
       </t-form-item>
     </t-form>
     <div class="dida-login-footer">
-      <t-link
-        @click="
-          () => {
-            globalProperties.$router.push({ name: 'login' });
-          }
-        "
-        >返回登陆
+      <t-link @click="
+        () => {
+          globalProperties.$router.push({ name: 'login' });
+        }
+      ">返回登陆
       </t-link>
     </div>
   </t-card>
-
-  <t-dialog v-model:visible="dialogShow" header="正在加载人机验证" :close-btn="false" :footer="false">
-    <div ref="dialogContainer" class="cf-confirm-container"></div>
-  </t-dialog>
 </template>
 
 <style scoped>
@@ -297,13 +263,5 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
-}
-
-.cf-confirm-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 </style>

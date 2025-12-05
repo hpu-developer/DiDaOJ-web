@@ -16,8 +16,6 @@ const sendEmailButtonText = ref("发送验证码");
 let sendEmailTime: any = null;
 let sendEmailInterval = -1;
 
-const dialogShow = ref(false);
-const dialogContainer = ref(null as any);
 const sendToEmail = ref("");
 
 const formData = ref({
@@ -102,38 +100,18 @@ const requestSendEmailKey = async (token: string) => {
 };
 
 const handleSendEmailKey = async () => {
-  dialogShow.value = true;
   if (isSendEmailKeyDisabled.value) {
     return;
   }
   if (isSendEmailKeying.value) {
     return;
   }
-
-  await nextTick(); // 等待 modal 渲染完成
-
-  // 确保 cf-confirm-div 只添加一次
-  const confirmDiv = document.getElementById("cf-confirm-div");
-  if (confirmDiv) {
-    confirmDiv.remove();
-  }
-
-  const div = document.createElement("div");
-  div.id = "cf-confirm-div";
-  div.setAttribute("data-theme", "light");
-  dialogContainer.value?.appendChild(div);
+  isSendEmailKeying.value = true;
 
   const windowRef = window as any;
-  windowRef.turnstile.ready(function () {
-    windowRef.turnstile.render("#cf-confirm-div", {
-      sitekey: "0x4AAAAAABeM4SYPu2Rn7PmI",
-      callback: async function (token: string) {
-        dialogShow.value = false;
-        await requestSendEmailKey(token);
-      },
-      "before-interactive-callback": function () {
-        console.log("before-interactive-callback");
-      },
+  windowRef.grecaptcha.ready(function () {
+    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'submit' }).then(async function (token: string) {
+      await requestSendEmailKey(token);
     });
   });
 };
@@ -240,10 +218,6 @@ onBeforeUnmount(() => {});
       </t-link>
     </div>
   </t-card>
-
-  <t-dialog v-model:visible="dialogShow" header="正在加载人机验证" :close-btn="false" :footer="false">
-    <div ref="dialogContainer" class="cf-confirm-container"></div>
-  </t-dialog>
 </template>
 
 <style scoped>

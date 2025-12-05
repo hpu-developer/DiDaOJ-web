@@ -205,9 +205,6 @@ const isSendNewEmailKeyDisabled = ref(false);
 let sendNewEmailTime: any = null;
 let sendNewEmailInterval = -1;
 
-const dialogShow = ref(false);
-const dialogContainer = ref(null as any);
-
 const requestSendOldEmailKey = async (token: string) => {
   if (isSendOldEmailKeyDisabled.value) {
     return;
@@ -296,32 +293,11 @@ const handleSendOldEmailKey = async () => {
     return;
   }
 
-  dialogShow.value = true;
-
-  await nextTick(); // 等待 modal 渲染完成
-
-  // 确保 cf-confirm-div 只添加一次
-  const confirmDiv = document.getElementById("cf-confirm-div");
-  if (confirmDiv) {
-    confirmDiv.remove();
-  }
-
-  const div = document.createElement("div");
-  div.id = "cf-confirm-div";
-  div.setAttribute("data-theme", "light");
-  dialogContainer.value?.appendChild(div);
-
+  isSendOldEmailKeying.value = true;
   const windowRef = window as any;
-  windowRef.turnstile.ready(function () {
-    windowRef.turnstile.render("#cf-confirm-div", {
-      sitekey: "0x4AAAAAABeM4SYPu2Rn7PmI",
-      callback: async function (token: string) {
-        dialogShow.value = false;
-        await requestSendOldEmailKey(token);
-      },
-      "before-interactive-callback": function () {
-        console.log("before-interactive-callback");
-      },
+  windowRef.grecaptcha.ready(function () {
+    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'submit' }).then(async function (token: string) {
+      await requestSendOldEmailKey(token);
     });
   });
 };
@@ -346,32 +322,11 @@ const handleSendNewEmailKey = async () => {
     return;
   }
 
-  dialogShow.value = true;
-
-  await nextTick(); // 等待 modal 渲染完成
-
-  // 确保 cf-confirm-div 只添加一次
-  const confirmDiv = document.getElementById("cf-confirm-div");
-  if (confirmDiv) {
-    confirmDiv.remove();
-  }
-
-  const div = document.createElement("div");
-  div.id = "cf-confirm-div";
-  div.setAttribute("data-theme", "light");
-  dialogContainer.value?.appendChild(div);
-
+  isSendNewEmailKeying.value = true;
   const windowRef = window as any;
-  windowRef.turnstile.ready(function () {
-    windowRef.turnstile.render("#cf-confirm-div", {
-      sitekey: "0x4AAAAAABeM4SYPu2Rn7PmI",
-      callback: async function (token: string) {
-        dialogShow.value = false;
-        await requestSendNewEmailKey(token);
-      },
-      "before-interactive-callback": function () {
-        console.log("before-interactive-callback");
-      },
+  windowRef.grecaptcha.ready(function () {
+    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'submit' }).then(async function (token: string) {
+      await requestSendNewEmailKey(token);
     });
   });
 };
@@ -479,15 +434,8 @@ onMounted(() => {
           <t-alert>
             <span>头像可以参考<t-link href="/system/about" target="_blank">系统帮助</t-link>中的<t-tag>用户头像</t-tag>相关介绍</span>
           </t-alert>
-          <t-form
-            ref="form"
-            :rules="formRules"
-            :data="formData"
-            :colon="true"
-            @reset="onResetBaseInfo"
-            @submit="onSubmitBaseInfo"
-            class="yj-modify-form"
-          >
+          <t-form ref="form" :rules="formRules" :data="formData" :colon="true" @reset="onResetBaseInfo"
+            @submit="onSubmitBaseInfo" class="yj-modify-form">
             <t-form-item name="nickname" label="昵称">
               <t-input v-model="formData.nickname" clearable placeholder="请输入昵称"></t-input>
             </t-form-item>
@@ -519,29 +467,18 @@ onMounted(() => {
           </t-form>
         </t-tab-panel>
         <t-tab-panel value="2" label="安全信息" style="padding: 10px">
-          <t-form
-            ref="form"
-            :rules="passwordFormRules"
-            :data="passwordFormData"
-            :colon="true"
-            @reset="onResetPasswordInfo"
-            @submit="onSubmitPasswordInfo"
-            class="yj-modify-form"
-          >
+          <t-form ref="form" :rules="passwordFormRules" :data="passwordFormData" :colon="true"
+            @reset="onResetPasswordInfo" @submit="onSubmitPasswordInfo" class="yj-modify-form">
             <t-form-item name="password" label="当前密码">
               <t-input v-model="passwordFormData.password" clearable type="password" placeholder="请输入旧密码"></t-input>
             </t-form-item>
             <t-form-item name="changePassword" label="新密码">
-              <t-input v-model="passwordFormData.changePassword" clearable type="password" placeholder="输入新密码"></t-input>
+              <t-input v-model="passwordFormData.changePassword" clearable type="password"
+                placeholder="输入新密码"></t-input>
             </t-form-item>
             <t-form-item name="confirmPassword" label="确认密码">
-              <t-input
-                v-model="passwordFormData.confirmPassword"
-                clearable
-                type="password"
-                autocomplete="current-password"
-                placeholder="请确认新密码"
-              ></t-input>
+              <t-input v-model="passwordFormData.confirmPassword" clearable type="password"
+                autocomplete="current-password" placeholder="请确认新密码"></t-input>
             </t-form-item>
             <t-form-item>
               <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
@@ -554,15 +491,8 @@ onMounted(() => {
             <span>如果您的原邮箱无法接受验证码，可联系管理员寻求帮助</span>
             <span>管理员邮箱：BoilTask@qq.com</span>
           </t-alert>
-          <t-form
-            ref="form"
-            :rules="emailFormRules"
-            :data="emailFormData"
-            :colon="true"
-            @reset="onResetEmail"
-            @submit="onSubmitEmail"
-            class="yj-modify-form"
-          >
+          <t-form ref="form" :rules="emailFormRules" :data="emailFormData" :colon="true" @reset="onResetEmail"
+            @submit="onSubmitEmail" class="yj-modify-form">
             <t-form-item name="email" label="原邮箱">
               <t-input v-model="emailFormData.email" readonly></t-input>
             </t-form-item>
@@ -601,16 +531,14 @@ onMounted(() => {
             </t-form-item>
             <t-form-item>
               <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
-              <t-button theme="primary" type="submit" block :loading="isPostRunning">{{ vjudgeNickname ? "保存" : "绑定" }}</t-button>
+              <t-button theme="primary" type="submit" block :loading="isPostRunning">{{ vjudgeNickname ? "保存" : "绑定"
+                }}</t-button>
             </t-form-item>
           </t-form>
         </t-tab-panel>
       </t-tabs>
     </t-loading>
   </t-card>
-  <t-dialog v-model:visible="dialogShow" header="正在加载人机验证" :close-btn="false" :footer="false">
-    <div ref="dialogContainer" class="cf-confirm-container"></div>
-  </t-dialog>
 </template>
 
 <style scoped>
@@ -623,6 +551,7 @@ onMounted(() => {
   align-items: center;
 }
 .yj-modify-form {
+
   padding: 20px;
 }
 </style>
