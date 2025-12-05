@@ -1,7 +1,7 @@
 // 导入axios实例
 import httpRequest from "@/apis/axios-api";
 
-import type { Contest, ContestView, ContestEditRequest, ContestProblem } from "@/types/contest";
+import type { Contest, ContestView, ContestEditRequest, ContestProblem, ContestMemberEditRequest } from "@/types/contest";
 import { ProblemView } from "@/types/problem.ts";
 import { JudgeLanguage } from "@/apis/language.ts";
 
@@ -182,5 +182,20 @@ export function GetContentRencently() {
   return httpRequest({
     url: "/contest/recently",
     method: "get",
+  });
+}
+
+export function GetContestMemberSelf(contestId: number) {
+  return httpRequest({
+    url: "/contest/member/self" + "?id=" + contestId,
+    method: "get",
+  });
+}
+
+export function PostContestMemberEditSelf(request: ContestMemberEditRequest) {
+  return httpRequest({
+    url: "/contest/member/edit/self",
+    method: "post",
+    data: request,
   });
 }

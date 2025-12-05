@@ -102,3 +102,8 @@ export interface ContestEditRequest {
   submit_anytime: boolean;
   password: string;
 }
+
+export interface ContestMemberEditRequest {
+  id: number;
+  contest_name: string;
+}

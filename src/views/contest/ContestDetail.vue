@@ -2,14 +2,14 @@
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetContest, ParseContest, PostContestDolos, PostContestPassword } from "@/apis/contest.ts";
+import { GetContest, GetContestMemberSelf, ParseContest, PostContestDolos, PostContestMemberEditSelf, PostContestPassword } from "@/apis/contest.ts";
 import { useCurrentInstance } from "@/util";
 import { ShowErrorTips, ShowTextTipsError, ShowTextTipsInfo } from "@/util/tips";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
 import { useUserStore } from "@/stores/user.ts";
 import { AuthType } from "@/auth";
 import { handleGotoContestProblem } from "@/util/router.ts";
-import type { ContestView } from "@/types/contest.ts";
+import type { ContestMemberEditRequest, ContestView } from "@/types/contest.ts";
 import type { ProblemView } from "@/types/problem.ts";
 import { ProblemAttemptStatus } from "@/apis/problem.ts";
 import Countdown from "@/components/count-down/Countdown.vue";
@@ -28,7 +28,11 @@ const contestData = ref<ContestView | null>(null);
 const hasContestViewAuth = ref(false);
 const needContestPassword = ref(false);
 const contestPassword = ref("");
+
 const contestCountdownTarget = ref(null as Date | null);
+const showEditContestMemberDialog = ref(false);
+const editContestMemberLoading = ref(false);
+const contestName = ref("");
 
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageContest) || (contestData.value && userStore?.getUserId === contestData.value.inserter);
@@ -144,6 +148,39 @@ const handlePostContestPassword = async () => {
   }
 };
 
+const handleEditContestMember = async () => {
+  editContestMemberLoading.value = true;
+  try {
+    const res = await GetContestMemberSelf(contestId);
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+    contestName.value = res.data.contest_name || "";
+  } finally {
+    editContestMemberLoading.value = false;
+  showEditContestMemberDialog.value = true;
+  }
+}
+
+const handleEditContestMemberSubmit = async () => {
+  editContestMemberLoading.value = true;
+  try {
+    const res = await PostContestMemberEditSelf({
+      id: contestId,
+      contest_name: contestName.value,
+    } as ContestMemberEditRequest);
+    if (res.code !== 0) {
+      ShowErrorTips(globalProperties, res.code);
+      return;
+    }
+    ShowTextTipsInfo(globalProperties, "修改成功");
+  } finally {
+    editContestMemberLoading.value = false;
+    showEditContestMemberDialog.value = false;
+  }
+}
+
 const fetchContestData = async () => {
   contestLoading.value = true;
 
@@ -234,11 +271,12 @@ onMounted(async () => {
           <t-space>
             <t-button v-if="hasEditAuth" @click="handleClickDolos" :loading="dolosLoading">查重</t-button>
             <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
+            <t-button @click="handleEditContestMember" :loading="editContestMemberLoading">参赛信息</t-button>
           </t-space>
         </div>
         <div style="margin: 12px">
           <t-descriptions layout="vertical" :bordered="true">
-            <t-descriptions-item label="创建时间">{{ contestData?.insertTime }}</t-descriptions-item>
+            <t-descriptions-item label="">{{ contestData?.insertTime }}</t-descriptions-item>
           </t-descriptions>
           <t-descriptions layout="vertical" :bordered="true">
             <t-descriptions-item label="编辑时间">{{ contestData?.modifyTime }}</t-descriptions-item>
@@ -259,6 +297,16 @@ onMounted(async () => {
       </t-col>
     </t-row>
   </t-loading>
+
+  <t-dialog v-model:visible="showEditContestMemberDialog" header="参赛信息" @confirm="handleEditContestMemberSubmit"  :confirm-loading="editContestMemberLoading">
+    <div style="margin-bottom: 10px">
+      <t-form ref="contestMemberFormRef">
+        <t-form-item label="参赛昵称" prop="nickname">
+          <t-input v-model:value="contestName" placeholder="留空则取用户昵称" />
+        </t-form-item>
+      </t-form>
+    </div>
+  </t-dialog>
 </template>
 
 <style scoped>
