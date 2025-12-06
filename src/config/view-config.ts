@@ -15,12 +15,6 @@ import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 import ProblemEdit from "@/views/problem/ProblemEdit.vue";
 import ProblemJudge from "@/views/problem/ProblemJudge.vue";
 
-import BotList from "@/views/bot/BotList.vue";
-import BotGame from "@/views/bot/BotGame.vue";
-import BotGameEdit from "@/views/bot/BotGameEdit.vue";
-import BotReplay from "@/views/bot/BotReplay.vue";
-import BotReplayList from "@/views/bot/BotReplayList.vue";
-
 import CollectionList from "@/views/collection/CollectionList.vue";
 import CollectionDetail from "@/views/collection/CollectionDetail.vue";
 import CollectionRank from "@/views/collection/CollectionRank.vue";
@@ -158,22 +152,20 @@ const viewsConfig = [
 
   {
     name: "judge-list",
-    tab: "problem",
+    tab: "judge",
     sidebar: "judge-list",
+    path: "",
     title: "评测列表",
     icon: "cloud",
-    path: "judge",
-    disableTabPath: true,
     component: JudgeJobList,
   },
   {
     name: "judge-detail",
-    tab: "problem",
+    tab: "judge",
     sidebar: "judge-list",
+    path: ":judgeId+",
     title: "评测详情",
     icon: "check-circle",
-    path: "judge/:judgeId+",
-    disableTabPath: true,
     component: JudgeJobDetail,
   },
 
@@ -235,62 +227,6 @@ const viewsConfig = [
     icon: "file-code",
     disableSidebar: true,
     component: ProblemDetail,
-  },
-  {
-    name: "bot-list",
-    tab: "bot",
-    sidebar: "bot-list",
-    path: "",
-    title: "游戏列表",
-    icon: "flag",
-    component: BotList,
-  },
-  // {
-  //   name: "bot-replay-list",
-  //   tab: "bot",
-  //   sidebar: "bot-replay-list",
-  //   path: "",
-  //   title: "回放列表",
-  //   icon: "camera",
-  //   component: BotList,
-  // },
-  {
-    name: "bot-game",
-    tab: "bot-detail-tab",
-    sidebar: "bot-game",
-    path: ":gameKey+",
-    title: "游戏详情",
-    icon: "play",
-    component: BotGame,
-  },
-  {
-    name: "manage-bot-game",
-    tab: "bot-detail-tab",
-    sidebar: "manage-bot-game",
-    disableSidebar: true,
-    path: "game/:gameKey+",
-    title: "游戏编辑",
-    icon: "edit",
-    component: BotGameEdit,
-    auths: [AuthType.ManageBotGame],
-  },
-  {
-    name: "bot-replay-list",
-    tab: "bot-detail-tab",
-    sidebar: "bot-replay-list",
-    path: ":gameKey+/replay",
-    title: "回放列表",
-    icon: "camera",
-    component: BotReplayList,
-  },
-  {
-    name: "bot-replay",
-    tab: "bot-detail-tab",
-    sidebar: "bot-replay-list",
-    path: ":gameKey+/replay/:replayId+",
-    title: "回放详情",
-    icon: "play",
-    component: BotReplay,
   },
   {
     name: "contest-judge",

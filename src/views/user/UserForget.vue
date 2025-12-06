@@ -108,6 +108,7 @@ const handleSendEmailKey = async () => {
   if (isSendEmailKeying.value) {
     return;
   }
+  isPostRunning.value = true;
   isSendEmailKeying.value = true;
 
   const windowRef = window as any;
@@ -208,6 +209,9 @@ onBeforeUnmount(() => {});
       <t-form-item v-else>
         <t-button theme="primary" type="submit" block :loading="isPostRunning">重置密码</t-button>
       </t-form-item>
+      <div style="color: #666; font-size: 12px; text-align: right;">
+        本网站由 reCAPTCHA 和 Google 保护 <a href="https://policies.google.com/privacy" target="_blank">隐私政策</a> <a href="https://policies.google.com/terms" target="_blank">服务条款</a>
+      </div>
     </t-form>
     <div class="dida-login-footer">
       <t-link
@@ -252,3 +256,4 @@ onBeforeUnmount(() => {});
   align-items: center;
 }
 </style>
+

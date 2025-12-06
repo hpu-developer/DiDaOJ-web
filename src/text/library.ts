@@ -198,7 +198,7 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
         zh: "用户名已被占用，请更换后重试",
       },
       "100047": {
-        zh: "验证码错误或已过期，请刷新后重试",
+        zh: "您的网络环境验证失败，请等待一段时间后刷新重试",
       },
     });
   });

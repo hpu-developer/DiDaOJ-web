@@ -6,7 +6,8 @@ a {
   margin-right: 2px;
 }
 
-:not(pre) > code, .sh-code {
+:not(pre) > code,
+.sh-code {
   border: 1px solid #e8eaec;
   border-radius: 10%;
   background-color: #f8f9fa;
@@ -52,4 +53,8 @@ a {
 /* 可编辑区域突出显示 */
 .monaco-editor .editable-line {
   background-color: rgba(0, 255, 120, 0.08);
+}
+
+.grecaptcha-badge {
+  visibility: hidden;
 }
