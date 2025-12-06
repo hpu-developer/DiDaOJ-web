@@ -19,6 +19,7 @@ import BotList from "@/views/bot/BotList.vue";
 import BotGame from "@/views/bot/BotGame.vue";
 import BotGameEdit from "@/views/bot/BotGameEdit.vue";
 import BotReplay from "@/views/bot/BotReplay.vue";
+import BotReplayList from "@/views/bot/BotReplayList.vue";
 
 import CollectionList from "@/views/collection/CollectionList.vue";
 import CollectionDetail from "@/views/collection/CollectionDetail.vue";
@@ -280,7 +281,7 @@ const viewsConfig = [
     path: ":gameKey+/replay",
     title: "回放列表",
     icon: "camera",
-    component: BotList,
+    component: BotReplayList,
   },
   {
     name: "bot-replay",

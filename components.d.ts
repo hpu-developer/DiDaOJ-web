@@ -61,10 +61,7 @@ declare module 'vue' {
     TRow: typeof import('tdesign-vue-next')['Row']
     TSelect: typeof import('tdesign-vue-next')['Select']
     TSelectInput: typeof import('tdesign-vue-next')['SelectInput']
-<<<<<<< HEAD
     TSkeleton: typeof import('tdesign-vue-next')['Skeleton']
-=======
->>>>>>> ef4ca8e (完善参赛信息编辑)
     TSlider: typeof import('tdesign-vue-next')['Slider']
     TSpace: typeof import('tdesign-vue-next')['Space']
     TStatistic: typeof import('tdesign-vue-next')['Statistic']

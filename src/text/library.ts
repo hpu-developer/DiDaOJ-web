@@ -194,6 +194,12 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100045": {
         zh: "该问题的首通奖励已经领取过了",
       },
+      "100046": {
+        zh: "用户名已被占用，请更换后重试",
+      },
+      "100047": {
+        zh: "验证码错误或已过期，请刷新后重试",
+      },
     });
   });
 }
