@@ -539,7 +539,7 @@ onMounted(() => {
       </t-tabs>
       
       <div style="color: #666; font-size: 12px; text-align: right;">
-        本网站由 reCAPTCHA 和 Google 保护 <a href="https://policies.google.com/privacy" target="_blank">隐私政策</a> <a href="https://policies.google.com/terms" target="_blank">服务条款</a>
+        本网站由 reCAPTCHA 和 Google 保护 <a href="https://policies.google.cn/privacy" target="_blank">隐私政策</a> <a href="https://policies.google.cn/terms" target="_blank">服务条款</a>
       </div>
     </t-loading>
   </t-card>
