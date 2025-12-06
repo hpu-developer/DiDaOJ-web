@@ -291,7 +291,10 @@ onBeforeUnmount(() => {
               </t-breadcrumb-item>
               <t-breadcrumb-item
                 v-if="discussData?.contestProblemIndex"
-                :to="{ name: 'contest-problem-detail', params: { problemIndex: discussData?.contestProblemIndex } }"
+                :to="{
+                  name: 'contest-problem-detail',
+                  params: { contestId: discussData?.contestId, problemIndex: discussData?.contestProblemIndex },
+                }"
               >
                 {{ GetContestProblemIndexStr(discussData?.contestProblemIndex) }} - {{ discussData?.problemTitle }}
               </t-breadcrumb-item>

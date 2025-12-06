@@ -9,6 +9,7 @@ import { HandleR2ImageUpload, UploadImageCallbackUrl } from "@/util/md-editor-v3
 import type { WatchStopHandle } from "vue";
 import type { Discuss, DiscussView } from "@/types/discuss.ts";
 import type { DiscussEditRequest } from "@/types/discuss.ts";
+import { GetContest, GetContestProblemIndexStr } from "@/apis/contest";
 
 let route = useRoute();
 const { globalProperties } = useCurrentInstance();
@@ -135,10 +136,11 @@ const loadDiscuss = async () => {
   discussEditForm.value.content = discuss.content;
   if (discuss.contest_id) {
     discussEditForm.value.contestId = discuss.contest_id.toString();
+    discussEditForm.value.problemKey = GetContestProblemIndexStr(discuss.contest_problem_index);
   } else {
     discussEditForm.value.contestId = "";
+    discussEditForm.value.problemKey = discuss.problem_key;
   }
-  discussEditForm.value.problemKey = discuss.problem_key;
 
   discussLoading.value = false;
 };
