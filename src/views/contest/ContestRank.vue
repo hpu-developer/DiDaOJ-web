@@ -13,6 +13,7 @@ import { TNode } from "tdesign-vue-next/es/common";
 import { GetAvatarUrl } from "@/util/avatar.ts";
 import type { BaseTableCol } from "tdesign-vue-next";
 import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
+import * as XLSX from "xlsx";
 
 const route = useRoute();
 const router = useRouter();
@@ -107,8 +108,8 @@ const listColumns1 = [
       };
     },
     cell: (_: any, data: any) => {
-      let nickname = data.row.nickname
-      if (contestNames[data.row.userId]){
+      let nickname = data.row.nickname;
+      if (contestNames[data.row.userId]) {
         nickname = contestNames[data.row.userId];
       }
       const text = GetEllipsisText(nickname, 18);
@@ -482,6 +483,70 @@ const handleProgressChange = (value: number) => {
   loadProgress();
 };
 
+// 导出榜单为 Excel
+const exportRankToExcel = () => {
+  if (contestRankViews.value.length === 0) {
+    ShowTextTipsInfo(globalProperties, "暂无数据可导出");
+    return;
+  }
+
+  // 构建 Excel 表头
+  const headers = ["Rank", "用户名", "昵称", "Solved", "Penalty"];
+
+  // 添加每个问题的表头
+  const problemColumns = listColumns.value.filter((col) => col.colKey.startsWith("problem_"));
+  problemColumns.forEach((col) => {
+    // 问题列的标题是一个函数，我们需要获取问题索引并转换为正确的标题格式
+    const problemIndex = parseInt(col.colKey.replace("problem_", ""));
+    headers.push(GetContestProblemIndexStr(problemIndex));
+  });
+
+  // 构建 Excel 数据行
+  const rows = contestRankViews.value.map((row) => {
+    const rowData: any[] = [row.rank, row.username, contestNames[row.userId] || row.nickname, row.solved, getDurationText(row.penalty)];
+
+    // 添加每个问题的数据
+    problemColumns.forEach((col) => {
+      const problemKey = col.colKey;
+      const problem = row[problemKey];
+      if (problem) {
+        let text = "";
+        if (problem.acDuration >= 0) {
+          text = getDurationText(problem.acDuration);
+        }
+        if (problem.attempt > 0) {
+          if (text) {
+            text += " ";
+          }
+          text += `(-${problem.attempt})`;
+        }
+        if (problem.lock > 0) {
+          if (text) {
+            text += " ";
+          }
+          text += `(+${problem.lock})`;
+        }
+        rowData.push(text);
+      } else {
+        rowData.push("");
+      }
+    });
+
+    return rowData;
+  });
+
+  // 创建工作表
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+  // 创建工作簿
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "比赛榜单");
+
+  // 生成 Excel 文件并下载
+  const fileName = `contest_rank_${contestId}_${new Date().getTime()}.xlsx`;
+  XLSX.writeFile(workbook, fileName);
+};
+
 function startAutoScroll() {
   if (scrollTimer) return; // 已在滚动中则不重复启动
 
@@ -526,10 +591,10 @@ const fetchData = async (needLoading: boolean) => {
       }
 
       contestNames = {} as Record<number, string>;
-      if (res.data.contest.members){
-        res.data.contest.members.forEach((member: { id: number, contest_name: string }) => {
+      if (res.data.contest.members) {
+        res.data.contest.members.forEach((member: { id: number; contest_name: string }) => {
           contestNames[member.id] = member.contest_name;
-        })
+        });
       }
 
       res.data.contest.problems.sort((a: number, b: number) => a - b);
@@ -722,6 +787,7 @@ onBeforeUnmount(() => {
             <t-switch size="large" v-model="autoScroll" @change="handleSwitchAutoScroll">
               <template #label="slotProps">{{ slotProps.value ? "自动滚动" : "关闭滚动" }}</template>
             </t-switch>
+            <t-button @click="exportRankToExcel" size="small" variant="outline">导出榜单</t-button>
           </t-space>
         </div>
         <t-slider
