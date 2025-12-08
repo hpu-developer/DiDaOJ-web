@@ -133,7 +133,7 @@ const handleParse = async () => {
 
 const handleParseProblem = () => {
   if (localViews.value) {
-    textareaValue.value = localViews.value.map((v) => v.id).join("\n");
+    textareaValue.value = localViews.value.map((v) => v.key).join("\n");
   } else {
     textareaValue.value = "";
   }
@@ -188,3 +188,4 @@ watch(
   min-width: 100%;
 }
 </style>
+
