@@ -13,7 +13,8 @@ import { TNode } from "tdesign-vue-next/es/common";
 import { GetAvatarUrl } from "@/util/avatar.ts";
 import type { BaseTableCol } from "tdesign-vue-next";
 import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 const route = useRoute();
 const router = useRouter();
@@ -484,11 +485,15 @@ const handleProgressChange = (value: number) => {
 };
 
 // 导出榜单为 Excel
-const exportRankToExcel = () => {
+const exportRankToExcel = async () => {
   if (contestRankViews.value.length === 0) {
     ShowTextTipsInfo(globalProperties, "暂无数据可导出");
     return;
   }
+
+  // 创建工作簿和工作表
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("比赛榜单");
 
   // 构建 Excel 表头
   const headers = ["Rank", "用户名", "昵称", "Solved", "Penalty"];
@@ -501,8 +506,14 @@ const exportRankToExcel = () => {
     headers.push(GetContestProblemIndexStr(problemIndex));
   });
 
+  // 添加表头行
+  const headerRow = worksheet.addRow(headers);
+  // 设置表头样式（可选）
+  headerRow.font = { bold: true };
+  headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+
   // 构建 Excel 数据行
-  const rows = contestRankViews.value.map((row) => {
+  contestRankViews.value.forEach((row) => {
     const rowData: any[] = [row.rank, row.username, contestNames[row.userId] || row.nickname, row.solved, getDurationText(row.penalty)];
 
     // 添加每个问题的数据
@@ -532,19 +543,25 @@ const exportRankToExcel = () => {
       }
     });
 
-    return rowData;
+    worksheet.addRow(rowData);
   });
 
-  // 创建工作表
-  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-
-  // 创建工作簿
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "比赛榜单");
+  // 设置列宽自适应（可选）
+  worksheet.columns.forEach((column) => {
+    let maxLength = 0;
+    column.eachCell((cell) => {
+      const columnLength = cell.value ? cell.value.toString().length : 0;
+      if (columnLength > maxLength) {
+        maxLength = columnLength;
+      }
+    });
+    column.width = maxLength < 10 ? 10 : maxLength + 2;
+  });
 
   // 生成 Excel 文件并下载
   const fileName = `contest_rank_${contestId}_${new Date().getTime()}.xlsx`;
-  XLSX.writeFile(workbook, fileName);
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveAs(new Blob([buffer]), fileName);
 };
 
 function startAutoScroll() {
@@ -790,30 +807,13 @@ onBeforeUnmount(() => {
             <t-button @click="exportRankToExcel" size="small" variant="outline">导出榜单</t-button>
           </t-space>
         </div>
-        <t-slider
-          v-model="progressValue"
-          :marks="progressMarks"
-          :max="progressMax"
-          :label="progressLabelRender"
-          :tooltip-props="{ placement: 'top' }"
-          @change-end="handleProgressChange"
-        />
+        <t-slider v-model="progressValue" :marks="progressMarks" :max="progressMax" :label="progressLabelRender"
+          :tooltip-props="{ placement: 'top' }" @change-end="handleProgressChange" />
       </div>
       <div class="table-scroll-wrapper">
-        <t-table
-          :data="contestRankViews"
-          :columns="listColumns"
-          row-key="index"
-          vertical-align="middle"
-          :bordered="true"
-          :hover="true"
-          table-layout="auto"
-          :rowspan-and-colspan="rowspanAndColspan"
-          :loading="dataLoading"
-          class="dida-contest-rank-table"
-          :pagination="pagination"
-          @page-change="onPageChange"
-        />
+        <t-table :data="contestRankViews" :columns="listColumns" row-key="index" vertical-align="middle"
+          :bordered="true" :hover="true" table-layout="auto" :rowspan-and-colspan="rowspanAndColspan"
+          :loading="dataLoading" class="dida-contest-rank-table" :pagination="pagination" @page-change="onPageChange" />
       </div>
     </t-card>
   </t-row>

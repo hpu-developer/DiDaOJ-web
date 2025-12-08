@@ -14,6 +14,8 @@
     "axios": "^1.12.2",
     "cropperjs": "^1.6.2",
     "echarts": "^6.0.0",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
     "highlight.js": "^11.11.1",
     "katex": "^0.16.22",
     "markdown-it-container": "^4.0.0",
@@ -30,8 +32,7 @@
     "tdesign-icons-vue-next": "^0.3.0",
     "tdesign-vue-next": "^1.15.1",
     "vue": "^3.5.13",
-    "vue-router": "^4.1.5",
-    "xlsx": "^0.18.5"
+    "vue-router": "^4.1.5"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.11.0",
