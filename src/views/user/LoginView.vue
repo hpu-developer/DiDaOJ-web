@@ -33,9 +33,14 @@ const onSubmit = () => {
         ShowTextTipsInfo(globalProperties, "登录成功");
         let redirectUri = globalProperties.$route.query.redirect_uri as string;
         if (!redirectUri) {
-          redirectUri = "/user/" + res.data.username;
+          redirectUri = "/";
         }
-        globalProperties.$router.push({ path: redirectUri });
+        // 解析完整的重定向 URL，包括查询参数
+        const resolvedRoute = globalProperties.$router.resolve(redirectUri);
+        globalProperties.$router.push({
+          path: resolvedRoute.path,
+          query: resolvedRoute.query
+        });
       } else {
         ShowErrorTips(globalProperties, res.code);
       }
