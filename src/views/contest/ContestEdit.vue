@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import router from "@/router";
-import { GetContestEdit, GetContestImageToken, ParseContest, PostContestCreate, PostContestEdit } from "@/apis/contest.ts";
+import { GetContestClone, GetContestEdit, GetContestImageToken, ParseContest, PostContestCreate, PostContestEdit } from "@/apis/contest.ts";
 import { useCurrentInstance } from "@/util";
 import { ShowErrorTips, ShowTextTipsSuccess } from "@/util/tips";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
@@ -210,6 +210,28 @@ const loadContest = async () => {
   loadDescriptionEditor(contestDescription);
 };
 
+const loadCloneContest = async (cloneContestId: number) => {
+  const res = await GetContestClone(cloneContestId);
+  if (res.code !== 0) {
+    ShowErrorTips(globalProperties, res.code);
+    loadDescriptionEditor("");
+    return;
+  }
+  const contest = res.data.contest;
+
+  contestEditForm.value.title = contest.title;
+
+  contestEditForm.value.problems = contest.problems;
+
+  if (contest.lock_rank_duration) {
+    contestEditForm.value.lockRankDuration = GetSecondFromDuration(contest.lock_rank_duration);
+  } else {
+    contestEditForm.value.lockRankDuration = 0;
+  }
+  contestEditForm.value.alwaysLock = contest.always_lock;
+  loadDescriptionEditor("");
+};
+
 onMounted(async () => {
   if (Array.isArray(route.params.contestId)) {
     contestId.value = Number(route.params.contestId[0]);
@@ -221,7 +243,13 @@ onMounted(async () => {
     contestLoading.value = true;
     await loadContest();
   } else {
-    loadDescriptionEditor("");
+    // 获取query是否包含contest_id
+    if (route.query.contest_id) {
+      const cloneContestId = Number(route.query.contest_id);
+      await loadCloneContest(cloneContestId);
+    } else {
+      loadDescriptionEditor("");
+    }
   }
 });
 </script>
@@ -269,14 +297,19 @@ onMounted(async () => {
                     <t-switch v-model="contestEditForm.private" />
                   </t-form-item>
                   <t-form-item label="密码" v-if="contestEditForm.private">
-                    <t-input v-model="contestEditForm.password" type="password" autocomplete="current-password" placeholder="请输入访问密码，留空代表关闭密码访问"></t-input>
+                    <t-input
+                      v-model="contestEditForm.password"
+                      type="password"
+                      autocomplete="current-password"
+                      placeholder="请输入访问密码，留空代表关闭密码访问"
+                    ></t-input>
                   </t-form-item>
                 </t-form>
               </t-tab-panel>
               <t-tab-panel value="2" label="问题" style="padding: 10px">
                 <ParseProblemList v-model="contestEditForm.problems" />
               </t-tab-panel>
-              <t-tab-panel v-if="contestEditForm.private" value="3" label="成员" style="padding: 10px">
+              <t-tab-panel value="3" label="成员" style="padding: 10px">
                 <ParseUserList v-model="contestEditForm.members" />
               </t-tab-panel>
             </t-tabs>

@@ -156,16 +156,20 @@ const handleEditContestMember = async () => {
       ShowErrorTips(globalProperties, res.code);
       return;
     }
-    if (res.data &&  res.data.contest_name){
-      contestName.value = res.data.contest_name
-    }else{
+    if (res.data && res.data.contest_name) {
+      contestName.value = res.data.contest_name;
+    } else {
       contestName.value = "";
     }
   } finally {
     editContestMemberLoading.value = false;
-  showEditContestMemberDialog.value = true;
+    showEditContestMemberDialog.value = true;
   }
-}
+};
+
+const handleClickClone = async () => {
+  router.push({ name: "contest-create", query: { contest_id: contestId } });
+};
 
 const handleEditContestMemberSubmit = async () => {
   editContestMemberLoading.value = true;
@@ -183,7 +187,7 @@ const handleEditContestMemberSubmit = async () => {
     editContestMemberLoading.value = false;
     showEditContestMemberDialog.value = false;
   }
-}
+};
 
 const fetchContestData = async () => {
   contestLoading.value = true;
@@ -276,6 +280,7 @@ onMounted(async () => {
             <t-button v-if="hasEditAuth" @click="handleClickDolos" :loading="dolosLoading">查重</t-button>
             <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
             <t-button @click="handleEditContestMember" :loading="editContestMemberLoading">参赛信息</t-button>
+            <t-button @click="handleClickClone" theme="warning">克隆</t-button>
           </t-space>
         </div>
         <div style="margin: 12px">
@@ -302,7 +307,12 @@ onMounted(async () => {
     </t-row>
   </t-loading>
 
-  <t-dialog v-model:visible="showEditContestMemberDialog" header="参赛信息" @confirm="handleEditContestMemberSubmit"  :confirm-loading="editContestMemberLoading">
+  <t-dialog
+    v-model:visible="showEditContestMemberDialog"
+    header="参赛信息"
+    @confirm="handleEditContestMemberSubmit"
+    :confirm-loading="editContestMemberLoading"
+  >
     <div style="margin-bottom: 10px">
       <t-form ref="contestMemberFormRef">
         <t-form-item label="参赛昵称" prop="nickname">

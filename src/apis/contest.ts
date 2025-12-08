@@ -72,6 +72,13 @@ export function GetContest(contestId: number) {
   });
 }
 
+export function GetContestClone(contestId: number) {
+  return httpRequest({
+    url: "/contest/clone" + "?id=" + contestId,
+    method: "get",
+  });
+}
+
 export function GetContestEdit(contestId: number) {
   return httpRequest({
     url: "/contest/edit" + "?id=" + contestId,

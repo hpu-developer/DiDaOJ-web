@@ -2,7 +2,7 @@
 import { ref, watch } from "vue";
 import { useCurrentInstance } from "@/util";
 import { ShowErrorTips, SplitIdStringsFromText } from "@/util/tips";
-import { PostUserAccountInfoss, PostUserParse, PostUserParseByIds } from "@/apis/user.ts";
+import { PostUserAccountInfoss, PostUserParse } from "@/apis/user.ts";
 import { ParseValidType } from "@/util/parse.ts";
 import { UserInfo } from "@/types/user.ts";
 
