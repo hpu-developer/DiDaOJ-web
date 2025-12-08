@@ -6,7 +6,7 @@ import { GetContestClone, GetContestEdit, GetContestImageToken, ParseContest, Po
 import { useCurrentInstance } from "@/util";
 import { ShowErrorTips, ShowTextTipsSuccess } from "@/util/tips";
 import { useWebStyleStore } from "@/stores/webStyle.ts";
-import type { ContestEditRequest, ContestView } from "@/types/contest.ts";
+import type { ContestEditRequest, ContestView, ContestMember } from "@/types/contest.ts";
 import ParseProblemList from "@/components/problem/ParseProblemList.vue";
 import ParseUserList from "@/components/user/ParseUserList.vue";
 import { GetSecondFromDuration, GetTimeStringBySeconds } from "@/time/library.ts";
@@ -32,7 +32,7 @@ const contestEditForm = ref({
   private: true,
   password: "",
   problems: [] as number[],
-  members: [] as number[],
+  members: [] as ContestMember[],
   description: "",
   notification: "",
   lockRankDuration: 0,
@@ -310,7 +310,7 @@ onMounted(async () => {
                 <ParseProblemList v-model="contestEditForm.problems" />
               </t-tab-panel>
               <t-tab-panel value="3" label="成员" style="padding: 10px">
-                <ParseUserList v-model="contestEditForm.members" />
+                <ParseUserList v-model="contestEditForm.members" extra-field="contest_name" extra-column-title="比赛名称" />
               </t-tab-panel>
             </t-tabs>
           </t-card>

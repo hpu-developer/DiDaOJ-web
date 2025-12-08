@@ -22,6 +22,11 @@ export interface ContestProblem {
   attempt: number;
 }
 
+export interface ContestMember {
+  id: number;
+  contest_name: string;
+}
+
 export interface Contest {
   id: string;
   title: string;
