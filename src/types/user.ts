@@ -47,6 +47,8 @@ export interface UserInfoView {
 }
 
 export interface UserModifyInfo {
+  id: number;
+  username: string;
   nickname: string;
   slogan: string;
   email: string;
@@ -77,6 +79,10 @@ export interface UserModifyPasswordRequest {
 
 export interface UserModifyEmailRequest {
   email_key: string;
+}
+
+export interface UserModifyUsernameRequest {
+  username: string;
 }
 
 export interface UserModifyVjudgeRequest {

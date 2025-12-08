@@ -8,6 +8,7 @@ import {
   UserModifyPasswordRequest,
   UserModifyEmailRequest,
   UserModifyVjudgeRequest,
+  UserModifyUsernameRequest,
 } from "@/types/user.ts";
 import { GetAvatarUrl } from "@/util/avatar.ts";
 
@@ -130,6 +131,14 @@ export function PostUserModifyEmail(request: UserModifyEmailRequest) {
 export function PostUserModifyVjudge(request: UserModifyVjudgeRequest) {
   return httpRequest({
     url: "/user/modify/vjudge",
+    method: "post",
+    data: request,
+  });
+}
+
+export function PostUserModifyUsername(request: UserModifyUsernameRequest) {
+  return httpRequest({
+    url: "/user/modify/username",
     method: "post",
     data: request,
   });

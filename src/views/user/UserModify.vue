@@ -11,10 +11,17 @@ import {
   PostUserModifyInfo,
   PostUserModifyOldEmailKey,
   PostUserModifyPassword,
+  PostUserModifyUsername,
   PostUserModifyVjudge,
-  PostUserRegisterEmailKey,
 } from "@/apis/user.ts";
-import { UserModifyEmailRequest, UserModifyInfo, UserModifyInfoRequest, UserModifyPasswordRequest, UserModifyVjudgeRequest } from "@/types/user.ts";
+import {
+  UserModifyEmailRequest,
+  UserModifyInfo,
+  UserModifyInfoRequest,
+  UserModifyPasswordRequest,
+  UserModifyUsernameRequest,
+  UserModifyVjudgeRequest,
+} from "@/types/user.ts";
 
 import router from "@/router";
 import { useUserStore } from "@/stores/user.ts";
@@ -45,6 +52,10 @@ const emailFormData = ref({
   emailKey: "",
   newEmail: "",
   newEmailKey: "",
+});
+
+const accountFormData = ref({
+  newUsername: "",
 });
 
 const vjudgeNickname = ref("");
@@ -159,13 +170,13 @@ const onSubmitBaseInfo = async (_: any) => {
   }
 };
 
-const onResetPasswordInfo = (_: any) => {
+const onResetPasswordInfo = () => {
   passwordFormData.value.password = "";
   passwordFormData.value.changePassword = "";
   passwordFormData.value.confirmPassword = "";
 };
 
-const onSubmitPasswordInfo = async (_: any) => {
+const onSubmitPasswordInfo = async () => {
   if (passwordFormData.value.changePassword !== passwordFormData.value.confirmPassword) {
     return;
   }
@@ -296,7 +307,7 @@ const handleSendOldEmailKey = async () => {
   isSendOldEmailKeying.value = true;
   const windowRef = window as any;
   windowRef.grecaptcha.ready(function () {
-    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'old_email' }).then(async function (token: string) {
+    windowRef.grecaptcha.execute("6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-", { action: "old_email" }).then(async function (token: string) {
       await requestSendOldEmailKey(token);
     });
   });
@@ -325,7 +336,7 @@ const handleSendNewEmailKey = async () => {
   isSendNewEmailKeying.value = true;
   const windowRef = window as any;
   windowRef.grecaptcha.ready(function () {
-    windowRef.grecaptcha.execute('6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-', { action: 'new_email' }).then(async function (token: string) {
+    windowRef.grecaptcha.execute("6LfsVSIsAAAAAJ3GGJoIMNjvV0O0srrAlfRxZTE-", { action: "new_email" }).then(async function (token: string) {
       await requestSendNewEmailKey(token);
     });
   });
@@ -343,14 +354,14 @@ const newSendEmailRender = ref(() => (
   </t-button>
 ));
 
-const onResetEmail = (_: any) => {
+const onResetEmail = () => {
   emailFormData.value.email = loadedUserInfo.email;
   emailFormData.value.emailKey = "";
   emailFormData.value.newEmail = "";
   emailFormData.value.newEmailKey = "";
 };
 
-const onSubmitEmail = async (_: any) => {
+const onSubmitEmail = async () => {
   if (!emailFormData.value.newEmail.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
     ShowTextTipsError(globalProperties, "新邮箱格式不正确");
     return;
@@ -377,6 +388,35 @@ const onSubmitEmail = async (_: any) => {
     const res = await PostUserModifyEmail(requestData);
     if (res.code === 0) {
       ShowTextTipsInfo(globalProperties, "邮箱修改成功，请重新登录");
+      userStore.clear();
+      globalProperties.$router.push({
+        path: "/login",
+      });
+    } else {
+      ShowErrorTips(globalProperties, res.code);
+    }
+  } finally {
+    isPostRunning.value = false;
+  }
+};
+
+const onResetAccountInfo = () => {
+  accountFormData.value.newUsername = "";
+};
+
+const onSubmitAccountInfo = async (_: any) => {
+  isPostRunning.value = true;
+  const requestData = {
+    username: accountFormData.value.newUsername,
+  } as UserModifyUsernameRequest;
+  try {
+    const res = await PostUserModifyUsername(requestData);
+    if (res.code === 0) {
+      ShowTextTipsInfo(globalProperties, "用户名修改成功，请重新登录");
+      loadedUserInfo.username = accountFormData.value.newUsername;
+      onResetAccountInfo();
+
+      // 注销当前登录
       userStore.clear();
       globalProperties.$router.push({
         path: "/login",
@@ -434,8 +474,15 @@ onMounted(() => {
           <t-alert>
             <span>头像可以参考<t-link href="/system/about" target="_blank">系统帮助</t-link>中的<t-tag>用户头像</t-tag>相关介绍</span>
           </t-alert>
-          <t-form ref="form" :rules="formRules" :data="formData" :colon="true" @reset="onResetBaseInfo"
-            @submit="onSubmitBaseInfo" class="yj-modify-form">
+          <t-form
+            ref="form"
+            :rules="formRules"
+            :data="formData"
+            :colon="true"
+            @reset="onResetBaseInfo"
+            @submit="onSubmitBaseInfo"
+            class="yj-modify-form"
+          >
             <t-form-item name="nickname" label="昵称">
               <t-input v-model="formData.nickname" clearable placeholder="请输入昵称"></t-input>
             </t-form-item>
@@ -467,18 +514,29 @@ onMounted(() => {
           </t-form>
         </t-tab-panel>
         <t-tab-panel value="2" label="安全信息" style="padding: 10px">
-          <t-form ref="form" :rules="passwordFormRules" :data="passwordFormData" :colon="true"
-            @reset="onResetPasswordInfo" @submit="onSubmitPasswordInfo" class="yj-modify-form">
+          <t-form
+            ref="form"
+            :rules="passwordFormRules"
+            :data="passwordFormData"
+            :colon="true"
+            @reset="onResetPasswordInfo"
+            @submit="onSubmitPasswordInfo"
+            class="yj-modify-form"
+          >
             <t-form-item name="password" label="当前密码">
               <t-input v-model="passwordFormData.password" clearable type="password" placeholder="请输入旧密码"></t-input>
             </t-form-item>
             <t-form-item name="changePassword" label="新密码">
-              <t-input v-model="passwordFormData.changePassword" clearable type="password"
-                placeholder="输入新密码"></t-input>
+              <t-input v-model="passwordFormData.changePassword" clearable type="password" placeholder="输入新密码"></t-input>
             </t-form-item>
             <t-form-item name="confirmPassword" label="确认密码">
-              <t-input v-model="passwordFormData.confirmPassword" clearable type="password"
-                autocomplete="current-password" placeholder="请确认新密码"></t-input>
+              <t-input
+                v-model="passwordFormData.confirmPassword"
+                clearable
+                type="password"
+                autocomplete="current-password"
+                placeholder="请确认新密码"
+              ></t-input>
             </t-form-item>
             <t-form-item>
               <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
@@ -491,8 +549,15 @@ onMounted(() => {
             <span>如果您的原邮箱无法接受验证码，可联系管理员寻求帮助</span>
             <span>管理员邮箱：BoilTask@qq.com</span>
           </t-alert>
-          <t-form ref="form" :rules="emailFormRules" :data="emailFormData" :colon="true" @reset="onResetEmail"
-            @submit="onSubmitEmail" class="yj-modify-form">
+          <t-form
+            ref="form"
+            :rules="emailFormRules"
+            :data="emailFormData"
+            :colon="true"
+            @reset="onResetEmail"
+            @submit="onSubmitEmail"
+            class="yj-modify-form"
+          >
             <t-form-item name="email" label="原邮箱">
               <t-input v-model="emailFormData.email" readonly></t-input>
             </t-form-item>
@@ -515,7 +580,24 @@ onMounted(() => {
             </t-form-item>
           </t-form>
         </t-tab-panel>
-        <t-tab-panel value="4" label="VJUDGE" style="padding: 10px">
+        <t-tab-panel value="4" label="账号信息" style="padding: 10px">
+          <t-alert theme="warning" :max-line="1">
+            <span>修改用户名并不是常规功能，后期可能会添加限制甚至取消</span>
+          </t-alert>
+          <t-form ref="form" :colon="true" @reset="onResetAccountInfo" @submit="onSubmitAccountInfo" class="yj-modify-form">
+            <t-form-item name="currentUsername" label="当前用户名">
+              <t-input v-model="loadedUserInfo.username" readonly></t-input>
+            </t-form-item>
+            <t-form-item name="newUsername" label="新用户名">
+              <t-input v-model="accountFormData.newUsername" clearable placeholder="请输入新用户名"></t-input>
+            </t-form-item>
+            <t-form-item>
+              <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
+              <t-button theme="primary" type="submit" block :loading="isPostRunning">保存</t-button>
+            </t-form-item>
+          </t-form>
+        </t-tab-panel>
+        <t-tab-panel value="5" label="VJUDGE" style="padding: 10px">
           <t-alert>
             <span>本站支持绑定<a href="https://vjudge.net/" target="_blank">vjudge.net</a>账号，请输入目标用户名</span>
           </t-alert>
@@ -531,15 +613,15 @@ onMounted(() => {
             </t-form-item>
             <t-form-item>
               <t-button theme="danger" type="reset" style="margin-right: 10px">重置</t-button>
-              <t-button theme="primary" type="submit" block :loading="isPostRunning">{{ vjudgeNickname ? "保存" : "绑定"
-                }}</t-button>
+              <t-button theme="primary" type="submit" block :loading="isPostRunning">{{ vjudgeNickname ? "保存" : "绑定" }}</t-button>
             </t-form-item>
           </t-form>
         </t-tab-panel>
       </t-tabs>
-      
-      <div style="color: #666; font-size: 12px; text-align: right;">
-        本网站由 reCAPTCHA 和 Google 保护 <a href="https://policies.google.cn/privacy" target="_blank">隐私政策</a> <a href="https://policies.google.cn/terms" target="_blank">服务条款</a>
+
+      <div style="color: #666; font-size: 12px; text-align: right">
+        本网站由 reCAPTCHA 和 Google 保护 <a href="https://policies.google.cn/privacy" target="_blank">隐私政策</a>
+        <a href="https://policies.google.cn/terms" target="_blank">服务条款</a>
       </div>
     </t-loading>
   </t-card>
@@ -554,8 +636,8 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
 }
-.yj-modify-form {
 
+.yj-modify-form {
   padding: 20px;
 }
 </style>
