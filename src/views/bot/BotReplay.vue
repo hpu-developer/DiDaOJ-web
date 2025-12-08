@@ -40,15 +40,6 @@ interface GameData {
   [key: string]: any; // 允许任意属性，具体游戏会定义自己的结构
 }
 
-interface BotReplayResponse {
-  code: number;
-  data?: {
-    info: string;
-    param: string;
-    status: BotStatus;
-  };
-}
-
 const route = useRoute();
 const gameKey = ref("");
 const replayId = ref(-1);
