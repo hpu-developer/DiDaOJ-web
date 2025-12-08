@@ -36,7 +36,7 @@ export interface BotGameView {
 export interface BotReplay {
   id: number;
   game_key: string;
-  game_name: string;
+  game_title: string;
   status: number;
   players: {
     id: number;
@@ -49,7 +49,7 @@ export interface BotReplay {
 export interface BotReplayView {
   id: number;
   gameKey: string;
-  gameName: string;
+  gameTitle: string;
   status: number;
   players: {
     id: number;

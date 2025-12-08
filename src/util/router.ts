@@ -43,6 +43,25 @@ export const handleGotoJudgeJob = async (id: string, contestId?: number | undefi
   }
 };
 
+export const handleGotoBotGame = async (gameKey: string) => {
+  await router.push({
+    name: "bot-game",
+    params: {
+      gameKey: gameKey,
+    },
+  });
+}
+
+export const handleGotoBotReplay = async (gameKey: string, replayId: number) => {
+  await router.push({
+    name: "bot-replay",
+    params: {
+      gameKey: gameKey,
+      replayId: replayId,
+    },
+  });
+}
+
 export const handleOpenUsername = async (router: Router, username: string | undefined) => {
   if (!username) {
     return;

@@ -1,5 +1,5 @@
 import httpRequest from "@/apis/axios-api";
-import type { BotGame, BotGameView } from "@/types/bot";
+import type { BotGame, BotGameView, BotReplay, BotReplayView } from "@/types/bot";
 
 export enum BotStatus {
   BotStatusInit = 0,
@@ -102,7 +102,7 @@ export function ParseBotReplay(item: BotReplay): BotReplayView {
   const result: BotReplayView = {} as BotReplayView;
   result.id = item.id;
   result.gameKey = item.game_key;
-  result.gameName = item.game_name;
+  result.gameTitle = item.game_title;
   result.status = item.status;
   result.players = item.players;
   if (item.insert_time != undefined) {

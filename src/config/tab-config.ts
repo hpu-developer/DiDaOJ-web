@@ -37,12 +37,12 @@ const tabsConfig: Tab[] = [
     redirect: "problem-collection-list",
   },
   {
-    name: "judge",
-    path: "/judge",
-    title: "评测",
-    icon: "code",
+    name: "bot",
+    path: "/bot",
+    title: "对战",
+    icon: "calculation",
     showSidebar: true,
-    redirect: "judge-list",
+    redirect: "bot-list",
   },
   {
     name: "contest",

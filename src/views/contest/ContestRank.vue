@@ -14,6 +14,7 @@ import { GetAvatarUrl } from "@/util/avatar.ts";
 import type { BaseTableCol } from "tdesign-vue-next";
 import type { ContestRank, ContestRankProblem, ContestRankView } from "@/types/contest.ts";
 import ExcelJS from "exceljs";
+// @ts-ignore
 import { saveAs } from "file-saver";
 
 const route = useRoute();

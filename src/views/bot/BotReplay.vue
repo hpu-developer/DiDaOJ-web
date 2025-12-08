@@ -14,7 +14,7 @@
       <!-- 游戏内容 -->
       <div v-else>
         <!-- 五子棋游戏 -->
-        <Gomoku v-if="gameKey === 'gomoku'" v-model:gameData="gameData" />
+        <Gomoku v-if="gameKey && gameKey.toLowerCase() === 'gomoku'" v-model:gameData="gameData" />
 
         <!-- 无效游戏提示 -->
         <div v-else class="game-not-found">

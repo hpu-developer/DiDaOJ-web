@@ -12,6 +12,7 @@ import {
   ParseBotReplay,
 } from "@/apis/bot.ts";
 import type { BotReplay, BotReplayView } from "@/types/bot.ts";
+import { handleGotoBotGame, handleGotoBotReplay } from "@/util/router";
 
 const route = useRoute();
 const router = useRouter();
@@ -46,7 +47,7 @@ const listColumns = ref([
     colKey: "id",
     cell: (_: any, data: any) => {
       return (
-        <t-button variant="text" onClick={() => handleGotoReplay(data.row.gameKey, data.row.id)}>
+        <t-button variant="text" onClick={() => handleGotoBotReplay(data.row.gameKey, data.row.id)}>
           {data.row.id}
         </t-button>
       );
@@ -54,7 +55,12 @@ const listColumns = ref([
   },
   {
     title: "游戏名称",
-    colKey: "gameName",
+    colKey: "gameTitle",
+    cell: (_: any, data: any) => {
+      return <t-button variant="text" onClick={() => handleGotoBotGame(data.row.gameKey)}>
+        {data.row.gameTitle}
+      </t-button>;
+    },
   },
   {
     title: "状态",
@@ -71,7 +77,7 @@ const listColumns = ref([
         finalElements.push(<span>{statusStr}</span>);
       }
       return (
-        <t-button theme={theme} variant="outline" disabled>
+        <t-button theme={theme} variant="outline" onClick={() => handleGotoBotReplay(data.row.gameKey, data.row.id)}>
           {finalElements}
         </t-button>
       );
@@ -81,11 +87,14 @@ const listColumns = ref([
     title: "玩家列表",
     colKey: "players",
     cell: (_: any, data: any) => {
+      if (!data.row.players || data.row.players.length === 0) {
+        return <span>无</span>;
+      }
       return (
         <t-space>
           {data.row.players.map((player: any) => (
             <t-tag key={player.id} variant="light">
-              {player.nickname}
+              {player.name}
             </t-tag>
           ))}
         </t-space>
@@ -98,11 +107,6 @@ const listColumns = ref([
     width: 180,
   },
 ]);
-
-// 跳转到回放详情
-const handleGotoReplay = (gameKey: string, replayId: number) => {
-  router.push({ path: `/bot/${gameKey}/replay/${replayId}` });
-};
 
 // 搜索表单提交
 const handleSearchFormSubmit = async () => {
