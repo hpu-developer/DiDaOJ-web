@@ -119,6 +119,7 @@ export function ParseBotGame(item: BotGame): BotGameView {
   result.introduction = item.introduction;
   result.description = item.description;
   result.judgeCode = item.judge_code;
+  result.playerMin = item.player_min;
   result.playerMax = item.player_max;
   result.inserter = item.inserter;
   result.inserterNickname = item.inserterNickname;

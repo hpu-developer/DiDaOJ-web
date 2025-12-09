@@ -69,7 +69,7 @@ const loadGameData = async () => {
     // 处理API返回的数据
     gameData.value = ParseBotGame(res.data);
 
-    gameDescription.value = gameData.value.description;
+    gameDescription.value = gameData.value.description || "";
   } catch (error) {
     const errorText = error instanceof Error ? error.message : "加载游戏数据时发生未知错误";
     ShowTextTipsError(globalProperties, errorText);

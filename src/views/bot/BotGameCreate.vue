@@ -29,9 +29,37 @@ const gameInfo = computed(() => {
   return gameList.value.find(game => game.gameKey === selectedGame.value) || null;
 });
 
+// 游戏最小人数
+const minPlayers = computed(() => {
+  return gameInfo.value?.playerMin || 2;
+});
+
 // 游戏最大人数
 const maxPlayers = computed(() => {
   return gameInfo.value?.playerMax || 2;
+});
+
+// 空格列表
+const playerSlots = computed(() => {
+  const slots = [];
+  if (gameInfo.value) {
+    for (let i = 1; i <= maxPlayers.value; i++) {
+      slots.push({
+        index: i,
+        isRequired: i <= minPlayers.value
+      });
+    }
+  }
+  return slots;
+});
+
+// 已选择的Agent映射到空格
+const agentSlots = ref<(number | null)[]>([]);
+
+// 当选择游戏时，初始化空格列表
+watch(selectedGame, () => {
+  selectedAgents.value = [];
+  agentSlots.value = Array(maxPlayers.value).fill(null);
 });
 
 // 对局信息
@@ -40,7 +68,7 @@ const matchInfo = ref<string>("");
 // 检查是否可以创建对局
 const canCreateMatch = computed(() => {
   return selectedGame.value && 
-         selectedAgents.value.length >= 2 && 
+         selectedAgents.value.length >= minPlayers.value && 
          selectedAgents.value.length <= maxPlayers.value;
 });
 
@@ -95,6 +123,49 @@ const toggleAgent = (agentId: number) => {
     }
   } else {
     selectedAgents.value.splice(index, 1);
+    // 同时从agentSlots中移除
+    const slotIndex = agentSlots.value.indexOf(agentId);
+    if (slotIndex !== -1) {
+      agentSlots.value[slotIndex] = null;
+    }
+  }
+};
+
+// 将Agent分配到指定空格
+const assignAgentToSlot = (agentId: number, slotIndex: number) => {
+  // 检查该Agent是否已被分配到其他空格
+  const currentSlotIndex = agentSlots.value.indexOf(agentId);
+  if (currentSlotIndex !== -1) {
+    agentSlots.value[currentSlotIndex] = null;
+  }
+  
+  // 检查该空格是否已有其他Agent
+  const currentAgentId = agentSlots.value[slotIndex];
+  if (currentAgentId !== null) {
+    const agentIndex = selectedAgents.value.indexOf(currentAgentId);
+    if (agentIndex !== -1) {
+      selectedAgents.value.splice(agentIndex, 1);
+    }
+  }
+  
+  // 分配Agent到空格
+  agentSlots.value[slotIndex] = agentId;
+  
+  // 确保Agent在selectedAgents中
+  if (!selectedAgents.value.includes(agentId)) {
+    selectedAgents.value.push(agentId);
+  }
+};
+
+// 从空格中移除Agent
+const removeAgentFromSlot = (slotIndex: number) => {
+  const agentId = agentSlots.value[slotIndex];
+  if (agentId !== null) {
+    const agentIndex = selectedAgents.value.indexOf(agentId);
+    if (agentIndex !== -1) {
+      selectedAgents.value.splice(agentIndex, 1);
+    }
+    agentSlots.value[slotIndex] = null;
   }
 };
 
@@ -120,6 +191,12 @@ onMounted(() => {
   fetchGameList();
   fetchAgentList();
 });
+
+// 获取Agent名称
+const getAgentName = (agentId: number | null) => {
+  if (agentId === null) return '未选择';
+  const agent = agentList.value.find(a => a.id === agentId);
+  return agent ? agent.name : '未知Agent';
 </script>
 
 <template>
@@ -170,14 +247,56 @@ onMounted(() => {
           <span>{{ gameInfo.description }}</span>
         </div>
         <div class="info-item">
+          <span class="label">最小人数：</span>
+          <span>{{ minPlayers }}</span>
+        </div>
+        <div class="info-item">
           <span class="label">最大人数：</span>
           <span>{{ maxPlayers }}</span>
         </div>
       </div>
       
+      <!-- 空格选择 -->
+      <div class="form-section">
+        <h3>玩家空格分配 (最少 {{ minPlayers }} 人，最多 {{ maxPlayers }} 人)</h3>
+        <div class="slot-container">
+          <div 
+            v-for="(slot, index) in playerSlots" 
+            :key="slot.index"
+            class="player-slot"
+            :class="{ 'required': slot.isRequired }"
+          >
+            <div class="slot-header">
+              <span class="slot-index">玩家 {{ slot.index }}</span>
+              <t-tag v-if="slot.isRequired" theme="warning" size="small">必填</t-tag>
+            </div>
+            <div class="slot-content">
+              <t-select
+                v-model="agentSlots[index]"
+                placeholder="选择Agent"
+                style="width: 100%;"
+                @change="(value) => value && assignAgentToSlot(value, index)"
+              >
+                <t-option
+                  v-for="agent in agentList"
+                  :key="agent.id"
+                  :label="agent.name"
+                  :value="agent.id"
+                >
+                  <div>
+                    <div class="option-title">{{ agent.name }}</div>
+                    <div class="option-description">{{ agent.description }}</div>
+                  </div>
+                </t-option>
+              </t-select>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <!-- Agent选择 -->
       <div class="form-section">
-        <h3>选择参与对局的Agent (已选 {{ selectedAgents.length }}/{{ maxPlayers }})</h3>
+        <h3>可用Agent列表</h3>
         <div class="agent-scroll-container">
           <div class="agent-list">
             <t-card
@@ -300,6 +419,38 @@ onMounted(() => {
 .agent-list .t-card.selected {
   border-color: #1890ff;
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.slot-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.player-slot {
+  width: 250px;
+  padding: 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.player-slot.required {
+  border-color: #faad14;
+  background-color: #fffbe6;
+}
+
+.slot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.slot-index {
+  font-weight: bold;
+  font-size: 14px;
 }
 
 .option-title {

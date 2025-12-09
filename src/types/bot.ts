@@ -5,6 +5,7 @@ export interface BotGame {
   introduction?: string;
   description?: string;
   judge_code: string;
+  player_min: number;
   player_max: number;
   inserter: number;
   inserterNickname: string;
@@ -23,6 +24,7 @@ export interface BotGameView {
   introduction?: string;
   description?: string;
   judgeCode?: string;
+  playerMin?: number;
   playerMax?: number;
   inserter?: number;
   inserterNickname?: string;
