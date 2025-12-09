@@ -200,6 +200,31 @@ async function fetchRemoteText(): Promise<Record<string, Record<string, string>>
       "100047": {
         zh: "您的网络环境验证失败，请等待一段时间后刷新重试",
       },
+      // ContestTitleEmpty             metaerrorcode.ErrorCode = 100048
+      // ContestStartTimeBeforeNow     metaerrorcode.ErrorCode = 100049
+      // ContestEndTimeBeforeStartTime metaerrorcode.ErrorCode = 100050
+      // ContestDurationTooLong        metaerrorcode.ErrorCode = 100051
+      // ContestCannotEditStartTime    metaerrorcode.ErrorCode = 100052
+      // ContestCannotEditEndTime      metaerrorcode.ErrorCode = 100053
+
+      "100048": {
+        zh: "比赛标题不能为空",
+      },
+      "100049": {
+        zh: "比赛开始时间不能早于当前时间",
+      },
+      "100050": {
+        zh: "比赛结束时间不能早于开始时间",
+      },
+      "100051": {
+        zh: "比赛持续时间不能超过30天",
+      },
+      "100052": {
+        zh: "比赛已经开始，无法修改开始时间",
+      },
+      "100053": {
+        zh: "比赛已经结束，无法修改结束时间",
+      },
     });
   });
 }

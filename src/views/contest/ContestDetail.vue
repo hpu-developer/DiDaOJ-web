@@ -24,6 +24,7 @@ const dolosLoading = ref(false);
 let contestId = 0;
 const contestLoading = ref(false);
 const contestData = ref<ContestView | null>(null);
+const serverNow = ref(new Date());
 
 const hasContestViewAuth = ref(false);
 const needContestPassword = ref(false);
@@ -36,6 +37,11 @@ const contestName = ref("");
 
 const hasEditAuth = computed(() => {
   return userStore.hasAuth(AuthType.ManageContest) || (contestData.value && userStore?.getUserId === contestData.value.inserter);
+});
+
+const isContestEnded = computed(() => {
+  if (!contestData.value) return false;
+  return serverNow.value > new Date(contestData.value.endTime);
 });
 
 const getProblemIdTheme = (id: number) => {
@@ -204,9 +210,9 @@ const fetchContestData = async () => {
   needContestPassword.value = res.data.need_password;
 
   contestCountdownTarget.value = null;
-  const serverNow = new Date(res.data.now);
-  if (serverNow < new Date(res.data.contest.start_time)) {
-    const offset = new Date().getTime() - serverNow.getTime();
+  serverNow.value = new Date(res.data.now);
+  if (serverNow.value < new Date(res.data.contest.start_time)) {
+    const offset = new Date().getTime() - serverNow.value.getTime();
     contestCountdownTarget.value = new Date(new Date(res.data.contest.start_time).getTime() + offset);
   }
 
@@ -280,7 +286,7 @@ onMounted(async () => {
             <t-button v-if="hasEditAuth" @click="handleClickDolos" :loading="dolosLoading">查重</t-button>
             <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>
             <t-button @click="handleEditContestMember" :loading="editContestMemberLoading">参赛信息</t-button>
-            <t-button @click="handleClickClone" theme="warning">克隆</t-button>
+            <t-button v-if="isContestEnded" @click="handleClickClone" theme="warning">克隆</t-button>
           </t-space>
         </div>
         <div style="margin: 12px">
