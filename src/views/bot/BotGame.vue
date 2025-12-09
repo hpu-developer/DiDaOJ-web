@@ -15,7 +15,7 @@ const { globalProperties } = useCurrentInstance();
 const userStore = useUserStore();
 
 // 响应式数据
-const gameId = ref(route.params.gameKey as string);
+const gameKey = ref(route.params.gameKey as string);
 const gameLoading = ref(false);
 const gameData = ref<BotGameView | null>(null);
 const gameDescription = ref("");
@@ -28,7 +28,16 @@ const handleClickEdit = async () => {
   await router.push({
     name: "manage-bot-game",
     params: {
-      gameKey: gameId.value,
+      gameKey: gameKey.value,
+    },
+  });
+};
+
+const handleClickCreateRoom = async () => {
+  await router.push({
+    name: "bot-replay-create",
+    query: {
+      gameKey: gameKey.value,
     },
   });
 };
@@ -39,20 +48,20 @@ const loadGameData = async () => {
 
   try {
     // 验证gameId是否存在
-    if (!gameId.value) {
-      throw new Error('游戏ID无效');
+    if (!gameKey.value) {
+      throw new Error("游戏ID无效");
     }
 
     // 调用实际的API来获取游戏数据
-    const res = await GetBotGame(gameId.value);
+    const res = await GetBotGame(gameKey.value);
 
     // 检查API响应
     if (!res) {
-      throw new Error('API响应为空');
+      throw new Error("API响应为空");
     }
 
     if (res.code !== 0) {
-      const errorMsg = `加载游戏数据失败，错误码：${res.code}${res.msg ? '，' + res.msg : ''}`;
+      const errorMsg = `加载游戏数据失败，错误码：${res.code}${res.msg ? "，" + res.msg : ""}`;
       ShowTextTipsError(globalProperties, errorMsg);
       return;
     }
@@ -61,9 +70,8 @@ const loadGameData = async () => {
     gameData.value = ParseBotGame(res.data);
 
     gameDescription.value = gameData.value.description;
-
   } catch (error) {
-    const errorText = error instanceof Error ? error.message : '加载游戏数据时发生未知错误';
+    const errorText = error instanceof Error ? error.message : "加载游戏数据时发生未知错误";
     ShowTextTipsError(globalProperties, errorText);
   } finally {
     gameLoading.value = false;
@@ -81,7 +89,6 @@ onMounted(async () => {
     <div class="dida-row">
       <!-- 左侧：游戏描述 -->
       <div class="dida-col-left">
-
         <div class="dida-game-description-container">
           <h2 class="dida-game-title">{{ gameData?.title }}</h2>
           <div class="md-preview-wrapper">
@@ -101,7 +108,11 @@ onMounted(async () => {
           <t-descriptions-item label="更新时间">{{ gameData?.modifyTime }}</t-descriptions-item>
         </t-descriptions>
 
-        <!-- 操作按钮 -->
+        <div class="dida-operation-container">
+          <t-space>
+            <t-button @click="handleClickCreateRoom">创建对局</t-button>
+          </t-space>
+        </div>
         <div class="dida-operation-container">
           <t-space>
             <t-button v-if="hasEditAuth" @click="handleClickEdit">编辑</t-button>

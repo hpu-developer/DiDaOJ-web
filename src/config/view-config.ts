@@ -15,7 +15,7 @@ import ProblemRecommend from "@/views/problem/ProblemRecommend.vue";
 import ProblemEdit from "@/views/problem/ProblemEdit.vue";
 import ProblemJudge from "@/views/problem/ProblemJudge.vue";
 
-import BotList from "@/views/bot/BotList.vue";
+import BotGameList from "@/views/bot/BotGameList.vue";
 import BotGame from "@/views/bot/BotGame.vue";
 import BotGameEdit from "@/views/bot/BotGameEdit.vue";
 import BotReplay from "@/views/bot/BotReplay.vue";
@@ -47,6 +47,7 @@ import SystemStatus from "@/views/system/SystemStatus.vue";
 import ManageJudge from "@/views/manage/ManageJudge.vue";
 import ManageWeb from "@/views/manage/ManageWeb.vue";
 import ContestRencently from "@/views/contest/ContestRencently.vue";
+import BotReplayCreate from "@/views/bot/BotGameCreate.vue";
 
 const viewsConfig = [
   {
@@ -237,22 +238,31 @@ const viewsConfig = [
     component: ProblemDetail,
   },
   {
-    name: "bot-list",
+    name: "bot-game-list",
     tab: "bot",
-    sidebar: "bot-list",
+    sidebar: "bot-game-list",
     path: "",
     title: "游戏列表",
     icon: "flag",
-    component: BotList,
+    component: BotGameList,
   },
   {
     name: "bot-game",
     tab: "bot",
-    sidebar: "bot-list",
+    sidebar: "bot-game-list",
     path: ":gameKey+",
     title: "游戏详情",
     icon: "play",
     component: BotGame,
+  },
+  {
+    name: "bot-replay-create",
+    tab: "bot",
+    sidebar: "bot-game-list",
+    path: "create",
+    title: "新建游戏",
+    icon: "play",
+    component: BotReplayCreate,
   },
   {
     name: "bot-replay-list",

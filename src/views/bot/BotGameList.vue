@@ -1,73 +1,46 @@
 <script setup lang="tsx">
 import { onMounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
 import { useCurrentInstance } from "@/util";
-import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo } from "@/util/tips";
-import httpRequest from '@/apis/axios-api';
+import { GetCommonErrorCode, ShowErrorTips } from "@/util/tips";
+import { GetBotGameList, ParseBotGame } from "@/apis/bot";
+import type { BotGame, BotGameView } from "@/types/bot";
+import { handleGotoBotGame } from "@/util/router";
 
-const route = useRoute();
-const router = useRouter();
 const { globalProperties } = useCurrentInstance();
 
-// 游戏类型定义
-interface Game {
-  id: string;
-  title: string;
-  description: string;
-  icon?: string;
-  route: string;
-}
-
 const dataLoading = ref(true);
-const gameList = ref<Game[]>([]);
+const gameList = ref<BotGameView[]>([]);
 
-const handleNavigateToGame = (game: Game) => {
-  if (!game || !game.route) {
-    return;
-  }
-  router.push(game.route);
+const handleNavigateToGame = (game: BotGameView) => {
+  handleGotoBotGame(game.gameKey);
 };
 
 const fetchGameList = async () => {
   dataLoading.value = true;
   try {
-    // 实际项目中，这里应该调用真实的API
-    // const response = await httpRequest({
-    //   url: '/bot/game/list',
-    //   method: 'get'
-    // });
+    const response = await GetBotGameList();
+    if (response.code !== 0) {
+      ShowErrorTips(globalProperties, response.code);
+      return;
+    }
 
-    // 由于目前没有实际的API，使用模拟数据
-    // 模拟网络延迟
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const botGames: BotGame[] = response.data;
+    gameList.value = botGames.map(ParseBotGame);
 
-    // 模拟数据（只包含实际游戏）
-    const mockData = [
-      {
-        id: 'gomoku',
-        title: '五子棋',
-        description: 'AI 对战的五子棋游戏，锻炼你的策略思维',
-        route: '/bot/gomoku'
-      }
-    ];
-
-    // 使用模拟数据
-    gameList.value = mockData;
-    
-    // 在获取列表后手动添加"敬请期待"项（非服务器返回）
-    gameList.value.push({
-      id: 'coming-soon',
-      title: '敬请期待',
-      description: '更多精彩游戏即将上线，敬请期待！',
-      route: ''
-    });
   } catch (err) {
-    console.error('获取游戏列表失败:', err);
+    console.error("获取游戏列表失败:", err);
     ShowErrorTips(globalProperties, GetCommonErrorCode());
     // 出错时使用默认数据
-    gameList.value = [ ];
+    gameList.value = [];
   } finally {
     dataLoading.value = false;
+    // 在获取列表后手动添加"敬请期待"项（非服务器返回）
+    gameList.value.push({
+      id: -1,
+      gameKey: "",
+      title: "敬请期待",
+      introduction: "更多精彩游戏即将上线，敬请期待！",
+    });
   }
 };
 
@@ -81,7 +54,7 @@ onMounted(() => {
     <t-col :span="9">
       <t-card style="margin: 10px">
         <template #header>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; justify-content: space-between; align-items: center">
             <span>游戏列表</span>
           </div>
         </template>
@@ -96,17 +69,14 @@ onMounted(() => {
               <div class="game-content">
                 <div class="game-info">
                   <h3 class="game-title">{{ game.title }}</h3>
-                  <p class="game-description">{{ game.description }}</p>
+                  <p class="game-introduction">{{ game.introduction }}</p>
                 </div>
                 <div v-if="index !== gameList.length - 1" class="game-action">
-                  <t-button theme="primary" @click="handleNavigateToGame(game)">
-                    开始游戏
-                  </t-button>
+                  <t-button theme="primary" @click="handleNavigateToGame(game)"> 开始游戏 </t-button>
                 </div>
               </div>
             </t-card>
           </div>
-
         </div>
       </t-card>
     </t-col>
@@ -144,7 +114,7 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.game-description {
+.game-introduction {
   margin: 0;
   color: var(--td-text-color-secondary);
   font-size: 14px;

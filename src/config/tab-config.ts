@@ -42,7 +42,7 @@ const tabsConfig: Tab[] = [
     title: "对战",
     icon: "calculation",
     showSidebar: true,
-    redirect: "bot-list",
+    redirect: "bot-game-list",
   },
   {
     name: "contest",

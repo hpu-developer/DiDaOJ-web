@@ -114,8 +114,9 @@ export function ParseBotReplay(item: BotReplay): BotReplayView {
 export function ParseBotGame(item: BotGame): BotGameView {
   const result: BotGameView = {} as BotGameView;
   result.id = item.id;
-  result.key = item.key;
+  result.gameKey = item.game_key;
   result.title = item.title;
+  result.introduction = item.introduction;
   result.description = item.description;
   result.judgeCode = item.judge_code;
   result.playerMax = item.player_max;
@@ -132,6 +133,14 @@ export function ParseBotGame(item: BotGame): BotGameView {
     result.modifyTime = new Date(item.modify_time).toLocaleString();
   }
   return result;
+}
+
+// 获取游戏列表
+export function GetBotGameList() {
+  return httpRequest({
+    url: "/bot/game/list",
+    method: "get",
+  });
 }
 
 export function GetBotGame(gameKey: string) {
@@ -189,3 +198,25 @@ export function PostBotGameEdit(gameId: number, title: string, description: stri
     },
   });
 }
+
+// 获取可用的agent列表
+export function GetBotAgentList() {
+  return httpRequest({
+    url: "/bot/agent/list",
+    method: "get",
+  });
+}
+
+// 创建对局
+export function PostBotGameCreateMatch(gameKey: string, agentIds: number[], matchInfo?: string) {
+  return httpRequest({
+    url: "/bot/match/create",
+    method: "post",
+    data: {
+      game_key: gameKey,
+      agent_ids: agentIds,
+      match_info: matchInfo,
+    },
+  });
+}
+
