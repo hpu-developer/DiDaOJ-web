@@ -1,5 +1,5 @@
 import httpRequest from "@/apis/axios-api";
-import type { BotGame, BotGameView, BotReplay, BotReplayView } from "@/types/bot";
+import type { BotGame, BotGameView, BotAgent, BotAgentView, BotReplay, BotReplayView } from "@/types/bot";
 
 export enum BotStatus {
   BotStatusInit = 0,
@@ -98,19 +98,6 @@ export function GetBotStatusTheme(status: BotStatus): string {
   }
 }
 
-export function ParseBotReplay(item: BotReplay): BotReplayView {
-  const result: BotReplayView = {} as BotReplayView;
-  result.id = item.id;
-  result.gameKey = item.game_key;
-  result.gameTitle = item.game_title;
-  result.status = item.status;
-  result.players = item.players;
-  if (item.insert_time != undefined) {
-    result.insertTime = new Date(item.insert_time).toLocaleString();
-  }
-  return result;
-}
-
 export function ParseBotGame(item: BotGame): BotGameView {
   const result: BotGameView = {} as BotGameView;
   result.id = item.id;
@@ -132,6 +119,31 @@ export function ParseBotGame(item: BotGame): BotGameView {
   result.modifierUsername = item.modifierUsername;
   if (item.modify_time != undefined) {
     result.modifyTime = new Date(item.modify_time).toLocaleString();
+  }
+  return result;
+}
+
+export function ParseBotAgent(item: BotAgent): BotAgentView {
+  const result: BotAgentView = {} as BotAgentView;
+  result.id = item.id;
+  result.name = item.name;
+  result.version = item.version;
+  result.inserter = item.inserter;
+  result.inserterUsername = item.inserter_username;
+  result.inserterNickname = item.inserter_nickname;
+  result.inserterEmail = item.inserter_email;
+  return result;
+}
+
+export function ParseBotReplay(item: BotReplay): BotReplayView {
+  const result: BotReplayView = {} as BotReplayView;
+  result.id = item.id;
+  result.gameKey = item.game_key;
+  result.gameTitle = item.game_title;
+  result.status = item.status;
+  result.players = item.players;
+  if (item.insert_time != undefined) {
+    result.insertTime = new Date(item.insert_time).toLocaleString();
   }
   return result;
 }
@@ -201,9 +213,14 @@ export function PostBotGameEdit(gameId: number, title: string, description: stri
 }
 
 // 获取可用的agent列表
-export function GetBotAgentList() {
+export function GetBotAgentList(id?: number, username?: string, name?: string) {
+  let params = {
+    id: id,
+    username: username,
+    name: name,
+  } as any;
   return httpRequest({
-    url: "/bot/agent/list",
+    url: "/bot/agent/list" + "?" + new URLSearchParams(params).toString(),
     method: "get",
   });
 }
@@ -220,4 +237,3 @@ export function PostBotGameCreateMatch(gameKey: string, agentIds: number[], matc
     },
   });
 }
-

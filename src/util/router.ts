@@ -16,6 +16,14 @@ export const handleGotoUsername = async (router: Router, username: string | unde
   await router.push({ name: "user", params: { username: username } });
 };
 
+export const handleOpenUsername = async (router: Router, username: string | undefined) => {
+  if (!username) {
+    return;
+  }
+  const routeData = router.resolve({ name: "user", params: { username: username } });
+  window.open(routeData.href, "_blank");
+};
+
 export const handleGotoJudgeList = async (query?: any, contestId?: number | undefined) => {
   if (contestId && contestId > 0) {
     await router.push({ name: "contest-judge-list", params: { contestId: contestId }, query: query });
@@ -61,15 +69,6 @@ export const handleGotoBotReplay = async (gameKey: string, replayId: number) => 
     },
   });
 }
-
-export const handleOpenUsername = async (router: Router, username: string | undefined) => {
-  if (!username) {
-    return;
-  }
-  const routeData = router.resolve({ name: "user", params: { username: username } });
-  window.open(routeData.href, "_blank");
-};
-
 export const handleGotoProblemList = async (query?: any) => {
   await router.push({ name: "problem-list", query: query });
 }

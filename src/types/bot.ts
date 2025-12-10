@@ -36,6 +36,28 @@ export interface BotGameView {
   modifyTime?: string;
 }
 
+// 机器人相关类型定义
+export interface BotAgent {
+  id: number;
+  name: string;
+  username: string;
+  version: number;
+  inserter: number;
+  inserter_username: string;
+  inserter_nickname: string;
+  inserter_email?: string;
+}
+
+export interface BotAgentView {
+  id: number;
+  name: string;
+  version: number;
+  inserter: number;
+  inserterUsername: string;
+  inserterNickname: string;
+  inserterEmail?: string;
+}
+
 // 回放相关类型定义
 export interface BotReplay {
   id: number;

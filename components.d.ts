@@ -59,7 +59,6 @@ declare module 'vue' {
     TPagination: typeof import('tdesign-vue-next')['Pagination']
     TProgress: typeof import('tdesign-vue-next')['Progress']
     TRow: typeof import('tdesign-vue-next')['Row']
-    TScrollbar: typeof import('tdesign-vue-next')['Scrollbar']
     TSelect: typeof import('tdesign-vue-next')['Select']
     TSelectInput: typeof import('tdesign-vue-next')['SelectInput']
     TSkeleton: typeof import('tdesign-vue-next')['Skeleton']

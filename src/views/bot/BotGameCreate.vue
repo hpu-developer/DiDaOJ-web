@@ -1,28 +1,29 @@
 <script setup lang="tsx">
-import { onMounted, ref, computed, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { onMounted, ref, computed } from "vue";
+import { useRouter } from "vue-router";
 import { useCurrentInstance } from "@/util";
-import { GetCommonErrorCode, ShowErrorTips, ShowTextTipsInfo } from "@/util/tips";
-import { GetBotGameList, GetBotAgentList, PostBotGameCreateMatch, ParseBotGame } from "@/apis/bot";
-import type { BotGame, BotGameView } from "@/types/bot";
+import { GetCommonErrorCode, ShowErrorTips } from "@/util/tips";
+import { GetBotGameList, GetBotAgentList, ParseBotGame, ParseBotAgent } from "@/apis/bot";
+import { GetAvatarUrl } from "@/util/avatar";
+import { handleOpenUsername } from "@/util/router";
+import type { BotAgent, BotAgentView, BotGame, BotGameView } from "@/types/bot";
 
-const route = useRoute();
 const router = useRouter();
 const { globalProperties } = useCurrentInstance();
-
-// 加载状态
-const dataLoading = ref(true);
-const gamesLoading = ref(true);
-const agentsLoading = ref(true);
-const creatingMatch = ref(false);
 
 // 游戏列表和选择
 const gameList = ref<BotGameView[]>([]);
 const selectedGame = ref<string | null>(null);
 
-// Agent列表和选择
-const agentList = ref<Array<{ id: number; name: string; description: string }>>([]);
-const selectedAgents = ref<number[]>([]);
+// 加载状态
+const dataLoading = ref(true);
+const gamesLoading = ref(true);
+const creatingMatch = ref(false);
+
+const showAgentDialog = ref(false);
+let currentSelectAgentIndex = -1;
+const agentLoading = ref(true);
+const agentList = ref<BotAgentView[]>([]);
 
 // 游戏信息
 const gameInfo = computed(() => {
@@ -40,163 +41,157 @@ const maxPlayers = computed(() => {
 });
 
 // 空格列表
-const playerSlots = computed(() => {
-  const slots = [];
-  if (gameInfo.value) {
-    for (let i = 1; i <= maxPlayers.value; i++) {
-      slots.push({
-        index: i,
-        isRequired: i <= minPlayers.value
-      });
+const playerSlots = ref([] as { index: number; isRequired: boolean; isLoading: boolean, agent: BotAgentView | null }[])
+
+const handleSelectAgent = (agentId: number) => {
+  playerSlots.value[currentSelectAgentIndex].agent = agentList.value.find(agent => agent.id === agentId) || null;
+  showAgentDialog.value = false;
+}
+
+const agentColumns = [
+  {
+    title: "ID",
+    colKey: "id",
+  },
+  {
+    title: "名称",
+    colKey: "name",
+  },
+  {
+    title: "版本",
+    colKey: "version",
+  },
+  {
+    title: "作者",
+    colKey: "inserter",
+    cell: (_: any, data: any) => {
+      const avatarUrl = GetAvatarUrl(data.row.inserterUsername, data.row.inserterEmail);
+      return (
+        <t-space>
+          <t-avatar shape="round" size="32px" image={avatarUrl} hide-on-load-failed={false} />
+          <t-button variant="text" onClick={() => handleOpenUsername(router, data.row.inserterUsername)}>
+            {data.row.inserterNickname}
+          </t-button>
+        </t-space>
+      );
+    },
+  },
+  {
+    title: "操作",
+    colKey: "action",
+    cell: (_: any, data: any) => {
+      return (
+        <t-space>
+          <t-button theme="default" onClick={() => handleSelectAgent(data.row.id)}>
+            选择
+          </t-button>
+        </t-space>
+      );
     }
   }
-  return slots;
-});
-
-// 已选择的Agent映射到空格
-const agentSlots = ref<(number | null)[]>([]);
-
-// 当选择游戏时，初始化空格列表
-watch(selectedGame, () => {
-  selectedAgents.value = [];
-  agentSlots.value = Array(maxPlayers.value).fill(null);
-});
-
-// 对局信息
-const matchInfo = ref<string>("");
+];
 
 // 检查是否可以创建对局
 const canCreateMatch = computed(() => {
-  return selectedGame.value && 
-         selectedAgents.value.length >= minPlayers.value && 
-         selectedAgents.value.length <= maxPlayers.value;
+  return selectedGame.value;
 });
+
+const onGameChange = () => {
+  playerSlots.value = []
+  if (gameInfo.value) {
+    for (let i = 1; i <= maxPlayers.value; i++) {
+      playerSlots.value.push({
+        index: i,
+        isRequired: i <= minPlayers.value,
+        isLoading: false,
+        agent: null
+      });
+    }
+  }
+}
 
 // 加载游戏列表
 const fetchGameList = async () => {
-  gamesLoading.value = true;
+  dataLoading.value = true;
   try {
     const response = await GetBotGameList();
     gameList.value = response.data.map((item: BotGame) => ParseBotGame(item));
     // 默认选择第一个游戏
     if (gameList.value.length > 0) {
       selectedGame.value = gameList.value[0].gameKey;
+      onGameChange();
     }
   } catch (err) {
     console.error('获取游戏列表失败:', err);
     ShowErrorTips(globalProperties, GetCommonErrorCode());
   } finally {
     gamesLoading.value = false;
-    dataLoading.value = agentsLoading.value ? dataLoading.value : false;
+    dataLoading.value = false;
   }
 };
 
-// 加载Agent列表
 const fetchAgentList = async () => {
-  agentsLoading.value = true;
+  agentLoading.value = true;
+
   try {
-    const response = await GetBotAgentList();
-    agentList.value = response.data;
-  } catch (err) {
-    console.error('获取Agent列表失败:', err);
-    ShowErrorTips(globalProperties, GetCommonErrorCode());
+    const response = await GetBotAgentList(Number(searchForm.value.Id), searchForm.value.username, searchForm.value.name);
+    if (response.code !== 0) {
+      ShowErrorTips(globalProperties, response.code);
+      return;
+    }
+
+    agentList.value = []
+
+    if (response.data) {
+      agentList.value = response.data.map((item: BotAgent) => ParseBotAgent(item));
+    }
   } finally {
-    agentsLoading.value = false;
-    dataLoading.value = gamesLoading.value ? dataLoading.value : false;
+    agentLoading.value = false;
   }
+
+}
+
+const openAgentDialog = async (slotIndex: number) => {
+  currentSelectAgentIndex = slotIndex;
+  playerSlots.value[currentSelectAgentIndex].isLoading = true;
+  await fetchAgentList()
+  playerSlots.value[currentSelectAgentIndex].isLoading = false;
+  showAgentDialog.value = true;
 };
 
-// 切换游戏时重置选择的Agent
-watch(selectedGame, () => {
-  selectedAgents.value = [];
+const searchForm = ref({
+  Id: "",
+  username: "",
+  name: "",
 });
 
-// 选择/取消选择Agent
-const toggleAgent = (agentId: number) => {
-  const index = selectedAgents.value.indexOf(agentId);
-  if (index === -1) {
-    // 检查是否超过最大人数限制
-    if (selectedAgents.value.length < maxPlayers.value) {
-      selectedAgents.value.push(agentId);
-    } else {
-      ShowTextTipsInfo(globalProperties, `该游戏最多只能选择 ${maxPlayers.value} 个Agent参与`);
-    }
-  } else {
-    selectedAgents.value.splice(index, 1);
-    // 同时从agentSlots中移除
-    const slotIndex = agentSlots.value.indexOf(agentId);
-    if (slotIndex !== -1) {
-      agentSlots.value[slotIndex] = null;
-    }
-  }
+const handleSearchFormSubmit = async (form: any) => {
+  await fetchAgentList();
 };
 
-// 将Agent分配到指定空格
-const assignAgentToSlot = (agentId: number, slotIndex: number) => {
-  // 检查该Agent是否已被分配到其他空格
-  const currentSlotIndex = agentSlots.value.indexOf(agentId);
-  if (currentSlotIndex !== -1) {
-    agentSlots.value[currentSlotIndex] = null;
-  }
-  
-  // 检查该空格是否已有其他Agent
-  const currentAgentId = agentSlots.value[slotIndex];
-  if (currentAgentId !== null) {
-    const agentIndex = selectedAgents.value.indexOf(currentAgentId);
-    if (agentIndex !== -1) {
-      selectedAgents.value.splice(agentIndex, 1);
-    }
-  }
-  
-  // 分配Agent到空格
-  agentSlots.value[slotIndex] = agentId;
-  
-  // 确保Agent在selectedAgents中
-  if (!selectedAgents.value.includes(agentId)) {
-    selectedAgents.value.push(agentId);
-  }
+const handleSearchFormReset = async () => {
+  searchForm.value.Id = "";
+  searchForm.value.username = "";
+  searchForm.value.name = "";
+  await fetchAgentList();
 };
 
-// 从空格中移除Agent
-const removeAgentFromSlot = (slotIndex: number) => {
-  const agentId = agentSlots.value[slotIndex];
-  if (agentId !== null) {
-    const agentIndex = selectedAgents.value.indexOf(agentId);
-    if (agentIndex !== -1) {
-      selectedAgents.value.splice(agentIndex, 1);
-    }
-    agentSlots.value[slotIndex] = null;
-  }
-};
+// 清除选择的 Agent
+const clearSelectedAgent = () => {
+  playerSlots.value[currentSelectAgentIndex].agent = null;
+  showAgentDialog.value = false;
+}
 
 // 创建对局
 const handleCreateMatch = async () => {
-  if (!canCreateMatch.value || !selectedGame.value) return;
-  
-  creatingMatch.value = true;
-  try {
-    await PostBotGameCreateMatch(selectedGame.value, selectedAgents.value, matchInfo.value);
-    ShowTextTipsInfo(globalProperties, '对局创建成功！');
-    router.push('/bot/replay/list');
-  } catch (err) {
-    console.error('创建对局失败:', err);
-    ShowErrorTips(globalProperties, GetCommonErrorCode());
-  } finally {
-    creatingMatch.value = false;
-  }
+
 };
 
 // 初始化数据
 onMounted(() => {
   fetchGameList();
-  fetchAgentList();
 });
 
-// 获取Agent名称
-const getAgentName = (agentId: number | null) => {
-  if (agentId === null) return '未选择';
-  const agent = agentList.value.find(a => a.id === agentId);
-  return agent ? agent.name : '未知Agent';
 </script>
 
 <template>
@@ -206,35 +201,23 @@ const getAgentName = (agentId: number | null) => {
         <span>创建对局</span>
       </div>
     </template>
-    
+
     <div v-if="dataLoading" class="loading-container">
       <t-skeleton :rows="8" animated />
     </div>
-    
+
     <div v-else class="create-match-container">
       <!-- 游戏选择 -->
       <div class="form-section">
         <h3>选择游戏</h3>
-        <t-select
-          v-model="selectedGame"
-          placeholder="请选择游戏"
-          :disabled="gamesLoading"
-          style="width: 300px;"
-        >
-          <t-option
-            v-for="game in gameList"
-            :key="game.gameKey"
-            :label="game.title"
-            :value="game.gameKey"
-          >
-            <div>
-              <div class="option-title">{{ game.title }}</div>
-              <div class="option-description">{{ game.description }}</div>
-            </div>
+        <t-select v-model="selectedGame" placeholder="请选择游戏" :disabled="gamesLoading" style="width: 300px;"
+          @change="onGameChange">
+          <t-option v-for="game in gameList" :key="game.gameKey" :label="game.title" :value="game.gameKey">
+            {{ game.title }}
           </t-option>
         </t-select>
       </div>
-      
+
       <!-- 游戏信息展示 -->
       <div v-if="gameInfo" class="form-section game-info">
         <h3>游戏信息</h3>
@@ -244,7 +227,7 @@ const getAgentName = (agentId: number | null) => {
         </div>
         <div class="info-item">
           <span class="label">游戏描述：</span>
-          <span>{{ gameInfo.description }}</span>
+          <span>{{ gameInfo.introduction }}</span>
         </div>
         <div class="info-item">
           <span class="label">最小人数：</span>
@@ -255,104 +238,64 @@ const getAgentName = (agentId: number | null) => {
           <span>{{ maxPlayers }}</span>
         </div>
       </div>
-      
+
       <!-- 空格选择 -->
       <div class="form-section">
-        <h3>玩家空格分配 (最少 {{ minPlayers }} 人，最多 {{ maxPlayers }} 人)</h3>
+        <h3>玩家分配 (最少 {{ minPlayers }} 人，最多 {{ maxPlayers }} 人)</h3>
         <div class="slot-container">
-          <div 
-            v-for="(slot, index) in playerSlots" 
-            :key="slot.index"
-            class="player-slot"
-            :class="{ 'required': slot.isRequired }"
-          >
+          <div v-for="(slot, index) in playerSlots" :key="slot.index" class="player-slot"
+            :class="{ 'required': slot.isRequired }">
             <div class="slot-header">
               <span class="slot-index">玩家 {{ slot.index }}</span>
               <t-tag v-if="slot.isRequired" theme="warning" size="small">必填</t-tag>
             </div>
             <div class="slot-content">
-              <t-select
-                v-model="agentSlots[index]"
-                placeholder="选择Agent"
-                style="width: 100%;"
-                @change="(value) => value && assignAgentToSlot(value, index)"
-              >
-                <t-option
-                  v-for="agent in agentList"
-                  :key="agent.id"
-                  :label="agent.name"
-                  :value="agent.id"
-                >
-                  <div>
-                    <div class="option-title">{{ agent.name }}</div>
-                    <div class="option-description">{{ agent.description }}</div>
-                  </div>
-                </t-option>
-              </t-select>
+              <t-button block variant="dashed" @click="openAgentDialog(index)" :loading="slot.isLoading">
+                <template v-if="slot.agent">
+                  {{ slot.agent.name }}
+                </template>
+                <template v-else>
+                  选择 Agent
+                </template>
+              </t-button>
             </div>
           </div>
         </div>
       </div>
-      
-      <!-- Agent选择 -->
-      <div class="form-section">
-        <h3>可用Agent列表</h3>
-        <div class="agent-scroll-container">
-          <div class="agent-list">
-            <t-card
-              v-for="agent in agentList"
-              :key="agent.id"
-              :hoverable="true"
-              :class="{ 'selected': selectedAgents.includes(agent.id) }"
-              @click="toggleAgent(agent.id)"
-            >
-              <div class="agent-content">
-                <div class="agent-name">{{ agent.name }}</div>
-                <div class="agent-description">{{ agent.description }}</div>
-              </div>
-              <t-tag
-                v-if="selectedAgents.includes(agent.id)"
-                theme="success"
-                variant="light"
-              >
-                已选择
-              </t-tag>
-            </t-card>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 对局信息 -->
-      <div class="form-section">
-        <h3>对局信息 (可选)</h3>
-        <t-textarea
-          v-model="matchInfo"
-          placeholder="请输入对局的备注信息"
-          :rows="3"
-          style="width: 100%;"
-        ></t-textarea>
-      </div>
-      
+
       <!-- 创建按钮 -->
       <div class="form-section">
-        <t-button
-          theme="primary"
-          @click="handleCreateMatch"
-          :disabled="!canCreateMatch"
-          :loading="creatingMatch"
-        >
+        <t-button theme="primary" @click="handleCreateMatch" :disabled="!canCreateMatch" :loading="creatingMatch">
           创建对局
         </t-button>
-        <t-button
-          variant="outline"
-          @click="router.go(-1)"
-          style="margin-left: 10px;"
-        >
+        <t-button variant="outline" @click="router.go(-1)" style="margin-left: 10px;">
           返回
         </t-button>
       </div>
     </div>
   </t-card>
+
+  <t-dialog v-model:visible="showAgentDialog" :footer="false" :width="1300" :header="gameInfo?.title">
+    <t-form layout="inline" @submit="handleSearchFormSubmit" @reset="handleSearchFormReset">
+      <t-form-item label="ID">
+        <t-input v-model="searchForm.Id" placeholder="请输入Agent ID" />
+      </t-form-item>
+      <t-form-item label="名称">
+        <t-input v-model="searchForm.name" placeholder="请输入Agent名称" />
+      </t-form-item>
+      <t-form-item label="作者">
+        <t-input v-model="searchForm.username" placeholder="仅支持输入完整用户名" />
+      </t-form-item>
+      <t-form-item>
+        <t-space>
+          <t-button theme="primary" type="submit">搜索</t-button>
+          <t-button theme="default" variant="base" type="reset">重置</t-button>
+          <t-button theme="danger" @click="clearSelectedAgent">清除</t-button>
+        </t-space>
+      </t-form-item>
+    </t-form>
+    <t-table :columns="agentColumns" :data="agentList" row-key="id" :loading="agentLoading"></t-table>
+  </t-dialog>
 </template>
 
 <style scoped>
@@ -451,15 +394,5 @@ const getAgentName = (agentId: number | null) => {
 .slot-index {
   font-weight: bold;
   font-size: 14px;
-}
-
-.option-title {
-  font-weight: bold;
-}
-
-.option-description {
-  font-size: 12px;
-  color: #666;
-  margin-top: 4px;
 }
 </style>
